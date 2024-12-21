@@ -140,25 +140,27 @@ const ManageOrder = () => {
         key: "pendingOrders",
       },
       {
+        title: "Đơn Hàng Yêu Cầu Hủy",
+        dataIndex: "cancelingOrders",
+        key: "cancelingOrders",
+      },
+
+      {
+        title: "Đơn Hàng Được Duyệt Hủy",
+        dataIndex: "canceledOrders",
+        key: "canceledOrders",
+      },
+      {
         title: "Đơn Hàng Hoàn Thành",
         dataIndex: "completedOrders",
         key: "completedOrders",
       },
       {
-        title: "Đơn Hàng Bị Hủy",
-        dataIndex: "canceledOrders",
-        key: "canceledOrders",
-      },
-      {
-        title: "Đơn Hàng Được Duyệt",
+        title: "Đơn Hàng Được Sẵn Sàng",
         dataIndex: "approvedOrders",
         key: "approvedOrders",
       },
-      {
-        title: "Đơn Hàng Đã Đặt",
-        dataIndex: "placedOrders",
-        key: "placedOrders",
-      },
+
       {
         title: "Đơn Hàng Đã Giao",
         dataIndex: "shippedOrders",
@@ -169,11 +171,7 @@ const ManageOrder = () => {
         dataIndex: "paymentFailOrders",
         key: "paymentFailOrders",
       },
-      {
-        title: "Đơn Hàng Đang Hủy",
-        dataIndex: "cancelingOrders",
-        key: "cancelingOrders",
-      },
+
       {
         title: "Đơn Hàng Thanh Toán",
         dataIndex: "paymentOrders",
@@ -184,20 +182,16 @@ const ManageOrder = () => {
         dataIndex: "pendingRefundOrders",
         key: "pendingRefundOrders",
       },
-      {
-        title: "Đơn Hàng Đã Hoàn Tiền",
-        dataIndex: "refundOrders",
-        key: "refundOrders",
-      },
-      {
-        title: "Đơn Hàng Trả Lại Tiền Đặt Cọc",
-        dataIndex: "depositReturnOrders",
-        key: "depositReturnOrders",
-      },
+
       {
         title: "Đơn Hàng Gia Hạn",
         dataIndex: "extendOrders",
         key: "extendOrders",
+      },
+      {
+        title: "Đơn Hàng Hoàn Thành",
+        dataIndex: "completedOrders",
+        key: "completedOrders",
       },
     ],
     []
@@ -263,9 +257,46 @@ const ManageOrder = () => {
         <ShoppingCartOutlined style={{ color: "#1890ff", fontSize: "24px" }} />
       ),
     },
+
+    {
+      title: "Đơn Hàng Chờ Xử Lý",
+      value: data.orderStatistics.pendingOrders,
+      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Yêu Cầu Hủy",
+      value: data.orderStatistics.cancelingOrders,
+      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Được Hủy",
+      value: data.orderStatistics.canceledOrders,
+      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Được Sẵn Sàng",
+      value: data.orderStatistics.approvedOrders,
+      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+    },
+
     {
       title: "Đơn Hoàn Thành",
       value: data.orderStatistics.completedOrders,
+      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Thanh Toán",
+      value: data.orderStatistics.paymentOrders,
+      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Chờ Hoàn Tiền",
+      value: data.orderStatistics.pendingRefundOrders,
+      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Gia Hạn",
+      value: data.orderStatistics.extendOrders,
       icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
     },
   ];
@@ -295,11 +326,11 @@ const ManageOrder = () => {
         </div>
         <Row gutter={[16, 16]}>
           {summaryItems.map((item) => (
-            <Col xs={24} sm={12} md={8} key={item.title}>
+            <Col xs={24} sm={12} md={3} key={item.title}>
               <Card className="summary-card flex items-center">
-                <div className="icon-container mr-4">{item.icon}</div>
+                <div className="icon-container mr-2">{item.icon}</div>
+                <Text className="text-sm text-gray-500">{item.title}</Text>
                 <div>
-                  <Text className="text-sm text-gray-500">{item.title}</Text>
                   <Text className="text-xl font-bold">{item.value}</Text>
                 </div>
               </Card>

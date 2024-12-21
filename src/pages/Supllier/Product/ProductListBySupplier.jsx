@@ -1,5 +1,5 @@
 import { EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Input, message, Modal, Typography } from "antd";
+import { Button, Input, message, Modal, Pagination, Typography, Select } from "antd"; // Import Select component
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -14,13 +14,12 @@ import CreateProduct from "./CreateProduct/";
 import DetailProduct from "./DetailProduct";
 import EditProductForm from "./EditProductForm";
 const { Title } = Typography;
+const { Option } = Select;
 
 const ProductListBySupplier = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
+
   const user = useSelector((state) => state.user.user || {});
   const [supplierId, setSupplierId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +29,11 @@ const ProductListBySupplier = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const { id } = useParams();
+  const itemsPerPage = 20; // Define items per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(1);
+  const [sortField, setSortField] = useState("createdAt"); // State for sorting field
+  const [sortOrder, setSortOrder] = useState("desc"); // State for sorting order
 
   // Fetch supplier ID on component mount
   useEffect(() => {
@@ -40,10 +44,10 @@ const ProductListBySupplier = () => {
           if (response?.isSuccess) {
             setSupplierId(response.result);
           } else {
-            message.error("Failed to fetch supplier ID.");
+            message.error("Không thể lấy ID nhà cung cấp.");
           }
         } catch (error) {
-          message.error("Error fetching supplier ID.");
+          message.error("Lỗi khi lấy ID nhà cung cấp.");
         }
       }
     };
@@ -52,23 +56,22 @@ const ProductListBySupplier = () => {
   }, [user]);
 
   // Fetch products based on supplier ID, page index, and page size
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = 1) => {
     if (!supplierId) return;
 
     setLoading(true);
     try {
       const result = await getProductBySupplierId(
         supplierId,
-        pageIndex,
-        pageSize
+        page,
+        itemsPerPage,
+        sortField,
+        sortOrder // Pass sortField and sortOrder to the API
       );
       if (Array.isArray(result)) {
         setProducts(result);
-        setTotal(result.totalCount || 0);
+        setTotalItems(result.totalCount || 0); // Ensure totalItems is set correctly
 
-        if (result.totalCount === 50) {
-          alert("The system has helped you paginate.");
-        }
         // Fetch category names for each product
         const categoryPromises = result.map(async (product) => {
           if (product.categoryID) {
@@ -83,13 +86,13 @@ const ProductListBySupplier = () => {
         });
         await Promise.all(categoryPromises); // Wait for all category fetches to complete
       } else {
-        message.error("Unable to fetch products.");
+        message.error("Không thể lấy sản phẩm.");
         setProducts([]);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Lỗi khi lấy sản phẩm:", error);
       setProducts([]);
-      message.error("Error fetching products.");
+      message.error("Lỗi khi lấy sản phẩm.");
     } finally {
       setLoading(false);
     }
@@ -97,9 +100,9 @@ const ProductListBySupplier = () => {
 
   useEffect(() => {
     if (supplierId) {
-      fetchProducts();
+      fetchProducts(currentPage);
     }
-  }, [supplierId, pageIndex, pageSize]);
+  }, [supplierId, currentPage, sortField, sortOrder]);
 
   const handleEdit = (product) => {
     setSelectedProduct(product);
@@ -128,7 +131,7 @@ const ProductListBySupplier = () => {
       setSelectedProduct(fetchedProduct);
       setIsModalVisible(true); // Show the modal after fetching the product
     } catch (error) {
-      message.error("Failed to fetch product details.");
+      message.error("Không thể lấy chi tiết sản phẩm.");
     } finally {
       setLoading(false);
     }
@@ -150,10 +153,27 @@ const ProductListBySupplier = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+  const handleSortFieldChange = (value) => {
+    setSortField(value);
+  };
+
+  const handleSortOrderChange = (value) => {
+    setSortOrder(value);
+  };
+
   const filteredProducts = Array.isArray(products)
-    ? products.filter((product) =>
-        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? products
+        .filter((product) =>
+          product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+          if (sortOrder === "asc") {
+            return a[sortField] > b[sortField] ? 1 : -1;
+          } else {
+            return a[sortField] < b[sortField] ? 1 : -1;
+          }
+        })
     : [];
 
   const getStatusClass = (status) => {
@@ -214,6 +234,7 @@ const ProductListBySupplier = () => {
     <span
       style={{
         fontWeight: "bold",
+        color: priceBuy !== null && priceBuy !== 0 ? "#007bff" : "#888",
         color: priceBuy !== null && priceBuy !== 0 ? "#007bff" : "#888",
       }}
     >
@@ -312,6 +333,10 @@ const ProductListBySupplier = () => {
     </a>
   );
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div>
       <Title level={2}>DANH SÁCH SẢN PHẨM</Title>
@@ -325,11 +350,33 @@ const ProductListBySupplier = () => {
         }}
       >
         <Input
-          placeholder="Search by product name"
+          placeholder="Tìm kiếm sản phẩm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: "300px" }}
+          style={{ width: "200px", marginRight: "10px" }}
         />
+        <Select
+          value={sortField}
+          onChange={handleSortFieldChange}
+          style={{ width: "150px", marginRight: "10px" }}
+        >
+          <Option value="productName">Tên sản phẩm</Option>
+          <Option value="priceBuy">Giá mua</Option>
+          <Option value="pricePerDay">Giá thuê theo ngày</Option>
+          <Option value="pricePerHour">Giá thuê theo giờ</Option>
+          <Option value="pricePerMonth">Giá thuê theo tháng</Option>
+          <Option value="status">Trạng thái</Option>
+          <Option value="quality">Chất lượng</Option>
+          <Option value="createdAt">Ngày tạo</Option>
+        </Select>
+        <Select
+          value={sortOrder}
+          onChange={handleSortOrderChange}
+          style={{ width: "150px", marginRight: "10px" }}
+        >
+          <Option value="asc">Tăng dần</Option>
+          <Option value="desc">Giảm dần</Option>
+        </Select>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -345,7 +392,7 @@ const ProductListBySupplier = () => {
       </div>
 
       {loading ? (
-        <p>Loading products...</p>
+        <p>Đang tải sản phẩm...</p>
       ) : (
         <div>
           {filteredProducts.length > 0 ? (
@@ -353,14 +400,23 @@ const ProductListBySupplier = () => {
               {filteredProducts.map((product) => renderProductCard(product))}
             </div>
           ) : (
-            <p>No products available.</p>
+            <p>Không có sản phẩm nào.</p>
           )}
         </div>
       )}
 
+      <div className="flex justify-center">
+        <Pagination
+          current={currentPage}
+          pageSize={itemsPerPage}
+          total={totalItems}
+          onChange={handlePageChange}
+        />
+      </div>
+
       {/* Create Product Modal */}
       <Modal
-        title="Create Product"
+        title="Tạo sản phẩm"
         visible={isCreateModalVisible}
         onCancel={handleCreateModalClose}
         footer={null}
@@ -378,7 +434,7 @@ const ProductListBySupplier = () => {
         />
       )}
       <Modal
-        title="Product Details"
+        title="Chi tiết sản phẩm"
         visible={isModalVisible}
         onCancel={handleClose}
         footer={null}
