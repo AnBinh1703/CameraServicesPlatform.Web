@@ -129,7 +129,7 @@ export const getNewToken = async (accountId, refreshToken) => {
 
 export const getAccountById = async (accountId, token) => {
   try {
-    const res = await api.post(
+    const res = await api.get(
       `/account/get-account-by-userId/${accountId}`,
       {},
       {

@@ -1,6 +1,6 @@
 import { Button, Form, Input, message, Typography } from "antd";
 import React, { useState } from "react";
-import { sendOTP } from "../../../api/accountApi";
+import { sendOTP } from "../../../../api/accountApi";
 
 const { Title } = Typography;
 

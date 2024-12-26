@@ -1,8 +1,8 @@
 import { Tabs } from "antd";
-import CreateStaffForm from "./CreateStaffForm";
-import ManageSupplier from "./ManageSupplier";
 import ManageUserList from "./ManageUserList";
-import SendActivationCode from "./SendActiveSupplier";
+import CreateStaffForm from "./Staff/CreateStaffForm";
+import ManageSupplier from "./Supplier/ManageSupplier";
+import SendActivationCode from "./Supplier/SendActiveSupplier";
 
 const ManageUser = () => {
   const items = [

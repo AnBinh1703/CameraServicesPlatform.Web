@@ -10,7 +10,7 @@ import {
   message,
 } from "antd";
 import React, { useState } from "react";
-import { createStaff } from "../../../api/accountApi";
+import { createStaff } from "../../../../api/accountApi";
 
 const { Option } = Select;
 

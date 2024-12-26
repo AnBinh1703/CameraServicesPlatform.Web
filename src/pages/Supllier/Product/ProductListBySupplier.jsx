@@ -90,7 +90,7 @@ const ProductListBySupplier = () => {
         setProducts([]);
       }
     } catch (error) {
-      console.error("Lỗi khi lấy sản phẩm:", error);
+      console.error("Lỗi khi lấy sản ph���m:", error);
       setProducts([]);
       message.error("Lỗi khi lấy sản phẩm.");
     } finally {
@@ -193,6 +193,10 @@ const ProductListBySupplier = () => {
     }
   };
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  };
+
   const renderPriceRent = (priceRent, record) => {
     const priceLabels = {
       hour: record.pricePerHour,
@@ -205,22 +209,22 @@ const ProductListBySupplier = () => {
       <div>
         {record.pricePerHour !== null && record.pricePerHour !== 0 && (
           <span style={{ marginRight: "10px" }}>
-            <strong>Giờ:</strong> {record.pricePerHour} VND
+            <strong>Giờ:</strong> {formatCurrency(record.pricePerHour)}
           </span>
         )}
         {record.pricePerDay !== null && record.pricePerDay !== 0 && (
           <span style={{ marginRight: "10px" }}>
-            <strong>Ngày:</strong> {record.pricePerDay} VND
+            <strong>Ngày:</strong> {formatCurrency(record.pricePerDay)}
           </span>
         )}
         {record.pricePerWeek !== null && record.pricePerWeek !== 0 && (
           <span style={{ marginRight: "10px" }}>
-            <strong>Tuần:</strong> {record.pricePerWeek} VND
+            <strong>Tuần:</strong> {formatCurrency(record.pricePerWeek)}
           </span>
         )}
         {record.pricePerMonth !== null && record.pricePerMonth !== 0 && (
           <span style={{ marginRight: "10px" }}>
-            <strong>Tháng:</strong> {record.pricePerMonth} VND
+            <strong>Tháng:</strong> {formatCurrency(record.pricePerMonth)}
           </span>
         )}
         {Object.values(priceLabels).every(
@@ -235,10 +239,9 @@ const ProductListBySupplier = () => {
       style={{
         fontWeight: "bold",
         color: priceBuy !== null && priceBuy !== 0 ? "#007bff" : "#888",
-        color: priceBuy !== null && priceBuy !== 0 ? "#007bff" : "#888",
       }}
     >
-      {priceBuy !== null && priceBuy !== 0 ? `${priceBuy} VND` : "--"}
+      {priceBuy !== null && priceBuy !== 0 ? formatCurrency(priceBuy) : "--"}
     </span>
   );
 
@@ -339,7 +342,7 @@ const ProductListBySupplier = () => {
 
   return (
     <div>
-      <Title level={2}>DANH SÁCH SẢN PHẨM</Title>
+      <Title level={2}>DANH SÁCH S���N PHẨM</Title>
 
       <div
         style={{

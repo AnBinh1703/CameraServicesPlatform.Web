@@ -3,8 +3,8 @@ import { Navigate, useRoutes } from "react-router-dom";
 import CommonLayout from "../layouts/CommonLayout";
 import ManagementLayOut from "../layouts/ManagementLayout/ManagementLayOut";
 import ManagePolicy from "../pages/Admin/Policy/ManagePolicy";
-import CreateStaffForm from "../pages/Admin/User/CreateStaffForm";
 import ManageUser from "../pages/Admin/User/ManageUser";
+import CreateStaffForm from "../pages/Admin/User/Staff/CreateStaffForm";
 import About from "../pages/Common/About";
 import Cart from "../pages/Common/Cart";
 import Category from "../pages/Common/Category";
@@ -30,6 +30,8 @@ import Wishlist from "../pages/Common/Wishlish/Wishlist";
 import OrderDetail from "../pages/CommonManager/OrderDetail";
 import RegisterSupplier from "../pages/CommonManager/RegisterSupplier";
 import ManageCategory from "../pages/Staff/Category/ManageCategory";
+import ManageCombo from "../pages/Staff/Combo/ManageCombo";
+import Dashboard from "../pages/Staff/DashboardStaff";
 import ManageProduct from "../pages/Staff/Product/ManageProduct";
 import ManageTransactionSystem from "../pages/Staff/Transaction/ManageTransactionSystem";
 import ManageVoucher from "../pages/Staff/Voucher/ManageVoucher";
@@ -37,15 +39,12 @@ import ManageContractTemplate from "../pages/Supllier/ContractTemplate/ManageCon
 import DashboardSupplier from "../pages/Supllier/DashboardSupplier";
 import InformationSupplierDetail from "../pages/Supllier/InformationSupllierDetail";
 import ManageOrder from "../pages/Supllier/Order/ManageOrder";
+import PersonalPage from "../pages/Supllier/PersonalPage";
 import DetailProduct from "../pages/Supllier/Product/DetailProduct";
 import ManageProductOfSuplier from "../pages/Supllier/Product/ManageProductOfSuplier";
+import ManageReportProductOfSupplier from "../pages/Supllier/ReportProduct/ManageReportProductOfSupplier";
 import ManageVoucherOfSuplier from "../pages/Supllier/Voucher/ManageVoucherOfSuplier";
 import ProtectedRouteAdmin from "./PrivateRoute/ProtectedRouteAdmin";
-import PersonalPage from "../pages/Supllier/PersonalPage";
-import ManageCombo from "../pages/Staff/Combo/ManageCombo";
-import Dashboard from "../pages/Staff/DashboardStaff";
-import ReportListBySupplierId from "../pages/Supllier/ReportProduct/ReportListBySupplierId";
-import ManageReportProductOfSupplier from "../pages/Supllier/ReportProduct/ManageReportProductOfSupplier";
 
 function Routers() {
   const routing = useRoutes([
@@ -99,7 +98,7 @@ function Routers() {
         </ProtectedRouteAdmin>
       ),
       children: [
-        { index: true, element: <Navigate to="dashboard" replace /> },
+        { index: true, element: <DashboardAdmin /> },
 
         {
           path: "manage-user",

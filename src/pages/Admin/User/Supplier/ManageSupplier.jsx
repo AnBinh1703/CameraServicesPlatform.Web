@@ -1,8 +1,8 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input, message, Space, Table } from "antd";
 import { useEffect, useState } from "react";
-import { deleteSupplier, getAllSuppliers } from "../../../api/supplierApi";
-import LoadingComponent from "../../../components/LoadingComponent/LoadingComponent";
+import { deleteSupplier, getAllSuppliers } from "../../../../api/supplierApi";
+import LoadingComponent from "../../../../components/LoadingComponent/LoadingComponent";
 
 const ManageSupplier = () => {
   const [suppliers, setSuppliers] = useState([]);
