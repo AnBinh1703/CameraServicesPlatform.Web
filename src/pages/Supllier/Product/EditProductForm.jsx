@@ -128,7 +128,7 @@ const EditProductForm = ({ visible, onClose, product, onUpdateSuccess }) => {
       formData.append(
         "DateOfManufacture",
         values.dateOfManufacture
-          ? values.dateOfManufacture.format("YYYY-MM-DD")
+          ? values.dateOfManufacture.format("DD-MM-YYYY")
           : null
       );
       formData.append("OriginalPrice", values.originalPrice);

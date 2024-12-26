@@ -1,5 +1,6 @@
 import { SearchOutlined, UpOutlined } from "@ant-design/icons";
-import { Button, Input, message, Pagination, Select } from "antd";
+import { Button, DatePicker, Input, message, Pagination, Select } from "antd"; // Add DatePicker
+import moment from "moment"; // Add moment for date handling
 import { useEffect, useState } from "react";
 import { getAllAccount } from "../../../api/accountApi";
 import LoadingComponent from "../../../components/LoadingComponent/LoadingComponent";
@@ -22,6 +23,7 @@ const ManageUserList = () => {
     role: "",
     gender: "",
     status: "",
+    createdAt: null, // Add this line
   });
 
   const [selectedAccountId, setSelectedAccountId] = useState(null);
@@ -51,6 +53,10 @@ const ManageUserList = () => {
   const filteredAccounts = accounts.filter((item) => {
     const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
     const status = item.isVerified ? "true" : "false";
+    const dateMatch =
+      !searchTerm.createdAt ||
+      moment(item.createdAt).format("DD-MM-YYYY") ===
+        moment(searchTerm.createdAt).format("DD-MM-YYYY");
 
     return (
       fullName.includes(searchTerm.name.toLowerCase()) &&
@@ -60,7 +66,8 @@ const ManageUserList = () => {
       (genderLabels[item.gender] || "Không xác định")
         .toLowerCase()
         .includes(searchTerm.gender.toLowerCase()) &&
-      status.includes(searchTerm.status.toLowerCase())
+      status.includes(searchTerm.status.toLowerCase()) &&
+      dateMatch
     );
   });
 
@@ -76,6 +83,7 @@ const ManageUserList = () => {
       role: "",
       gender: "",
       status: "",
+      createdAt: null, // Add this line
     });
     fetchData(1);
   };
@@ -83,6 +91,13 @@ const ManageUserList = () => {
   const handleDoubleClick = (user) => {
     setSelectedAccountId(user.id);
     setModalVisible(true);
+  };
+
+  const isNewAccount = (createdAt) => {
+    if (!createdAt) return false;
+    const today = moment().startOf('day');
+    const accountDate = moment(createdAt).startOf('day');
+    return today.isSame(accountDate);
   };
 
   return (
@@ -102,7 +117,9 @@ const ManageUserList = () => {
 
       {/* Phần tìm kiếm */}
       {isSearchVisible && (
-        <div className="grid grid-cols-6 gap-4 mb-4">
+        <div className="grid grid-cols-7 gap-4 mb-4">
+          {" "}
+          {/* Update to grid-cols-7 */}
           <div>
             <label>Tên:</label>
             <Input
@@ -177,6 +194,18 @@ const ManageUserList = () => {
               <Option value="false">Chưa xác thực</Option>
             </Select>
           </div>
+          <div>
+            <label>Ngày tạo:</label>
+            <DatePicker
+              placeholder="Chọn ngày tạo"
+              value={searchTerm.createdAt ? moment(searchTerm.createdAt) : null}
+              onChange={(date) =>
+                setSearchTerm({ ...searchTerm, createdAt: date })
+              }
+              className="w-full"
+              format="DD/MM/YYYY"
+            />
+          </div>
         </div>
       )}
 
@@ -209,7 +238,14 @@ const ManageUserList = () => {
                   <td className="text-center">
                     {(currentPage - 1) * itemsPerPage + index + 1}
                   </td>
-                  <td className="text-center">{item.id}</td>
+                  <td className="text-center">
+                    {item.id}
+                    {isNewAccount(item.createdAt) && (
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-green-500 rounded-full">
+                        New
+                      </span>
+                    )}
+                  </td>
                   <td className="text-center">{`${item.firstName} ${item.lastName}`}</td>
                   <td className="text-center lowercase text-wrap">
                     {item.email}

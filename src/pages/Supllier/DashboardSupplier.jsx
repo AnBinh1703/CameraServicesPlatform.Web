@@ -1,19 +1,42 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import { Button, Card, Carousel, Col, DatePicker, Descriptions, Form, Input, message, Modal, Row, Spin, Table, Typography } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Modal,
+  Row,
+  Spin,
+  Typography,
+} from "antd";
 import dayjs from "dayjs";
 import moment from "moment";
+import React, { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../api/accountApi";
 import { getComboById, getCombosBySupplierId } from "../../api/comboApi";
-import { getBestSellingCategoriesBySupplier, getCalculateMonthlyRevenueBySupplier, getCalculateTotalRevenueBySupplier, getMonthOrderCostStatistics, getOrderStatusStatisticsBySupplier, getSupplierOrderStatistics, getSupplierPaymentStatistics, getSupplierProductStatistics, getSupplierRatingStatistics, getSupplierTransactionStatistics } from "../../api/dashboardApi";
+import {
+  getBestSellingCategoriesBySupplier,
+  getCalculateMonthlyRevenueBySupplier,
+  getCalculateTotalRevenueBySupplier,
+  getMonthOrderCostStatistics,
+  getOrderStatusStatisticsBySupplier,
+  getSupplierOrderStatistics,
+  getSupplierPaymentStatistics,
+  getSupplierProductStatistics,
+  getSupplierRatingStatistics,
+  getSupplierTransactionStatistics,
+} from "../../api/dashboardApi";
 import { getSupplierById, updateSupplier } from "../../api/supplierApi";
-import SupplierInfoCard from "./DashboardComponent/SupplierInfoCard";
 import ComboCarousel from "./DashboardComponent/ComboCarousel";
-import RevenueCard from "./DashboardComponent/RevenueCard";
+import MonthlyRevenueChart from "./DashboardComponent/MonthlyRevenueChart";
 import OrderCostStatisticsTable from "./DashboardComponent/OrderCostStatisticsTable";
 import OrderStatisticsTable from "./DashboardComponent/OrderStatisticsTable";
 import ProductStatisticsTable from "./DashboardComponent/ProductStatisticsTable";
-import MonthlyRevenueChart from "./DashboardComponent/MonthlyRevenueChart";
+import RevenueCard from "./DashboardComponent/RevenueCard";
+import SupplierInfoCard from "./DashboardComponent/SupplierInfoCard";
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -146,7 +169,7 @@ const DashboardSupplier = () => {
         setLoading(true);
         try {
           const [startDate, endDate] = dateRange.map((date) =>
-            date.format("YYYY-MM-DD")
+            date.format("DD-MM-YYYY")
           ); // Format dates
 
           const bestSellingCategories =
@@ -396,10 +419,17 @@ const DashboardSupplier = () => {
       {supplierDetails && (
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
-            <SupplierInfoCard supplierDetails={supplierDetails} showModal={showModal} />
+            <SupplierInfoCard
+              supplierDetails={supplierDetails}
+              showModal={showModal}
+            />
           </Col>
           <Col xs={24} lg={12}>
-            <ComboCarousel combos={combos} totalCombos={totalCombos} totalDuration={totalDuration} />
+            <ComboCarousel
+              combos={combos}
+              totalCombos={totalCombos}
+              totalDuration={totalDuration}
+            />
           </Col>
         </Row>
       )}
@@ -461,13 +491,17 @@ const DashboardSupplier = () => {
             <RevenueCard totalRevenue={data.totalRevenue} />
           </Col>
           <Col xs={24} lg={12}>
-            <OrderCostStatisticsTable orderCostStatistics={data.orderCostStatistics} />
+            <OrderCostStatisticsTable
+              orderCostStatistics={data.orderCostStatistics}
+            />
           </Col>
           <Col xs={24}>
             <OrderStatisticsTable orderStatistics={data.orderStatistics} />
           </Col>
           <Col xs={24} lg={12}>
-            <ProductStatisticsTable productStatistics={data.productStatistics} />
+            <ProductStatisticsTable
+              productStatistics={data.productStatistics}
+            />
           </Col>
           <Col xs={24}>
             <MonthlyRevenueChart monthlyRevenue={data.monthlyRevenue} />

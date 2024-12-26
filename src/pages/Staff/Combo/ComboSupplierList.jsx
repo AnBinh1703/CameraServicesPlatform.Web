@@ -231,10 +231,10 @@ const ComboSupplierList = ({ refresh }) => {
                 <td className="border px-4 py-2">{combo.comboName}</td>
                 <td className="border px-4 py-2">{combo.supplierName}</td>
                 <td className="border px-4 py-2">
-                  {dayjs(combo.startTime).format("YYYY-MM-DD HH:mm:ss")}
+                  {dayjs(combo.startTime).format("DD-MM-YYYY HH:mm:ss")}
                 </td>
                 <td className="border px-4 py-2">
-                  {dayjs(combo.endTime).format("YYYY-MM-DD HH:mm:ss")}
+                  {dayjs(combo.endTime).format("DD-MM-YYYY HH:mm:ss")}
                 </td>
                 <td className="border px-4 py-2">
                   {combo.isDisable ? (

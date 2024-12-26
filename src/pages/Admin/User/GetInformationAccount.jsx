@@ -31,37 +31,15 @@ const GetInformationAccount = ({ accountId, visible, onCancel, mainRole }) => {
 
   const handleCopyData = () => {
     if (accountData) {
-      const dataToCopy = `
-        Mã tài khoản: ${accountData.id}
-        Họ: ${accountData.firstName}
-        Tên: ${accountData.lastName}
-        Email: ${accountData.email}
-        Tên người dùng: ${accountData.userName}
-         Số điện thoại: ${accountData.phoneNumber}
-        Địa chỉ: ${accountData.address || "Chưa cung cấp địa chỉ"}
-        Giới tính: ${
-          accountData.gender !== undefined
-            ? accountData.gender === 0
-              ? "Nam"
-              : "Nữ"
-            : "Không xác định"
-        }
-         Mã nhà cung cấp: ${accountData.supplierID || "Chưa có mã nhà cung cấp"}
-        Nghề nghiệp: ${accountData.job || "Chưa cung cấp nghề nghiệp"}
-        Sở thích: ${accountData.hobby || "Chưa cung cấp sở thích"}
-         
-                
-
-        Đã xác minh: ${accountData.isVerified ? "Có" : "Không"}
-      `;
+      const dataToCopy = `${accountData.email}`;
 
       navigator.clipboard
         .writeText(dataToCopy)
         .then(() => {
-          message.success("Dữ liệu tài khoản đã được sao chép vào clipboard!");
+          message.success("Dữ liệu email đã được sao chép vào clipboard!");
         })
         .catch(() => {
-          message.error("Sao chép dữ liệu tài khoản không thành công.");
+          message.error("Sao chép email tài khoản không thành công.");
         });
     }
   };
@@ -210,7 +188,7 @@ const GetInformationAccount = ({ accountId, visible, onCancel, mainRole }) => {
             </Col>
           </Row>
           <Button type="primary" onClick={handleCopyData}>
-            Sao chép dữ liệu tài khoản
+            Sao chép email tài khoản
           </Button>
         </Form>
       )}

@@ -424,7 +424,7 @@ const OrderItem = ({
               { required: true, message: "Please select extend return date" },
             ]}
           >
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
           </Form.Item>
           <Form.Item
             name="rentalExtendStartDate"
@@ -436,7 +436,7 @@ const OrderItem = ({
               },
             ]}
           >
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
           </Form.Item>
           <Form.Item
             name="totalAmount"
@@ -455,7 +455,7 @@ const OrderItem = ({
               },
             ]}
           >
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
           </Form.Item>
         </Form>
       </Modal>
