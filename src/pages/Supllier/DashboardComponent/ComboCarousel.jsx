@@ -57,6 +57,11 @@ const ComboCarousel = ({ combos, totalCombos, totalDuration }) => {
     setComboDetails(null);
   };
 
+  // Sort combos by startTime (latest first)
+  const sortedCombos = [...combos].sort((a, b) => 
+    new Date(b.startTime) - new Date(a.startTime)
+  );
+
   const columns = [
     {
       title: "Tên Combo",
@@ -81,11 +86,20 @@ const ComboCarousel = ({ combos, totalCombos, totalDuration }) => {
       key: "endTime",
       render: (text) => {
         const remainingTime = calculateRemainingTime(text);
-        return remainingTime > 0
-          ? `${formatDateTime(text)} (Còn lại: ${Math.ceil(
-              remainingTime / (1000 * 60 * 60 * 24)
-            )} ngày)`
-          : `${formatDateTime(text)} (Đã hết hạn)`;
+        const isExpired = remainingTime <= 0;
+        return (
+          <span style={{ 
+            color: isExpired ? '#ff4d4f' : '#52c41a',
+            fontWeight: 'bold'
+          }}>
+            {isExpired 
+              ? `${formatDateTime(text)} (Đã hết hạn)`
+              : `${formatDateTime(text)} (Còn lại: ${Math.ceil(
+                  remainingTime / (1000 * 60 * 60 * 24)
+                )} ngày)`
+            }
+          </span>
+        );
       },
     },
     {
@@ -107,13 +121,16 @@ const ComboCarousel = ({ combos, totalCombos, totalDuration }) => {
         </span>
       }
     >
-      {combos.length > 0 ? (
+      {sortedCombos.length > 0 ? (
         <>
           <Table
-            dataSource={combos}
+            dataSource={sortedCombos}
             columns={columns}
             rowKey="comboOfSupplierId"
             pagination={false}
+            rowClassName={(record) => 
+              calculateRemainingTime(record.endTime) <= 0 ? 'text-gray-400' : ''
+            }
           />
           <Modal
             title="Chi tiết Combo"

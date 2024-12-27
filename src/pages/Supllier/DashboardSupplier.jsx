@@ -142,8 +142,7 @@ const DashboardSupplier = () => {
                 durationCombo: comboDetail?.result?.durationCombo || "N/A",
                 startTime: combo.startTime || "N/A",
                 endTime: combo.endTime || "N/A",
-                isDisable:
-                  combo.isDisable !== undefined ? combo.isDisable : "N/A",
+                isDisable: true  // Set isDisable to true
               };
             });
 
@@ -169,7 +168,7 @@ const DashboardSupplier = () => {
         setLoading(true);
         try {
           const [startDate, endDate] = dateRange.map((date) =>
-            date.format("DD-MM-YYYY")
+            date.format("MM-DD-YYYY")
           ); // Format dates
 
           const bestSellingCategories =
