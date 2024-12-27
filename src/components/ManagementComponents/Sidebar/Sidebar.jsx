@@ -69,6 +69,11 @@ const SideBar = () => {
         icon: <FaBoxOpen />,
       },
       {
+        name: "Quản lí combcomb",
+        link: "manage-combo",
+        icon: <FaClipboardList />,
+      },
+      {
         name: "Quản lí chính sách",
         link: "manage-policy",
         icon: <FaClipboardList />,

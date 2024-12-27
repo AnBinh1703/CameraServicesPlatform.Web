@@ -1,6 +1,7 @@
 import {
   CheckOutlined,
   CloseOutlined,
+  EditOutlined,
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
@@ -21,7 +22,6 @@ import {
   getComboById,
   getComboOfSupplierById,
   updateComboOfSupplier,
-  
 } from "../../../api/comboApi";
 import { getAllSuppliers, getSupplierById } from "../../../api/supplierApi";
 
@@ -92,26 +92,27 @@ const ComboSupplierList = ({ refresh }) => {
   }, [refresh]);
 
   const handleViewDetails = async (comboSupplierId) => {
-    const response = await getComboOfSupplierById(comboSupplierId);
-    if (response.isSuccess) {
-      const supplierResponse = await getSupplierById(
-        response.result.supplierID
-      );
-      const comboResponse = await getComboById(response.result.comboId);
-      if (supplierResponse && comboResponse) {
-        setSelectedCombo({
-          ...response.result,
-          supplierName: supplierResponse.result.items[0].supplierName,
-          comboName: comboResponse.result.comboName,
-          startTime: dayjs(response.result.startTime),
-          endTime: dayjs(response.result.endTime),
-        });
-        setShowUpdateForm(true);
-      } else {
-        console.error("Failed to fetch supplier or combo details");
+    try {
+      const response = await getComboOfSupplierById(comboSupplierId);
+      if (response.isSuccess) {
+        const [supplierResponse, comboResponse] = await Promise.all([
+          getSupplierById(response.result.supplierID),
+          getComboById(response.result.comboId)
+        ]);
+
+        if (supplierResponse && comboResponse) {
+          setSelectedCombo({
+            ...response.result,
+            supplierName: supplierResponse.result.items[0].supplierName,
+            comboName: comboResponse.result.comboName,
+            startTime: dayjs(response.result.startTime),
+            endTime: dayjs(response.result.endTime),
+          });
+          setShowUpdateForm(true);
+        }
       }
-    } else {
-      console.error(response.messages);
+    } catch (error) {
+      console.error("Error fetching details:", error);
     }
   };
 
@@ -222,7 +223,7 @@ const ComboSupplierList = ({ refresh }) => {
               <th className="py-2">Thời Gian Bắt Đầu</th>
               <th className="py-2">Thời Gian Kết Thúc</th>
               <th className="py-2">Hiệu lực</th>
-              {/* <th className="py-2">Hành Động</th> */}
+              <th className="py-2">Hành Động</th>
             </tr>
           </thead>
           <tbody>
@@ -232,23 +233,23 @@ const ComboSupplierList = ({ refresh }) => {
                 <td className="border px-4 py-2">{combo.comboName}</td>
                 <td className="border px-4 py-2">{combo.supplierName}</td>
                 <td className="border px-4 py-2">
-                  {dayjs(combo.startTime).format("DD-MM-YYYY HH:mm:ss")}
+                  {dayjs(combo.startTime).format("DD/MM/YYYY HH:mm")}
                 </td>
                 <td className="border px-4 py-2">
-                  {dayjs(combo.endTime).format("DD-MM-YYYY HH:mm:ss")}
+                  {dayjs(combo.endTime).format("DD/MM/YYYY HH:mm")}
                 </td>
                 <td className="border px-4 py-2">
                   {combo.isDisable ? (
-                    <span className="text-red-500">
-                      <CloseOutlined />
-                    </span>
-                  ) : (
                     <span className="text-green-500">
                       <CheckOutlined />
                     </span>
+                  ) : (
+                    <span className="text-red-500">
+                      <CloseOutlined />
+                    </span>
                   )}
                 </td>
-                {/* <td className="border px-4 py-2">
+                <td className="border px-4 py-2">
                   <Button
                     type="link"
                     icon={<EditOutlined />}
@@ -256,7 +257,7 @@ const ComboSupplierList = ({ refresh }) => {
                   >
                     Xem
                   </Button>
-                </td> */}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -264,7 +265,7 @@ const ComboSupplierList = ({ refresh }) => {
 
         <Modal
           title="Cập Nhật Combo của Nhà Cung Cấp"
-          visible={showUpdateForm}
+          open={showUpdateForm}
           onOk={handleUpdateCombo}
           onCancel={() => setShowUpdateForm(false)}
         >
@@ -277,12 +278,11 @@ const ComboSupplierList = ({ refresh }) => {
                 }
                 placeholder="Chọn Combo"
                 className="mb-2 w-full"
+                disabled
               >
-                {combos.map((combo) => (
-                  <Select.Option key={combo.comboId} value={combo.comboId}>
-                    {combo.comboName}
-                  </Select.Option>
-                ))}
+                <Select.Option value={selectedCombo.comboId}>
+                  {selectedCombo.comboName}
+                </Select.Option>
               </Select>
               <Select
                 value={selectedCombo.supplierID}
@@ -291,18 +291,15 @@ const ComboSupplierList = ({ refresh }) => {
                 }
                 placeholder="Chọn Nhà Cung Cấp"
                 className="mb-2 w-full"
+                disabled
               >
-                {suppliers.map((supplier) => (
-                  <Select.Option
-                    key={supplier.supplierID}
-                    value={supplier.supplierID}
-                  >
-                    {supplier.supplierName}
-                  </Select.Option>
-                ))}
+                <Select.Option value={selectedCombo.supplierID}>
+                  {selectedCombo.supplierName}
+                </Select.Option>
               </Select>
               <DatePicker
-                showTime
+                showTime={{ format: "HH:mm" }}
+                format="DD/MM/YYYY HH:mm"
                 value={dayjs(selectedCombo.startTime)}
                 onChange={(date) =>
                   setSelectedCombo({ ...selectedCombo, startTime: date })
@@ -311,7 +308,8 @@ const ComboSupplierList = ({ refresh }) => {
                 className="mb-2 w-full"
               />
               <DatePicker
-                showTime
+                showTime={{ format: "HH:mm" }}
+                format="DD/MM/YYYY HH:mm"
                 value={dayjs(selectedCombo.endTime)}
                 onChange={(date) =>
                   setSelectedCombo({ ...selectedCombo, endTime: date })
@@ -370,14 +368,16 @@ const ComboSupplierList = ({ refresh }) => {
             ))}
           </Select>
           <DatePicker
-            showTime
+            showTime={{ format: "HH:mm" }}
+            format="DD/MM/YYYY HH:mm"
             value={dayjs(newCombo.startTime)}
             onChange={(date) => setNewCombo({ ...newCombo, startTime: date })}
             placeholder="Thời Gian Bắt Đầu"
             className="mb-2 w-full"
           />
           <DatePicker
-            showTime
+            showTime={{ format: "HH:mm" }}
+            format="DD/MM/YYYY HH:mm"
             value={dayjs(newCombo.endTime)}
             onChange={(date) => setNewCombo({ ...newCombo, endTime: date })}
             placeholder="Thời Gian Kết Thúc"

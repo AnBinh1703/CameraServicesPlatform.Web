@@ -21,6 +21,7 @@ import ProductPage from "../pages/Common/Product/ProductPage";
 import ProductPageBuy from "../pages/Common/Product/ProductPageBuy";
 import ProductPageRent from "../pages/Common/Product/ProductPageRent";
 
+import ManageComboByAd from "../pages/Admin/Combo/ManageComboByAd";
 import DashboardAdmin from "../pages/Admin/DashboardAdmin";
 import CreateOrderRent from "../pages/Common/Order/CreateOrderRent/CreateOrderRent";
 import PersonalReview from "../pages/Common/PersonalReview";
@@ -111,6 +112,8 @@ function Routers() {
         { path: "manage-policy", element: <ManagePolicy /> },
         { path: "manage-category", element: <ManageCategory /> },
         { path: "manage-product", element: <ManageProduct /> },
+        { path: "manage-combo", element: <ManageComboByAd /> },
+
         { path: "create-staff", element: <CreateStaffForm /> },
       ],
     },

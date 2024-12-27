@@ -1,9 +1,15 @@
-import { Button, Form, Input, Modal, Table, message } from "antd";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { Button, Form, Input, message, Space, Table, Tag } from "antd";
+import moment from "moment";
 import React, { useEffect, useState } from "react";
-import moment from 'moment';
 import {
   createComboOfSupplier,
   getAllCombosOfSupplier,
+  getComboById,
   updateComboOfSupplier,
 } from "../../../../api/comboApi";
 
@@ -13,50 +19,117 @@ const Combo = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
+  const [comboDetails, setComboDetails] = useState({});
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Tìm kiếm ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => confirm()}
+          style={{ width: 188, marginBottom: 8, display: "block" }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => clearFilters()}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Đặt lại
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+  });
+
+  const fetchComboDetails = async (comboId) => {
+    try {
+      const response = await getComboById(comboId);
+      if (response.isSuccess) {
+        setComboDetails((prev) => ({
+          ...prev,
+          [comboId]: response.result,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch combo details:", error);
+    }
+  };
 
   const columns = [
     {
-      title: "Combo ID",
+      title: "Mã Combo",
       dataIndex: "comboId",
       key: "comboId",
+      ...getColumnSearchProps("comboId"),
+      sorter: (a, b) => a.comboId.localeCompare(b.comboId),
     },
     {
-      title: "Start Time",
+      title: "Tên Combo",
+      dataIndex: "comboId",
+      key: "comboName",
+      render: (comboId) => comboDetails[comboId]?.comboName || "Đang tải...",
+      ...getColumnSearchProps("comboName"),
+    },
+    {
+      title: "Thời gian bắt đầu",
       dataIndex: "startTime",
       key: "startTime",
-      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
+      render: (text) => moment(text).format("DD/MM/YYYY HH:mm:ss"),
+      sorter: (a, b) => moment(a.startTime).unix() - moment(b.startTime).unix(),
     },
     {
-      title: "End Time",
+      title: "Thời gian kết thúc",
       dataIndex: "endTime",
       key: "endTime",
-      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
+      render: (text) => moment(text).format("DD/MM/YYYY HH:mm:ss"),
+      sorter: (a, b) => moment(a.endTime).unix() - moment(b.endTime).unix(),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "isDisable",
       key: "isDisable",
       render: (isDisable) => (
-        <span className={isDisable ? "text-red-500" : "text-green-500"}>
-          {isDisable ? "Disabled" : "Active"}
-        </span>
+        <Tag
+          color={isDisable ? "success" : "error"}
+          icon={isDisable ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+        >
+          {isDisable ? "Vô hiệu hóa" : "Hết Hạn"}
+        </Tag>
       ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <div className="space-x-2">
-          <Button onClick={() => handleEdit(record)}>Edit</Button>
-          <Button 
-            type={record.isDisable ? "primary" : "default"}
-            danger={!record.isDisable}
-            onClick={() => handleToggleStatus(record)}
-          >
-            {record.isDisable ? "Enable" : "Disable"}
-          </Button>
-        </div>
-      ),
+      filters: [
+        { text: "Hết Hạn", value: false },
+        { text: "Vô hiệu hóa", value: true },
+      ],
+      onFilter: (value, record) => record.isDisable === value,
     },
   ];
 
@@ -64,8 +137,13 @@ const Combo = () => {
     setLoading(true);
     try {
       const response = await getAllCombosOfSupplier();
+      console.log("Fetched combos:", response.result); // Add this line to log the data
       if (response.isSuccess) {
-        setCombos(response.data || []);
+        setCombos(response.result || []);
+        // Fetch combo details for each combo
+        response.result?.forEach((combo) => {
+          fetchComboDetails(combo.comboId);
+        });
       } else {
         message.error(response.messages[0]);
       }
@@ -105,80 +183,23 @@ const Combo = () => {
     setModalVisible(true);
   };
 
-  const handleToggleStatus = async (record) => {
-    try {
-      const response = await updateComboOfSupplier({
-        ...record,
-        isDisable: !record.isDisable
-      });
-      
-      if (response.isSuccess) {
-        message.success(`Combo ${record.isDisable ? 'enabled' : 'disabled'} successfully`);
-        fetchCombos();
-      } else {
-        message.error(response.messages[0]);
-      }
-    } catch (error) {
-      message.error("Failed to update combo status");
-    }
-  };
-
   useEffect(() => {
     fetchCombos();
   }, []);
 
   return (
     <div>
-      <Button
-        type="primary"
-        onClick={() => {
-          setEditingId(null);
-          form.resetFields();
-          setModalVisible(true);
-        }}
-        style={{ marginBottom: 16 }}
-      >
-        Create New Combo
-      </Button>
-
       <Table
         columns={columns}
         dataSource={combos}
         loading={loading}
         rowKey="id"
+        pagination={{
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} của ${total} mục`,
+        }}
       />
-
-      <Modal
-        title={editingId ? "Edit Combo" : "Create Combo"}
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-      >
-        <Form form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: "Please input combo name!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="price"
-            label="Price"
-            rules={[{ required: true, message: "Please input price!" }]}
-          >
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="description" label="Description">
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              {editingId ? "Update" : "Create"}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   );
 };
