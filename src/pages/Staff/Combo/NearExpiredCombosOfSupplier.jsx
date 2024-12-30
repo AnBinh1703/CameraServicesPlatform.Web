@@ -1,104 +1,155 @@
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { Table } from "antd";
 import React, { useEffect, useState } from "react";
-import { getNearExpiredCombosOfSupplier } from "../../../api/comboApi";
+import {
+  getComboById,
+  getExpiredCombosOfSupplier,
+} from "../../../api/comboApi";
+import { getSupplierById } from "../../../api/supplierApi";
 
 const NearExpiredCombosOfSupplier = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
 
   const columns = [
     {
-      title: "Combo Of Supplier ID",
-      dataIndex: "comboOfSupplierId",
-      key: "comboOfSupplierId",
-      width: 300,
+      title: "Tên gói dịch vụ",
+      dataIndex: "comboName",
+      key: "comboName",
+      width: 200,
     },
     {
-      title: "Combo ID",
-      dataIndex: "comboId",
-      key: "comboId",
-      width: 300,
+      title: "Tên nhà cung cấp",
+      dataIndex: "supplierName",
+      key: "supplierName",
+      width: 200,
     },
     {
-      title: "Supplier ID",
-      dataIndex: "supplierID",
-      key: "supplierID",
-      width: 300,
-    },
-    {
-      title: "Start Time",
+      title: "Thời gian bắt đầu",
       dataIndex: "startTime",
       key: "startTime",
       width: 200,
       render: (text) => new Date(text).toLocaleString(),
     },
     {
-      title: "End Time",
+      title: "Thời gian kết thúc",
       dataIndex: "endTime",
       key: "endTime",
       width: 200,
       render: (text) => new Date(text).toLocaleString(),
     },
     {
-      title: "Near Expiry Mail",
+      title: "Mail sắp hết hạn",
       dataIndex: "isMailNearExpired",
       key: "isMailNearExpired",
       width: 150,
       render: (value) => (
         <span className={value ? "text-green-500" : "text-red-500"}>
-          {value ? "Sent" : "Not Sent"}
+          {value ? (
+            <>
+              <CheckCircleOutlined /> Đã gửi
+            </>
+          ) : (
+            <>
+              <CloseCircleOutlined /> Chưa gửi
+            </>
+          )}
         </span>
       ),
     },
     {
-      title: "Expiry Mail",
+      title: "Mail hết hạn",
       dataIndex: "isSendMailExpired",
       key: "isSendMailExpired",
       width: 150,
       render: (value) => (
         <span className={value ? "text-green-500" : "text-red-500"}>
-          {value ? "Sent" : "Not Sent"}
+          {value ? (
+            <>
+              <CheckCircleOutlined /> Đã gửi
+            </>
+          ) : (
+            <>
+              <CloseCircleOutlined /> Chưa gửi
+            </>
+          )}
         </span>
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "isDisable",
       key: "isDisable",
       width: 120,
       render: (value) => (
         <span className={value ? "text-red-500" : "text-green-500"}>
-          {value ? "Disabled" : "Active"}
+          {value ? (
+            <>
+              <CloseCircleOutlined /> Còn hiệu lực
+            </>
+          ) : (
+            <>
+              <CheckCircleOutlined /> Hết hiệu lực
+            </>
+          )}
         </span>
       ),
     },
   ];
 
-  const fetchData = async (page = 1, pageSize = 10) => {
-    setLoading(true);
-    const response = await getNearExpiredCombosOfSupplier(page, pageSize);
-    if (response.isSuccess) {
-      setData(response.result.items);
-      setPagination({
-        ...pagination,
-        total: response.result.totalPages * pageSize,
-      });
+  const fetchAdditionalData = async (items) => {
+    if (!items || !Array.isArray(items)) return [];
+
+    const enrichedData = await Promise.all(
+      items.map(async (item) => {
+        try {
+          const comboResponse = await getComboById(item.comboId);
+          const supplierResponse = await getSupplierById(item.supplierID);
+
+          return {
+            ...item,
+            comboName: comboResponse?.isSuccess
+              ? comboResponse.result.comboName
+              : "N/A",
+            supplierName:
+              (supplierResponse?.isSuccess &&
+                supplierResponse?.result?.items?.[0]?.supplierName) ||
+              "N/A",
+          };
+        } catch (error) {
+          console.error("Error fetching additional data:", error);
+          return {
+            ...item,
+            comboName: "N/A",
+            supplierName: "N/A",
+          };
+        }
+      })
+    );
+    return enrichedData;
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await getExpiredCombosOfSupplier();
+      if (response?.isSuccess && response?.result) {
+        const enrichedData = await fetchAdditionalData(response.result);
+        setData(enrichedData);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setData([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const handleTableChange = (newPagination) => {
-    fetchData(newPagination.current, newPagination.pageSize);
-  };
 
   return (
     <div className="p-6 bg-gray-50 text-medium text-gray-500 rounded-lg w-full">
@@ -107,8 +158,7 @@ const NearExpiredCombosOfSupplier = () => {
         columns={columns}
         dataSource={data}
         loading={loading}
-        pagination={pagination}
-        onChange={handleTableChange}
+        pagination={false}
         rowKey="comboOfSupplierId"
       />
     </div>

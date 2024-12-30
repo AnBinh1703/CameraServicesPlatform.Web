@@ -1,84 +1,129 @@
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { Table } from "antd";
 import React, { useEffect, useState } from "react";
-import { getExpiredCombosOfSupplier } from "../../../api/comboApi";
-
+import {
+  getComboById,
+  getExpiredCombosOfSupplier,
+} from "../../../api/comboApi";
+import { getSupplierById } from "../../../api/supplierApi";
 const ExpiredCombosOfSupplier = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const columns = [
     {
-      title: "Combo Of Supplier ID",
-      dataIndex: "comboOfSupplierId",
-      key: "comboOfSupplierId",
-      width: 300,
+      title: "Tên gói dịch vụ",
+      dataIndex: "comboName",
+      key: "comboName",
+      width: 200,
     },
     {
-      title: "Combo ID",
-      dataIndex: "comboId",
-      key: "comboId",
-      width: 300,
+      title: "Tên nhà cung cấp",
+      dataIndex: "supplierName",
+      key: "supplierName",
+      width: 200,
     },
+
     {
-      title: "Supplier ID",
-      dataIndex: "supplierID",
-      key: "supplierID",
-      width: 300,
-    },
-    {
-      title: "Start Time",
+      title: "Thời gian bắt đầu",
       dataIndex: "startTime",
       key: "startTime",
       width: 200,
       render: (text) => new Date(text).toLocaleString(),
     },
     {
-      title: "End Time",
+      title: "Thời gian kết thúc",
       dataIndex: "endTime",
       key: "endTime",
       width: 200,
       render: (text) => new Date(text).toLocaleString(),
     },
     {
-      title: "Near Expiry Mail",
+      title: "Mail sắp hết hạn",
       dataIndex: "isMailNearExpired",
       key: "isMailNearExpired",
       width: 150,
       render: (value) => (
         <span className={value ? "text-green-500" : "text-red-500"}>
-          {value ? "Sent" : "Not Sent"}
+          {value ? (
+            <>
+              <CheckCircleOutlined /> Đã gửi
+            </>
+          ) : (
+            <>
+              <CloseCircleOutlined /> Chưa gửi
+            </>
+          )}
         </span>
       ),
     },
     {
-      title: "Expiry Mail",
+      title: "Mail hết hạn",
       dataIndex: "isSendMailExpired",
       key: "isSendMailExpired",
       width: 150,
       render: (value) => (
         <span className={value ? "text-green-500" : "text-red-500"}>
-          {value ? "Sent" : "Not Sent"}
+          {value ? (
+            <>
+              <CheckCircleOutlined /> Đã gửi
+            </>
+          ) : (
+            <>
+              <CloseCircleOutlined /> Chưa gửi
+            </>
+          )}
         </span>
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "isDisable",
       key: "isDisable",
       width: 120,
       render: (value) => (
         <span className={value ? "text-red-500" : "text-green-500"}>
-          {value ? "Disabled" : "Active"}
+          {value ? (
+            <>
+              <CloseCircleOutlined /> Vô hiệu
+            </>
+          ) : (
+            <>
+              <CheckCircleOutlined /> Hoạt động
+            </>
+          )}
         </span>
       ),
     },
   ];
 
+  const fetchAdditionalData = async (items) => {
+    const enrichedData = await Promise.all(
+      items.map(async (item) => {
+        const comboResponse = await getComboById(item.comboId);
+        const supplierResponse = await getSupplierById(item.supplierID);
+
+        return {
+          ...item,
+          comboName: comboResponse.isSuccess
+            ? comboResponse.result.comboName
+            : "N/A",
+          supplierName:
+            (supplierResponse?.isSuccess &&
+              supplierResponse?.result?.items?.[0]?.supplierName) ||
+            "N/A",
+        };
+      })
+    );
+    return enrichedData;
+  };
+
   const fetchData = async () => {
     setLoading(true);
     const response = await getExpiredCombosOfSupplier();
     if (response.isSuccess) {
-      setData(response.result);
+      const enrichedData = await fetchAdditionalData(response.result);
+      setData(enrichedData);
     }
     setLoading(false);
   };
