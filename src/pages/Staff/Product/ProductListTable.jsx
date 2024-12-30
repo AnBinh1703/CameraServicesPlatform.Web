@@ -33,11 +33,11 @@ const ProductListTable = () => {
         setSelectedProduct(product);
         setIsModalVisible(true);
       } else {
-        message.error("Failed to fetch product details");
+        message.error("Không thể tải thông tin sản phẩm");
       }
     } catch (error) {
-      console.error("Error fetching product details:", error);
-      message.error("Error fetching product details");
+      console.error("Lỗi khi tải thông tin sản phẩm:", error);
+      message.error("Lỗi khi tải thông tin sản phẩm");
     }
     setLoading(false);
   };
@@ -51,7 +51,7 @@ const ProductListTable = () => {
 
   const handleDelete = async (productId) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this product?"
+      "Bạn có chắc chắn muốn xóa sản phẩm này không?"
     );
     if (confirmed) {
       try {
@@ -59,9 +59,9 @@ const ProductListTable = () => {
         setProducts((prevProducts) =>
           prevProducts.filter((product) => product.productID !== productId)
         );
-        message.success("Product deleted successfully.");
+        message.success("Xóa sản phẩm thành công");
       } catch (error) {
-        message.error("Failed to delete product.");
+        message.error("Không thể xóa sản phẩm");
       }
     }
   };
@@ -72,7 +72,7 @@ const ProductListTable = () => {
 
   return (
     <Spin spinning={loading}>
-      <Title level={2}>Product List</Title>
+      <Title level={2}>Danh Sách Sản Phẩm</Title>
       <HandleSearchAndFilter
         products={products}
         searchQuery={searchQuery}

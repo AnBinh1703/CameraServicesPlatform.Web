@@ -1,5 +1,5 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Row, Typography } from "antd";
+import { Button, Card, Col, Row, Tag, Typography } from "antd";
 import React from "react";
 import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
 
@@ -8,17 +8,17 @@ const { Paragraph, Text } = Typography;
 const getStatusClass = (status) => {
   switch (status) {
     case 0:
-      return "text-green-500 text-sm font-bold"; // For Sale
+      return "green"; // For Sale
     case 1:
-      return "text-blue-500 text-sm font-bold"; // For Rent
+      return "blue"; // For Rent
     case 2:
-      return "text-orange-500 text-sm font-bold"; // Rented Out
+      return "orange"; // Rented Out
     case 3:
-      return "text-red-500 text-sm font-bold"; // Sold
+      return "red"; // Sold
     case 4:
-      return "text-gray-500 text-sm font-bold"; // Unavailable
+      return "default"; // Unavailable
     default:
-      return "text-gray-400 text-sm font-bold"; // Default case
+      return "default"; // Default case
   }
 };
 
@@ -41,7 +41,14 @@ const ProductCard = ({
   handleView,
 }) => (
   <Card
-    title={<Text strong>{product.productName}</Text>}
+    title={
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <Tag color={getStatusClass(product.status)}>
+          {getProductStatusEnum(product.status)}
+        </Tag>
+        <Text strong>{product.productName}</Text>
+      </div>
+    }
     extra={
       <Button
         type="default"
@@ -99,10 +106,10 @@ const ProductCard = ({
           <Text strong>Chất Lượng:</Text> {product.quality}
         </p>
         <p>
-          <Text strong>Trạng Thái:</Text>
-          <span className={getStatusClass(product.status)}>
+          <Text strong>Trạng Thái:</Text>{" "}
+          <Tag color={getStatusClass(product.status)}>
             {getProductStatusEnum(product.status)}
-          </span>
+          </Tag>
         </p>
         <p>
           <Text strong>Đánh Giá:</Text> {product.rating}
@@ -129,9 +136,7 @@ const ProductCard = ({
               onClick={() => handleExpandDescription(product.productID)}
               style={{ padding: 0 }}
             >
-              {expandedDescriptions[product.productID]
-                ? "See Less"
-                : "See More"}
+              {expandedDescriptions[product.productID] ? "Thu gọn" : "Xem thêm"}
             </Button>
           )}
       </Col>
