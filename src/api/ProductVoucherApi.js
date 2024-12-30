@@ -53,6 +53,26 @@ export const getProductVoucherByProductId = async (
   }
 };
 
+// Fetch product vouchers associated with a specific supplier ID with pagination
+export const getProductVoucherBySupplierId = async (
+  supplierId,
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const response = await api.get(
+      "/productVoucher/get-product-voucher-by-supplier-id",
+      {
+        params: { supplierId, pageIndex, pageSize },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product voucher by Supplier ID:", error);
+    return null;
+  }
+};
+
 // Create a new product voucher
 export const createProductVoucher = async (productID, vourcherID) => {
   try {

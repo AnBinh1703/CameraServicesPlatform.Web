@@ -1,8 +1,6 @@
 import {
   CheckOutlined,
   CloseOutlined,
-  EditOutlined,
-  PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -17,7 +15,6 @@ import {
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import {
-  createComboOfSupplier,
   getAllCombosOfSupplier,
   getComboById,
   getComboOfSupplierById,
@@ -40,6 +37,8 @@ const ComboSupplierList = ({ refresh }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showViewForm, setShowViewForm] = useState(false);
+  const [viewCombo, setViewCombo] = useState(null);
 
   useEffect(() => {
     const fetchCombosAndSuppliers = async () => {
@@ -91,60 +90,40 @@ const ComboSupplierList = ({ refresh }) => {
     fetchCombosAndSuppliers();
   }, [refresh]);
 
-  const handleViewDetails = async (comboSupplierId) => {
+  const handleViewDetails = async (comboSupplierId, isView = false) => {
     try {
+      setLoading(true); // Add loading state while fetching
       const response = await getComboOfSupplierById(comboSupplierId);
       if (response.isSuccess) {
         const [supplierResponse, comboResponse] = await Promise.all([
           getSupplierById(response.result.supplierID),
-          getComboById(response.result.comboId)
+          getComboById(response.result.comboId),
         ]);
 
         if (supplierResponse && comboResponse) {
-          setSelectedCombo({
+          const comboDetail = {
             ...response.result,
             supplierName: supplierResponse.result.items[0].supplierName,
             comboName: comboResponse.result.comboName,
             startTime: dayjs(response.result.startTime),
             endTime: dayjs(response.result.endTime),
-          });
-          setShowUpdateForm(true);
+          };
+
+          if (isView) {
+            setViewCombo(comboDetail);
+            setShowViewForm(true); // This opens the view modal
+            setShowUpdateForm(false); // Make sure update modal is closed
+          } else {
+            setSelectedCombo(comboDetail);
+            setShowUpdateForm(true); // This opens the update modal
+            setShowViewForm(false); // Make sure view modal is closed
+          }
         }
       }
     } catch (error) {
       console.error("Error fetching details:", error);
-    }
-  };
-
-  const handleCreateCombo = async () => {
-    const response = await createComboOfSupplier(newCombo);
-    if (response.isSuccess) {
-      const supplierResponse = await getSupplierById(
-        response.result.supplierID
-      );
-      const comboResponse = await getComboById(response.result.comboId);
-      if (supplierResponse && comboResponse) {
-        setCombos([
-          ...combos,
-          {
-            ...response.result,
-            supplierName: supplierResponse.result.items[0].supplierName,
-            comboName: comboResponse.result.comboName,
-          },
-        ]);
-      } else {
-        setCombos([...combos, response.result]);
-      }
-      setNewCombo({
-        comboId: "",
-        supplierID: "",
-        startTime: "",
-        endTime: "",
-        isDisable: false,
-      });
-      setShowCreateForm(false);
-    } else {
-      console.error(response.messages);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -206,14 +185,7 @@ const ComboSupplierList = ({ refresh }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-4"
         />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setShowCreateForm(true)}
-          className="mb-4"
-        >
-          Tạo Gói Mới
-        </Button>
+
         <table className="min-w-full bg-white">
           <thead>
             <tr>
@@ -223,7 +195,6 @@ const ComboSupplierList = ({ refresh }) => {
               <th className="py-2">Thời Gian Bắt Đầu</th>
               <th className="py-2">Thời Gian Kết Thúc</th>
               <th className="py-2">Hiệu lực</th>
-              <th className="py-2">Hành Động</th>
             </tr>
           </thead>
           <tbody>
@@ -248,15 +219,6 @@ const ComboSupplierList = ({ refresh }) => {
                       <CloseOutlined />
                     </span>
                   )}
-                </td>
-                <td className="border px-4 py-2">
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={() => handleViewDetails(combo.comboOfSupplierId)}
-                  >
-                    Xem
-                  </Button>
                 </td>
               </tr>
             ))}
@@ -333,64 +295,37 @@ const ComboSupplierList = ({ refresh }) => {
         </Modal>
 
         <Modal
-          title="Tạo Gói Mới của Nhà Cung Cấp"
-          visible={showCreateForm}
-          onOk={handleCreateCombo}
-          onCancel={() => setShowCreateForm(false)}
+          title="Chi tiết Gói của Nhà Cung Cấp"
+          open={showViewForm}
+          onCancel={() => setShowViewForm(false)}
+          footer={[
+            <Button key="close" onClick={() => setShowViewForm(false)}>
+              Đóng
+            </Button>,
+          ]}
         >
-          <Select
-            value={newCombo.comboId}
-            onChange={(value) => setNewCombo({ ...newCombo, comboId: value })}
-            placeholder="Chọn Gói"
-            className="mb-2 w-full"
-          >
-            {combos.map((combo) => (
-              <Select.Option key={combo.comboId} value={combo.comboId}>
-                {combo.comboName}
-              </Select.Option>
-            ))}
-          </Select>
-          <Select
-            value={newCombo.supplierID}
-            onChange={(value) =>
-              setNewCombo({ ...newCombo, supplierID: value })
-            }
-            placeholder="Chọn Nhà Cung Cấp"
-            className="mb-2 w-full"
-          >
-            {suppliers.map((supplier) => (
-              <Select.Option
-                key={supplier.supplierID}
-                value={supplier.supplierID}
-              >
-                {supplier.supplierName}
-              </Select.Option>
-            ))}
-          </Select>
-          <DatePicker
-            showTime={{ format: "HH:mm" }}
-            format="DD/MM/YYYY HH:mm"
-            value={dayjs(newCombo.startTime)}
-            onChange={(date) => setNewCombo({ ...newCombo, startTime: date })}
-            placeholder="Thời Gian Bắt Đầu"
-            className="mb-2 w-full"
-          />
-          <DatePicker
-            showTime={{ format: "HH:mm" }}
-            format="DD/MM/YYYY HH:mm"
-            value={dayjs(newCombo.endTime)}
-            onChange={(date) => setNewCombo({ ...newCombo, endTime: date })}
-            placeholder="Thời Gian Kết Thúc"
-            className="mb-2 w-full"
-          />
-          <Checkbox
-            checked={newCombo.isDisable}
-            onChange={(e) =>
-              setNewCombo({ ...newCombo, isDisable: e.target.checked })
-            }
-          >
-            Bị Vô Hiệu Hóa
-          </Checkbox>
+          {viewCombo && (
+            <div className="space-y-4">
+              <div>
+                <strong>Tên Gói:</strong> {viewCombo.comboName}
+              </div>
+              <div>
+                <strong>Nhà Cung Cấp:</strong> {viewCombo.supplierName}
+              </div>
+              <div>
+                <strong>Thời Gian Bắt Đầu:</strong>{" "}
+                {viewCombo.startTime.format("DD/MM/YYYY HH:mm")}
+              </div>
+              <div>
+                <strong>Thời Gian Kết Thúc:</strong>{" "}
+                {viewCombo.endTime.format("DD/MM/YYYY HH:mm")}
+              </div>
+              <div>
+                <strong>Trạng Thái:</strong>{" "}
+                {viewCombo.isDisable ? "Vô Hiệu Hóa" : "Đang Hoạt Động"}
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </ConfigProvider>
