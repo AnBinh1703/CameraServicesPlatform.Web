@@ -17,58 +17,56 @@ const ProductListTable = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
 
   const { products, total, categoryNames } = useFetchProducts(
     pageIndex,
     pageSize
   );
-  const [loading, setLoading] = useState(false);
 
-  const handleView = async (productId) => {
+  // Update filteredProducts only when products or searchQuery changes
+  const handleFilter = React.useCallback((filteredProducts) => {
+    setFilteredProducts(filteredProducts);
+  }, []);
+
+  const handleView = React.useCallback(async (productId) => {
+    console.log('handleView called with productId:', productId);
     setLoading(true);
     try {
-      const product = await getProductById(productId);
-      if (product) {
-        setSelectedProduct(product);
+      console.log('Fetching product data...');
+      const response = await getProductById(productId);
+      console.log('API Response:', response);
+      
+      if (response && response.productID) {  // Check for direct product data
+        console.log('Setting product data:', response);
+        setSelectedProduct(response);  // Set the response directly
         setIsModalVisible(true);
+        console.log('Modal visibility set to true');
       } else {
+        console.log('No product data in response');
         message.error("Không thể tải thông tin sản phẩm");
       }
     } catch (error) {
-      console.error("Lỗi khi tải thông tin sản phẩm:", error);
+      console.error("Error details:", error);
       message.error("Lỗi khi tải thông tin sản phẩm");
+    } finally {
+      console.log('Loading finished');
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
-  const handleExpandDescription = (productId) => {
+  const handleExpandDescription = React.useCallback((productId) => {
     setExpandedDescriptions((prev) => ({
       ...prev,
       [productId]: !prev[productId],
     }));
-  };
+  }, []);
 
-  const handleDelete = async (productId) => {
-    const confirmed = window.confirm(
-      "Bạn có chắc chắn muốn xóa sản phẩm này không?"
-    );
-    if (confirmed) {
-      try {
-        await deleteProduct(productId);
-        setProducts((prevProducts) =>
-          prevProducts.filter((product) => product.productID !== productId)
-        );
-        message.success("Xóa sản phẩm thành công");
-      } catch (error) {
-        message.error("Không thể xóa sản phẩm");
-      }
-    }
-  };
-
-  const handleFilter = (filteredProducts) => {
-    setFilteredProducts(filteredProducts);
-  };
+  // Reset filtered products when products change
+  React.useEffect(() => {
+    setFilteredProducts([]);
+  }, [products]);
 
   return (
     <Spin spinning={loading}>
@@ -85,7 +83,6 @@ const ProductListTable = () => {
         expandedDescriptions={expandedDescriptions}
         handleExpandDescription={handleExpandDescription}
         handleView={handleView}
-        handleDelete={handleDelete}
       />
       <Pagination
         current={pageIndex}
@@ -100,7 +97,10 @@ const ProductListTable = () => {
       <ProductDetailsModal
         visible={isModalVisible}
         product={selectedProduct}
-        onClose={() => setIsModalVisible(false)}
+        onClose={() => {
+          setIsModalVisible(false);
+          setSelectedProduct(null);
+        }}
       />
     </Spin>
   );

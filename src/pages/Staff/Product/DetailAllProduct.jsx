@@ -1,45 +1,15 @@
-import { Col, Image, message, Row, Spin, Table } from "antd";
+import { Col, Divider, Image, Row, Table, Typography } from "antd";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getProductById } from "../../../api/productApi"; // Adjust path as necessary
+import { getCategoryById } from "../../../api/categoryApi";
+import { getSupplierById } from "../../../api/supplierApi";
+import { getVoucherById } from "../../../api/voucherApi";
 import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
 
-const DetailProduct = ({ product, loading, onClose }) => {
-  const { id } = useParams(); // Assume `id` is passed via URL parameters
-  const [productDetails, setProductDetails] = useState(product);
-  const [isLoading, setIsLoading] = useState(loading);
-  const [error, setError] = useState(null);
+const { Title } = Typography;
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedProduct = await getProductById(id);
-        setProductDetails(fetchedProduct);
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-        setError("Failed to load product details. Please try again later.");
-        message.error(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (!product) {
-      fetchProduct();
-    }
-  }, [id, product]);
-
-  if (isLoading) {
-    return <Spin size="large" />;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!productDetails) {
-    return <div>Đang tải thông tin sản phẩm...</div>; // Temporary loading message
+const DetailAllProduct = ({ product, onClose }) => {
+  if (!product) {
+    return <div>Không có thông tin sản phẩm</div>;
   }
 
   const {
@@ -64,7 +34,51 @@ const DetailProduct = ({ product, loading, onClose }) => {
     listImage,
     listVoucher,
     listProductSpecification,
-  } = productDetails;
+  } = product;
+
+  const [voucherDetails, setVoucherDetails] = useState({});
+  const [categoryDetails, setCategoryDetails] = useState(null);
+  const [supplierDetails, setSupplierDetails] = useState(null);
+
+  useEffect(() => {
+    const fetchVoucherDetails = async () => {
+      if (listVoucher && listVoucher.length > 0) {
+        const details = {};
+        for (const voucher of listVoucher) {
+          const voucherData = await getVoucherById(voucher.vourcherID);
+          if (voucherData) {
+            details[voucher.vourcherID] = voucherData;
+          }
+        }
+        setVoucherDetails(details);
+      }
+    };
+
+    fetchVoucherDetails();
+  }, [listVoucher]);
+
+  useEffect(() => {
+    const fetchCategoryDetails = async () => {
+      if (categoryID) {
+        const response = await getCategoryById(categoryID);
+        if (response.isSuccess) {
+          setCategoryDetails(response.result);
+        }
+      }
+    };
+
+    const fetchSupplierDetails = async () => {
+      if (supplierID) {
+        const response = await getSupplierById(supplierID);
+        if (response.isSuccess && response.result.items && response.result.items.length > 0) {
+          setSupplierDetails(response.result.items[0]);
+        }
+      }
+    };
+
+    fetchCategoryDetails();
+    fetchSupplierDetails();
+  }, [categoryID, supplierID]);
 
   const renderImages = () => {
     if (listImage && listImage.length > 0) {
@@ -98,8 +112,16 @@ const DetailProduct = ({ product, loading, onClose }) => {
   const data = [
     { key: "1", field: "Mã Sản Phẩm", value: productID },
     { key: "2", field: "Số Serial", value: serialNumber },
-    { key: "3", field: "Mã Nhà Cung Cấp", value: supplierID },
-    { key: "4", field: "Tên Loại Hàng", value: categoryID },
+    {
+      key: "3",
+      field: "Nhà Cung Cấp",
+      value: supplierDetails ? supplierDetails.supplierName : supplierID,
+    },
+    {
+      key: "4",
+      field: "Danh mục",
+      value: categoryDetails ? categoryDetails.categoryName : categoryID,
+    },
     { key: "5", field: "Tên Sản Phẩm", value: productName },
     { key: "6", field: "Mô Tả", value: productDescription },
     {
@@ -155,6 +177,31 @@ const DetailProduct = ({ product, loading, onClose }) => {
       title: "Mã Voucher",
       dataIndex: "vourcherID",
       key: "vourcherID",
+      render: (vourcherID) => {
+        const voucher = voucherDetails[vourcherID];
+        return voucher ? (
+          <div style={{ padding: "8px 0" }}>
+            <div style={{ marginBottom: "4px" }}>
+              <strong style={{ color: "#1890ff" }}>Mã: </strong>
+              <span
+                style={{
+                  background: "#f0f2f5",
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                }}
+              >
+                {voucher.vourcherCode}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#1890ff" }}>Mô tả: </strong>
+              <span>{voucher.description || "Không có mô tả"}</span>
+            </div>
+          </div>
+        ) : (
+          vourcherID
+        );
+      },
     },
     {
       title: "Ngày Tạo",
@@ -178,41 +225,88 @@ const DetailProduct = ({ product, loading, onClose }) => {
     },
     {
       title: "Giá Trị",
-      dataIndex: "value",
-      key: "value",
+      dataIndex: "details",
+      key: "details",
     },
   ];
 
   return (
-    <div className="product-detail-container">
-      <Row justify="space-between" align="middle">
+    <div className="product-detail-container" style={{ padding: "24px" }}>
+      <Row
+        justify="space-between"
+        align="middle"
+        style={{ marginBottom: "24px" }}
+      >
         <Col>
-          <h1>Chi Tiết Sản Phẩm</h1>
+          <Title level={2}>{product.productName}</Title>
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        showHeader={false}
-        bordered
-      />
-      <h2>Vouchers</h2>
-      <Table
-        columns={voucherColumns}
-        dataSource={listVoucher}
-        pagination={false}
-        bordered
-      />
-      <h2>Thông Số Kỹ Thuật</h2>
-      <Table
-        columns={specificationColumns}
-        dataSource={listProductSpecification}
-        pagination={false}
-        bordered
-      />
+
+      <div
+        style={{
+          background: "#fff",
+          padding: "24px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          showHeader={false}
+          bordered
+          style={{ marginBottom: "32px" }}
+        />
+
+        <Divider />
+
+        <div style={{ marginTop: "32px" }}>
+          <Title level={3} style={{ marginBottom: "16px" }}>
+            Vouchers
+          </Title>
+          <Table
+            columns={voucherColumns}
+            dataSource={listVoucher}
+            pagination={false}
+            bordered
+            style={{ marginBottom: "32px" }}
+          />
+        </div>
+
+        <Divider />
+
+        <div style={{ marginTop: "32px" }}>
+          <Title level={3} style={{ marginBottom: "16px" }}>
+            Thông Số Kỹ Thuật
+          </Title>
+          <Table
+            columns={specificationColumns}
+            dataSource={listProductSpecification}
+            pagination={false}
+            bordered
+          />
+        </div>
+      </div>
+
+      <style jsx>{`
+        .product-detail-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .ant-table-wrapper {
+          background: #fff;
+        }
+        .ant-table-cell {
+          padding: 12px 16px !important;
+        }
+        .ant-image {
+          border-radius: 4px;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default DetailProduct;
+export default DetailAllProduct;

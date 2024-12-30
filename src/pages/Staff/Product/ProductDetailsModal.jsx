@@ -2,23 +2,18 @@ import { Modal } from "antd";
 import React from "react";
 import DetailAllProduct from "./DetailAllProduct";
 
-const ProductDetailsModal = ({
-  isModalVisible,
-  handleClose,
-  selectedProduct,
-  loading,
-}) => {
+const ProductDetailsModal = ({ visible, product, onClose }) => {
   return (
     <Modal
       title="Chi Tiết Sản Phẩm"
-      visible={isModalVisible}
-      onCancel={handleClose}
+      open={visible}
+      onCancel={onClose}
       footer={null}
+      width={1000}
     >
-      <DetailAllProduct
-        product={selectedProduct}
-        loading={loading}
-        onClose={handleClose}
+      <DetailAllProduct 
+        product={product}
+        onClose={onClose}
       />
     </Modal>
   );
