@@ -1,6 +1,6 @@
-import React from "react";
-import { Modal, Steps, Form, DatePicker, Button, message } from "antd";
+import { Button, DatePicker, Form, Modal, Steps } from "antd";
 import moment from "moment";
+import React from "react";
 
 const durationMap = {
   0: 1,
@@ -63,7 +63,9 @@ const ComboRegistrationModal = ({
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-center">
                     <span className="text-blue-500 mr-2">✓</span>
-                    <span>Thời hạn: {durationMap[combo.durationCombo]} tháng</span>
+                    <span>
+                      Thời hạn: {durationMap[combo.durationCombo]} tháng
+                    </span>
                   </li>
                 </ul>
                 <button
@@ -122,9 +124,16 @@ const ComboRegistrationModal = ({
             <h3 className="text-lg font-semibold mb-4">
               Xác nhận thông tin đăng ký:
             </h3>
+            <p className="text-gray-700 mb-4">
+              Vui lòng kiểm tra kỹ thông tin trước khi xác nhận. 
+              <span className="font-medium text-red-600">
+                {" "}Lưu ý: Sau khi xác nhận đăng ký, bạn sẽ không thể hủy hoặc thay đổi gói dịch vụ đã chọn.
+              </span>
+            </p>
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Gói dịch vụ:</span>
+
                 <span className="font-medium">
                   {
                     combos.find((combo) => combo.comboId === selectedComboId)

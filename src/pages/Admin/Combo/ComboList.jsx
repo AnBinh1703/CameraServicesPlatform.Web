@@ -11,17 +11,17 @@ import {
 const { Option } = Select;
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(amount);
 };
 
 const durationText = {
-  0: '1 tháng',
-  1: '2 tháng',
-  2: '3 tháng',
-  3: '5 tháng'
+  0: "1 tháng",
+  1: "2 tháng",
+  2: "3 tháng",
+  3: "5 tháng",
 };
 
 const ComboList = ({ refresh }) => {
@@ -146,19 +146,29 @@ const ComboList = ({ refresh }) => {
             className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
             onDoubleClick={() => handleViewDetails(combo.comboId)}
           >
-            <h3 className="text-xl font-semibold text-blue-600 mb-3">{combo.comboName}</h3>
+            <h3 className="text-xl font-semibold text-blue-600 mb-3">
+              {combo.comboName}
+            </h3>
             <div className="space-y-2">
               <p className="text-lg font-medium">
                 <span className="text-gray-600">Giá: </span>
-                <span className="text-green-600">{formatCurrency(combo.comboPrice)}</span>
+                <span className="text-green-600">
+                  {formatCurrency(combo.comboPrice)}
+                </span>
               </p>
               <p className="text-gray-700">
                 <span className="font-medium">Thời gian: </span>
                 {durationText[combo.durationCombo]}
               </p>
               <div className="text-sm text-gray-500">
-                <p>Ngày tạo: {new Date(combo.createdAt).toLocaleDateString('vi-VN')}</p>
-                <p>Cập nhật: {new Date(combo.updatedAt).toLocaleDateString('vi-VN')}</p>
+                <p>
+                  Ngày tạo:{" "}
+                  {new Date(combo.createdAt).toLocaleDateString("vi-VN")}
+                </p>
+                <p>
+                  Cập nhật:{" "}
+                  {new Date(combo.updatedAt).toLocaleDateString("vi-VN")}
+                </p>
               </div>
             </div>
             <div className="flex justify-end mt-4">
@@ -187,15 +197,15 @@ const ComboList = ({ refresh }) => {
             label="Tên Gói"
             rules={[{ required: true, message: "Vui lòng nhập tên gói!" }]}
           >
-            <Input className="w-full" placeholder="Nhập tên góigói" />
+            <Input className="w-full" placeholder="Nhập tên Gói" />
           </Form.Item>
           <Form.Item
             name="comboPrice"
-            label="Giá GóiGói (VNĐ)"
+            label="Giá Gói (VNĐ)"
             rules={[{ required: true, message: "Vui lòng nhập giá gói!" }]}
           >
-            <Input 
-              type="number" 
+            <Input
+              type="number"
               className="w-full"
               placeholder="Nhập giá gói"
               min={0}
@@ -209,7 +219,9 @@ const ComboList = ({ refresh }) => {
           >
             <Select placeholder="Chọn thời gian">
               {Object.entries(durationText).map(([key, value]) => (
-                <Option key={key} value={Number(key)}>{value}</Option>
+                <Option key={key} value={Number(key)}>
+                  {value}
+                </Option>
               ))}
             </Select>
           </Form.Item>

@@ -33,13 +33,14 @@ const ComboSupplierList = ({ refresh }) => {
   const [newCombo, setNewCombo] = useState({
     comboId: "",
     supplierID: "",
-    startTime: "",
-    endTime: "",
+    startTime: null,  // Changed from "" to null
+    endTime: null,    // Changed from "" to null
     isDisable: false,
   });
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [availableCombos, setAvailableCombos] = useState([]); // Add this state
 
   useEffect(() => {
     const fetchCombosAndSuppliers = async () => {
@@ -91,6 +92,29 @@ const ComboSupplierList = ({ refresh }) => {
     fetchCombosAndSuppliers();
   }, [refresh]);
 
+  useEffect(() => {
+    const fetchAvailableCombos = async () => {
+      try {
+        const response = await getAllCombosOfSupplier();
+        if (response && response.isSuccess) {
+          const combosData = await Promise.all(
+            response.result.map(async (combo) => {
+              const comboDetails = await getComboById(combo.comboId);
+              return {
+                id: combo.comboId,
+                name: comboDetails.result.comboName
+              };
+            })
+          );
+          setAvailableCombos(combosData);
+        }
+      } catch (error) {
+        console.error("Error fetching available combos:", error);
+      }
+    };
+    fetchAvailableCombos();
+  }, []);
+
   const handleViewDetails = async (comboSupplierId) => {
     const response = await getComboOfSupplierById(comboSupplierId);
     if (response.isSuccess) {
@@ -116,7 +140,14 @@ const ComboSupplierList = ({ refresh }) => {
   };
 
   const handleCreateCombo = async () => {
-    const response = await createComboOfSupplier(newCombo);
+    // Format dates properly before sending to API
+    const formattedCombo = {
+      ...newCombo,
+      startTime: newCombo.startTime ? newCombo.startTime.format() : null,
+      endTime: newCombo.endTime ? newCombo.endTime.format() : null,
+    };
+    
+    const response = await createComboOfSupplier(formattedCombo);
     if (response.isSuccess) {
       const supplierResponse = await getSupplierById(
         response.result.supplierID
@@ -137,8 +168,8 @@ const ComboSupplierList = ({ refresh }) => {
       setNewCombo({
         comboId: "",
         supplierID: "",
-        startTime: "",
-        endTime: "",
+        startTime: null,  // Changed from "" to null
+        endTime: null,    // Changed from "" to null
         isDisable: false,
       });
       setShowCreateForm(false);
@@ -341,19 +372,19 @@ const ComboSupplierList = ({ refresh }) => {
           onCancel={() => setShowCreateForm(false)}
         >
           <Select
-            value={newCombo.comboId}
+            value={newCombo.comboId || undefined}
             onChange={(value) => setNewCombo({ ...newCombo, comboId: value })}
             placeholder="Chọn Combo"
             className="mb-2 w-full"
           >
-            {combos.map((combo) => (
-              <Select.Option key={combo.comboId} value={combo.comboId}>
-                {combo.comboName}
+            {availableCombos.map((combo) => (
+              <Select.Option key={combo.id} value={combo.id}>
+                {combo.name}
               </Select.Option>
             ))}
           </Select>
           <Select
-            value={newCombo.supplierID}
+            value={newCombo.supplierID || undefined}
             onChange={(value) =>
               setNewCombo({ ...newCombo, supplierID: value })
             }
@@ -371,14 +402,14 @@ const ComboSupplierList = ({ refresh }) => {
           </Select>
           <DatePicker
             showTime
-            value={dayjs(newCombo.startTime)}
+            value={newCombo.startTime ? dayjs(newCombo.startTime) : null}
             onChange={(date) => setNewCombo({ ...newCombo, startTime: date })}
             placeholder="Thời Gian Bắt Đầu"
             className="mb-2 w-full"
           />
           <DatePicker
             showTime
-            value={dayjs(newCombo.endTime)}
+            value={newCombo.endTime ? dayjs(newCombo.endTime) : null}
             onChange={(date) => setNewCombo({ ...newCombo, endTime: date })}
             placeholder="Thời Gian Kết Thúc"
             className="mb-2 w-full"
