@@ -3,15 +3,7 @@ import {
   CloseOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  ConfigProvider,
-  DatePicker,
-  Input,
-  Modal,
-  Select,
-} from "antd";
+import { ConfigProvider, Input } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import {
@@ -224,109 +216,6 @@ const ComboSupplierList = ({ refresh }) => {
             ))}
           </tbody>
         </table>
-
-        <Modal
-          title="Cập Nhật Gói của Nhà Cung Cấp"
-          open={showUpdateForm}
-          onOk={handleUpdateCombo}
-          onCancel={() => setShowUpdateForm(false)}
-        >
-          {selectedCombo && (
-            <div>
-              <Select
-                value={selectedCombo.comboId}
-                onChange={(value) =>
-                  setSelectedCombo({ ...selectedCombo, comboId: value })
-                }
-                placeholder="Chọn Gói"
-                className="mb-2 w-full"
-                disabled
-              >
-                <Select.Option value={selectedCombo.comboId}>
-                  {selectedCombo.comboName}
-                </Select.Option>
-              </Select>
-              <Select
-                value={selectedCombo.supplierID}
-                onChange={(value) =>
-                  setSelectedCombo({ ...selectedCombo, supplierID: value })
-                }
-                placeholder="Chọn Nhà Cung Cấp"
-                className="mb-2 w-full"
-                disabled
-              >
-                <Select.Option value={selectedCombo.supplierID}>
-                  {selectedCombo.supplierName}
-                </Select.Option>
-              </Select>
-              <DatePicker
-                showTime={{ format: "HH:mm" }}
-                format="DD/MM/YYYY HH:mm"
-                value={dayjs(selectedCombo.startTime)}
-                onChange={(date) =>
-                  setSelectedCombo({ ...selectedCombo, startTime: date })
-                }
-                placeholder="Thời Gian Bắt Đầu"
-                className="mb-2 w-full"
-              />
-              <DatePicker
-                showTime={{ format: "HH:mm" }}
-                format="DD/MM/YYYY HH:mm"
-                value={dayjs(selectedCombo.endTime)}
-                onChange={(date) =>
-                  setSelectedCombo({ ...selectedCombo, endTime: date })
-                }
-                placeholder="Thời Gian Kết Thúc"
-                className="mb-2 w-full"
-              />
-              <Checkbox
-                checked={selectedCombo.isDisable}
-                onChange={(e) =>
-                  setSelectedCombo({
-                    ...selectedCombo,
-                    isDisable: e.target.checked,
-                  })
-                }
-              >
-                Bị Vô Hiệu Hóa
-              </Checkbox>
-            </div>
-          )}
-        </Modal>
-
-        <Modal
-          title="Chi tiết Gói của Nhà Cung Cấp"
-          open={showViewForm}
-          onCancel={() => setShowViewForm(false)}
-          footer={[
-            <Button key="close" onClick={() => setShowViewForm(false)}>
-              Đóng
-            </Button>,
-          ]}
-        >
-          {viewCombo && (
-            <div className="space-y-4">
-              <div>
-                <strong>Tên Gói:</strong> {viewCombo.comboName}
-              </div>
-              <div>
-                <strong>Nhà Cung Cấp:</strong> {viewCombo.supplierName}
-              </div>
-              <div>
-                <strong>Thời Gian Bắt Đầu:</strong>{" "}
-                {viewCombo.startTime.format("DD/MM/YYYY HH:mm")}
-              </div>
-              <div>
-                <strong>Thời Gian Kết Thúc:</strong>{" "}
-                {viewCombo.endTime.format("DD/MM/YYYY HH:mm")}
-              </div>
-              <div>
-                <strong>Trạng Thái:</strong>{" "}
-                {viewCombo.isDisable ? "Vô Hiệu Hóa" : "Đang Hoạt Động"}
-              </div>
-            </div>
-          )}
-        </Modal>
       </div>
     </ConfigProvider>
   );
