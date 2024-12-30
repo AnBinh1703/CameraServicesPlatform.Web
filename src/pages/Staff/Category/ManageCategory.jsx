@@ -1,5 +1,5 @@
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Table } from "antd";
+import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Form, Input, message, Modal, Row, Space, Table, Typography } from "antd";
 import React, { useEffect, useState } from "react";
 import {
   createCategory,
@@ -9,8 +9,12 @@ import {
   updateCategory,
 } from "../../../api/categoryApi";
 import LoadingComponent from "../../../components/LoadingComponent/LoadingComponent";
+import { theme } from 'antd';
+
+const { Title } = Typography;
 
 const ManageCategory = () => {
+  const { token } = theme.useToken();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -50,20 +54,32 @@ const ManageCategory = () => {
   };
 
   const handleCreate = async (values) => {
-    const response = await createCategory(
-      values.categoryName,
-      values.categoryDescription
-    );
-    if (response && response.isSuccess) {
-      message.success("Tạo danh mục thành công!");
-      setCategories([...categories, response.result]);
-      setModalVisible(false);
-      form.resetFields();
-    } else {
-      const errorMessage = response.messages
-        ? response.messages[0]
-        : "Không thể tạo danh mục.";
-      message.error(errorMessage);
+    try {
+      // Check if category name already exists
+      const existingCategory = await getCategoryByName(values.categoryName, 1, 1);
+      if (existingCategory && existingCategory.isSuccess && existingCategory.result.length > 0) {
+        message.error("Tên danh mục đã tồn tại. Vui lòng chọn tên khác!");
+        return;
+      }
+
+      const response = await createCategory(
+        values.categoryName,
+        values.categoryDescription
+      );
+      if (response && response.isSuccess) {
+        message.success("Tạo danh mục thành công!");
+        setCategories([...categories, response.result]);
+        setModalVisible(false);
+        form.resetFields();
+      } else {
+        const errorMessage = response.messages
+          ? response.messages[0]
+          : "Không thể tạo danh mục.";
+        message.error(errorMessage);
+      }
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi tạo danh mục!");
+      console.error("Error creating category:", error);
     }
   };
 
@@ -122,104 +138,206 @@ const ManageCategory = () => {
     return <LoadingComponent />;
   }
 
-  return (
-    <div>
-      <h2>Quản lý danh mục</h2>
-      <Form
-        layout="inline"
-        onFinish={handleSearch}
-        style={{ marginBottom: "20px" }}
-      >
-        <Form.Item name="filter">
-          <Input placeholder="Tìm kiếm theo tên" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Tìm kiếm
-          </Button>
-        </Form.Item>
-      </Form>
-      <Button
-        type="primary"
-        onClick={() => {
-          setModalVisible(true);
-          setIsUpdating(false);
-          form.resetFields();
-        }}
-        style={{ marginBottom: "20px" }}
-      >
-        Tạo danh mục
-      </Button>
-      <Table
-        dataSource={categories}
-        rowKey="categoryID"
-        columns={[
-          {
-            title: "Tên danh mục",
-            dataIndex: "categoryName",
-          },
-          {
-            title: "Mô tả",
-            dataIndex: "categoryDescription",
-          },
-          {
-            title: "Hành động",
-            render: (text, record) => (
-              <>
-                <Button
-                  icon={<EditOutlined />}
-                  onClick={() => handleEdit(record)}
-                ></Button>
+  const pageHeaderStyle = {
+    background: token.colorBgContainer,
+    padding: '16px 24px',
+    borderRadius: token.borderRadius,
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+    marginBottom: 16
+  };
 
-                <Button
-                  icon={<DeleteOutlined />}
-                  onClick={() => handleDelete(record.categoryID)}
-                  danger
-                  style={{ marginLeft: 8 }}
-                ></Button>
-              </>
-            ),
-          },
-        ]}
-      />
+  const cardStyle = {
+    borderRadius: token.borderRadius,
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+  };
+
+  return (
+    <div style={{ padding: 24, background: token.colorBgLayout, minHeight: '100vh' }}>
+      {/* Page Header */}
+      <div style={pageHeaderStyle}>
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Title level={2} style={{ margin: 0, fontSize: 24 }}>
+              Quản lý danh mục
+            </Title>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setModalVisible(true);
+                setIsUpdating(false);
+                form.resetFields();
+              }}
+              style={{ 
+                height: 40,
+                borderRadius: token.borderRadius,
+                padding: '0 24px',
+              }}
+            >
+              Tạo danh mục
+            </Button>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Search Section */}
+      <Card style={{ ...cardStyle, marginBottom: 16 }}>
+        <Form layout="inline" onFinish={handleSearch}>
+          <Row gutter={16} style={{ width: '100%' }}>
+            <Col flex="auto">
+              <Form.Item name="filter" style={{ marginBottom: 0, width: '100%' }}>
+                <Input
+                  prefix={<SearchOutlined style={{ color: token.colorTextSecondary }} />}
+                  placeholder="Tìm kiếm theo tên danh mục"
+                  allowClear
+                  size="large"
+                  style={{ borderRadius: token.borderRadius }}
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                size="large"
+                style={{ borderRadius: token.borderRadius }}
+              >
+                Tìm kiếm
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
+
+      {/* Table Section */}
+      <Card style={cardStyle}>
+        <Table
+          dataSource={categories}
+          rowKey="categoryID"
+          columns={[
+            {
+              title: "Tên danh mục",
+              dataIndex: "categoryName",
+              width: '30%',
+              ellipsis: true,
+            },
+            {
+              title: "Mô tả",
+              dataIndex: "categoryDescription",
+              width: '50%',
+              ellipsis: true,
+            },
+            {
+              title: "Hành động",
+              width: '20%',
+              align: 'center',
+              render: (_, record) => (
+                <Space>
+                  <Button
+                    type="primary"
+                    ghost
+                    icon={<EditOutlined />}
+                    onClick={() => handleEdit(record)}
+                    style={{ borderRadius: token.borderRadius }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDelete(record.categoryID)}
+                    style={{ borderRadius: token.borderRadius }}
+                  >
+                    Xóa
+                  </Button>
+                </Space>
+              ),
+            },
+          ]}
+          pagination={{
+            defaultPageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} danh mục`,
+            style: { marginTop: 16 }
+          }}
+          style={{ borderRadius: token.borderRadius }}
+        />
+      </Card>
+
+      {/* Modal */}
       <Modal
-        title={isUpdating ? "Cập nhật danh mục" : "Tạo danh mục"}
-        visible={modalVisible}
+        title={
+          <Title level={4} style={{ margin: 0 }}>
+            {isUpdating ? "Cập nhật danh mục" : "Tạo danh mục mới"}
+          </Title>
+        }
+        open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
           setSelectedCategory(null);
           form.resetFields();
         }}
         footer={null}
+        width={600}
+        destroyOnClose
+        style={{ top: 20 }}
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={isUpdating ? handleUpdate : handleCreate}
+          style={{ marginTop: 24 }}
         >
           <Form.Item
             label="Tên danh mục"
             name="categoryName"
             rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
           >
-            <Input placeholder="Nhập tên danh mục" />
+            <Input 
+              placeholder="Nhập tên danh mục"
+              size="large"
+              style={{ borderRadius: token.borderRadius }}
+            />
           </Form.Item>
           <Form.Item
             label="Mô tả danh mục"
             name="categoryDescription"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập mô tả danh mục!",
-              },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả danh mục!" }]}
           >
-            <Input.TextArea placeholder="Nhập mô tả danh mục" rows={4} />
+            <Input.TextArea 
+              placeholder="Nhập mô tả danh mục" 
+              rows={4}
+              showCount
+              maxLength={500}
+              style={{ borderRadius: token.borderRadius }}
+            />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {isUpdating ? "Cập nhật danh mục" : "Tạo danh mục"}
-            </Button>
+          <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
+            <Row justify="end" gutter={16}>
+              <Col>
+                <Button 
+                  onClick={() => {
+                    setModalVisible(false);
+                    setSelectedCategory(null);
+                    form.resetFields();
+                  }}
+                  style={{ borderRadius: token.borderRadius }}
+                >
+                  Hủy
+                </Button>
+              </Col>
+              <Col>
+                <Button 
+                  type="primary" 
+                  htmlType="submit"
+                  style={{ borderRadius: token.borderRadius }}
+                >
+                  {isUpdating ? "Cập nhật" : "Tạo mới"}
+                </Button>
+              </Col>
+            </Row>
           </Form.Item>
         </Form>
       </Modal>
