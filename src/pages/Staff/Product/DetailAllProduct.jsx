@@ -109,6 +109,14 @@ const DetailAllProduct = ({ product, onClose }) => {
     },
   ];
 
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return "Không có";
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
   const data = [
     { key: "1", field: "Mã Sản Phẩm", value: productID },
     { key: "2", field: "Số Serial", value: serialNumber },
@@ -127,33 +135,32 @@ const DetailAllProduct = ({ product, onClose }) => {
     {
       key: "7",
       field: "Giá Đặt Cọc",
-      value: depositProduct !== null ? `${depositProduct} VND` : "Không có",
+      value: formatCurrency(depositProduct),
     },
-
     {
       key: "8",
       field: "Giá Bán",
-      value: priceBuy !== null ? `${priceBuy} VND` : "Không có",
+      value: formatCurrency(priceBuy),
     },
     {
       key: "9",
       field: "Giá Theo Giờ",
-      value: pricePerHour ? `${pricePerHour} VND` : "Không có",
+      value: formatCurrency(pricePerHour),
     },
     {
       key: "10",
       field: "Giá Theo Ngày",
-      value: pricePerDay ? `${pricePerDay} VND` : "Không có",
+      value: formatCurrency(pricePerDay),
     },
     {
       key: "11",
       field: "Giá Theo Tuần",
-      value: pricePerWeek ? `${pricePerWeek} VND` : "Không có",
+      value: formatCurrency(pricePerWeek),
     },
     {
       key: "12",
       field: "Giá Theo Tháng",
-      value: pricePerMonth ? `${pricePerMonth} VND` : "Không có",
+      value: formatCurrency(pricePerMonth),
     },
     { key: "13", field: "Thương Hiệu", value: getBrandName(brand) },
     { key: "14", field: "Chất Lượng", value: quality },

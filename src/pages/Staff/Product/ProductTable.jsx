@@ -61,6 +61,15 @@ const ProductCard = ({
     fetchSupplierData();
   }, [product.supplierID]);
 
+  const renderPriceRow = (label, value) => {
+    return value !== null && value !== undefined ? (
+      <>
+        <Text strong>{label}:</Text>
+        <Text>{formatPrice(value)}</Text>
+      </>
+    ) : null;
+  };
+
   return (
     <Card
       hoverable
@@ -161,12 +170,13 @@ const ProductCard = ({
                   gap: "4px",
                 }}
               >
-                <Text strong>Giá Cọc:</Text>
-                <Text>{formatPrice(product.depositProduct)}</Text>
-                <Text strong>Giá Thuê:</Text>
-                <Text>{formatPrice(product.priceRent)}</Text>
-                <Text strong>Giá Bán:</Text>
-                <Text>{formatPrice(product.priceBuy)}</Text>
+                {renderPriceRow("Giá Gốc", product.originalPrice)}
+                {renderPriceRow("Giá Cọc", product.depositProduct)}
+                {renderPriceRow("Giá Bán", product.priceBuy)}
+                {renderPriceRow("Giá/Giờ", product.pricePerHour)}
+                {renderPriceRow("Giá/Ngày", product.pricePerDay)}
+                {renderPriceRow("Giá/Tuần", product.pricePerWeek)}
+                {renderPriceRow("Giá/Tháng", product.pricePerMonth)}
               </div>
             </div>
 

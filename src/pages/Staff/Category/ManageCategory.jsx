@@ -1,5 +1,23 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Input, message, Modal, Row, Space, Table, Typography } from "antd";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  message,
+  Modal,
+  Row,
+  Space,
+  Table,
+  theme,
+  Typography,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import {
   createCategory,
@@ -9,7 +27,6 @@ import {
   updateCategory,
 } from "../../../api/categoryApi";
 import LoadingComponent from "../../../components/LoadingComponent/LoadingComponent";
-import { theme } from 'antd';
 
 const { Title } = Typography;
 
@@ -56,8 +73,16 @@ const ManageCategory = () => {
   const handleCreate = async (values) => {
     try {
       // Check if category name already exists
-      const existingCategory = await getCategoryByName(values.categoryName, 1, 1);
-      if (existingCategory && existingCategory.isSuccess && existingCategory.result.length > 0) {
+      const existingCategory = await getCategoryByName(
+        values.categoryName,
+        1,
+        1
+      );
+      if (
+        existingCategory &&
+        existingCategory.isSuccess &&
+        existingCategory.result.length > 0
+      ) {
         message.error("Tên danh mục đã tồn tại. Vui lòng chọn tên khác!");
         return;
       }
@@ -140,19 +165,25 @@ const ManageCategory = () => {
 
   const pageHeaderStyle = {
     background: token.colorBgContainer,
-    padding: '16px 24px',
+    padding: "16px 24px",
     borderRadius: token.borderRadius,
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
-    marginBottom: 16
+    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+    marginBottom: 16,
   };
 
   const cardStyle = {
     borderRadius: token.borderRadius,
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
   };
 
   return (
-    <div style={{ padding: 24, background: token.colorBgLayout, minHeight: '100vh' }}>
+    <div
+      style={{
+        padding: 24,
+        background: token.colorBgLayout,
+        minHeight: "100vh",
+      }}
+    >
       {/* Page Header */}
       <div style={pageHeaderStyle}>
         <Row justify="space-between" align="middle">
@@ -170,10 +201,10 @@ const ManageCategory = () => {
                 setIsUpdating(false);
                 form.resetFields();
               }}
-              style={{ 
+              style={{
                 height: 40,
                 borderRadius: token.borderRadius,
-                padding: '0 24px',
+                padding: "0 24px",
               }}
             >
               Tạo danh mục
@@ -185,11 +216,18 @@ const ManageCategory = () => {
       {/* Search Section */}
       <Card style={{ ...cardStyle, marginBottom: 16 }}>
         <Form layout="inline" onFinish={handleSearch}>
-          <Row gutter={16} style={{ width: '100%' }}>
+          <Row gutter={16} style={{ width: "100%" }}>
             <Col flex="auto">
-              <Form.Item name="filter" style={{ marginBottom: 0, width: '100%' }}>
+              <Form.Item
+                name="filter"
+                style={{ marginBottom: 0, width: "100%" }}
+              >
                 <Input
-                  prefix={<SearchOutlined style={{ color: token.colorTextSecondary }} />}
+                  prefix={
+                    <SearchOutlined
+                      style={{ color: token.colorTextSecondary }}
+                    />
+                  }
                   placeholder="Tìm kiếm theo tên danh mục"
                   allowClear
                   size="large"
@@ -198,9 +236,9 @@ const ManageCategory = () => {
               </Form.Item>
             </Col>
             <Col>
-              <Button 
-                type="primary" 
-                htmlType="submit" 
+              <Button
+                type="primary"
+                htmlType="submit"
                 size="large"
                 style={{ borderRadius: token.borderRadius }}
               >
@@ -220,19 +258,19 @@ const ManageCategory = () => {
             {
               title: "Tên danh mục",
               dataIndex: "categoryName",
-              width: '30%',
+              width: "30%",
               ellipsis: true,
             },
             {
               title: "Mô tả",
               dataIndex: "categoryDescription",
-              width: '50%',
+              width: "50%",
               ellipsis: true,
             },
             {
               title: "Hành động",
-              width: '20%',
-              align: 'center',
+              width: "20%",
+              align: "center",
               render: (_, record) => (
                 <Space>
                   <Button
@@ -260,7 +298,7 @@ const ManageCategory = () => {
             defaultPageSize: 10,
             showSizeChanger: true,
             showTotal: (total) => `Tổng ${total} danh mục`,
-            style: { marginTop: 16 }
+            style: { marginTop: 16 },
           }}
           style={{ borderRadius: token.borderRadius }}
         />
@@ -295,7 +333,7 @@ const ManageCategory = () => {
             name="categoryName"
             rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
           >
-            <Input 
+            <Input
               placeholder="Nhập tên danh mục"
               size="large"
               style={{ borderRadius: token.borderRadius }}
@@ -304,10 +342,12 @@ const ManageCategory = () => {
           <Form.Item
             label="Mô tả danh mục"
             name="categoryDescription"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả danh mục!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập mô tả danh mục!" },
+            ]}
           >
-            <Input.TextArea 
-              placeholder="Nhập mô tả danh mục" 
+            <Input.TextArea
+              placeholder="Nhập mô tả danh mục"
               rows={4}
               showCount
               maxLength={500}
@@ -317,7 +357,7 @@ const ManageCategory = () => {
           <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
             <Row justify="end" gutter={16}>
               <Col>
-                <Button 
+                <Button
                   onClick={() => {
                     setModalVisible(false);
                     setSelectedCategory(null);
@@ -329,8 +369,8 @@ const ManageCategory = () => {
                 </Button>
               </Col>
               <Col>
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   htmlType="submit"
                   style={{ borderRadius: token.borderRadius }}
                 >
@@ -346,4 +386,3 @@ const ManageCategory = () => {
 };
 
 export default ManageCategory;
-
