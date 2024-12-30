@@ -2,6 +2,13 @@ import React from "react";
 import { Modal, Steps, Form, DatePicker, Button, message } from "antd";
 import moment from "moment";
 
+const durationMap = {
+  0: 1,
+  1: 2,
+  2: 3,
+  3: 5,
+};
+
 const ComboRegistrationModal = ({
   isComboModalVisible,
   handleComboModalCancel,
@@ -56,7 +63,7 @@ const ComboRegistrationModal = ({
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-center">
                     <span className="text-blue-500 mr-2">✓</span>
-                    <span>Thời hạn: {combo.durationCombo} tháng</span>
+                    <span>Thời hạn: {durationMap[combo.durationCombo]} tháng</span>
                   </li>
                 </ul>
                 <button

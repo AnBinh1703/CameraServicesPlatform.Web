@@ -6,6 +6,12 @@ import { getProductById } from "../../../api/productApi"; // Import the new API 
 import { getProductReportBySupplierId } from "../../../api/productReportApi";
 
 const ReportListBySupplierId = () => {
+  const statusTypeMap = {
+    Suspended: "Tạm ngưng",
+    Blocked: "Chặn",
+    reject: "Từ chối"
+  };
+
   const user = useSelector((state) => state.user.user || {});
   const [supplierId, setSupplierId] = useState(null);
   const [reportData, setReportData] = useState([]);
@@ -107,7 +113,8 @@ const ReportListBySupplierId = () => {
                 }`}
               >
                 <p>
-                  <strong>Loại trạng thái:</strong> {report.statusType}
+                  <strong>Loại trạng thái:</strong>{" "}
+                  {statusTypeMap[report.statusType] || report.statusType}
                 </p>
                 <p>
                   <strong>Ngày bắt đầu:</strong> {report.startDate}
