@@ -1,4 +1,5 @@
-import { Input, Select } from "antd";
+import { Input, Select, Row, Col, Card, Badge } from "antd";
+import { SearchOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from "react";
 
 const { Option } = Select;
@@ -50,40 +51,61 @@ const HandleSearchFilter = ({ products = [], onFilter }) => {
   ]);
 
   return (
-    <div>
-      <Input
-        placeholder="Search products"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: "16px" }}
-      />
-      <Select
-        placeholder="Select Status"
-        value={selectedStatus}
-        onChange={(value) => setSelectedStatus(value)}
-        style={{ width: "100%", marginBottom: "16px" }}
-      >
-        <Option value="">All Statuses</Option>
-        <Option value="0">For Sale</Option>
-        <Option value="1">For Rent</Option>
-        <Option value="2">Rented Out</Option>
-        <Option value="3">Sold</Option>
-        <Option value="4">Unavailable</Option>
-      </Select>
-      <Select
-        placeholder="Select Brand"
-        value={selectedBrand}
-        onChange={(value) => setSelectedBrand(value)}
-        style={{ width: "100%", marginBottom: "16px" }}
-      >
-        <Option value="">All Brands</Option>
-        {Object.keys(BrandEnum).map((brand) => (
-          <Option key={BrandEnum[brand]} value={BrandEnum[brand]}>
-            {brand}
-          </Option>
-        ))}
-      </Select>
-    </div>
+    <Card className="filter-card" style={{ marginBottom: 24, borderRadius: 8 }}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={8} lg={8}>
+          <Input
+            placeholder="Tìm kiếm sản phẩm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8}>
+          <Select
+            placeholder="Chọn Trạng Thái"
+            value={selectedStatus}
+            onChange={(value) => setSelectedStatus(value)}
+            style={{ width: "100%" }}
+            allowClear
+          >
+            <Option value="">Tất Cả Trạng Thái</Option>
+            <Option value="0">
+              <Badge status="success" text="Đang Bán" />
+            </Option>
+            <Option value="1">
+              <Badge status="processing" text="Cho Thuê" />
+            </Option>
+            <Option value="2">
+              <Badge status="warning" text="Đã Cho Thuê" />
+            </Option>
+            <Option value="3">
+              <Badge status="default" text="Đã Bán" />
+            </Option>
+            <Option value="4">
+              <Badge status="error" text="Không Khả Dụng" />
+            </Option>
+          </Select>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8}>
+          <Select
+            placeholder="Chọn Thương Hiệu"
+            value={selectedBrand}
+            onChange={(value) => setSelectedBrand(value)}
+            style={{ width: "100%" }}
+            allowClear
+          >
+            <Option value="">Tất Cả Thương Hiệu</Option>
+            {Object.keys(BrandEnum).map((brand) => (
+              <Option key={BrandEnum[brand]} value={BrandEnum[brand]}>
+                {brand}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
+    </Card>
   );
 };
 

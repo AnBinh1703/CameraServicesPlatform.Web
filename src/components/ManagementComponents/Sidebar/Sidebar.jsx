@@ -69,7 +69,7 @@ const SideBar = () => {
         icon: <FaBoxOpen />,
       },
       {
-        name: "Quản lí combcomb",
+        name: "Quản lí combo",
         link: "manage-combo",
         icon: <FaClipboardList />,
       },

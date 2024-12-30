@@ -81,17 +81,6 @@ const DetailProduct = ({ product, loading, onClose }) => {
     return <span>Không có hình ảnh</span>;
   };
 
-  const handleEdit = () => {
-    // Implement edit functionality, e.g., navigate to edit form
-    console.log("Edit product:", productID);
-  };
-
-  const handleDelete = async () => {
-    // Implement delete functionality
-    console.log("Delete product:", productID);
-    // Add logic for deletion (API call, confirmation, etc.)
-  };
-
   const columns = [
     {
       title: "Trường",
@@ -227,4 +216,3 @@ const DetailProduct = ({ product, loading, onClose }) => {
 };
 
 export default DetailProduct;
-
