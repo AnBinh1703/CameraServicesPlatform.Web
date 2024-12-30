@@ -197,10 +197,10 @@ const ComboSupplierList = ({ refresh }) => {
     <ConfigProvider>
       <div>
         <h2 className="text-2xl font-bold mb-4">
-          Danh sách combo của nhà cung cấp
+          Danh sách gói của nhà cung cấp
         </h2>
         <Input
-          placeholder="Tìm kiếm combo hoặc nhà cung cấp"
+          placeholder="Tìm kiếm gói hoặc nhà cung cấp"
           prefix={<SearchOutlined />}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -212,13 +212,13 @@ const ComboSupplierList = ({ refresh }) => {
           onClick={() => setShowCreateForm(true)}
           className="mb-4"
         >
-          Tạo Combo Mới
+          Tạo Gói Mới
         </Button>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">Combo ID</th>
-              <th className="py-2">Tên Combo</th>
+              <th className="py-2">Gói ID</th>
+              <th className="py-2">Tên Gói</th>
               <th className="py-2">Tên Nhà Cung Cấp</th>
               <th className="py-2">Thời Gian Bắt Đầu</th>
               <th className="py-2">Thời Gian Kết Thúc</th>
@@ -264,7 +264,7 @@ const ComboSupplierList = ({ refresh }) => {
         </table>
 
         <Modal
-          title="Cập Nhật Combo của Nhà Cung Cấp"
+          title="Cập Nhật Gói của Nhà Cung Cấp"
           open={showUpdateForm}
           onOk={handleUpdateCombo}
           onCancel={() => setShowUpdateForm(false)}
@@ -276,7 +276,7 @@ const ComboSupplierList = ({ refresh }) => {
                 onChange={(value) =>
                   setSelectedCombo({ ...selectedCombo, comboId: value })
                 }
-                placeholder="Chọn Combo"
+                placeholder="Chọn Gói"
                 className="mb-2 w-full"
                 disabled
               >
@@ -333,7 +333,7 @@ const ComboSupplierList = ({ refresh }) => {
         </Modal>
 
         <Modal
-          title="Tạo Combo Mới của Nhà Cung Cấp"
+          title="Tạo Gói Mới của Nhà Cung Cấp"
           visible={showCreateForm}
           onOk={handleCreateCombo}
           onCancel={() => setShowCreateForm(false)}
@@ -341,7 +341,7 @@ const ComboSupplierList = ({ refresh }) => {
           <Select
             value={newCombo.comboId}
             onChange={(value) => setNewCombo({ ...newCombo, comboId: value })}
-            placeholder="Chọn Combo"
+            placeholder="Chọn Gói"
             className="mb-2 w-full"
           >
             {combos.map((combo) => (

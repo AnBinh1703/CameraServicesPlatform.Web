@@ -49,81 +49,81 @@ const Dashboard = () => {
   const [systemTotalMoneyStatistics, setSystemTotalMoneyStatistics] =
     useState(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const bestSellingCategoriesData = await getBestSellingCategories(
-          "2023-01-01",
-          "2023-12-31"
-        );
-        setBestSellingCategories(bestSellingCategoriesData);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const bestSellingCategoriesData = await getBestSellingCategories(
+  //         "2023-01-01",
+  //         "2023-12-31"
+  //       );
+  //       setBestSellingCategories(bestSellingCategoriesData);
 
-        const systemRatingStatisticsData = await getSystemRatingStatistics();
-        setSystemRatingStatistics(systemRatingStatisticsData);
+  //       const systemRatingStatisticsData = await getSystemRatingStatistics();
+  //       setSystemRatingStatistics(systemRatingStatisticsData);
 
-        const systemPaymentStatisticsData = await getSystemPaymentStatistics(
-          "2023-01-01",
-          "2023-12-31"
-        );
-        setSystemPaymentStatistics(systemPaymentStatisticsData);
+  //       const systemPaymentStatisticsData = await getSystemPaymentStatistics(
+  //         "2023-01-01",
+  //         "2023-12-31"
+  //       );
+  //       setSystemPaymentStatistics(systemPaymentStatisticsData);
 
-        const systemTransactionStatisticsData =
-          await getSystemTransactionStatistics("2023-01-01", "2023-12-31");
-        setSystemTransactionStatistics(systemTransactionStatisticsData);
+  //       const systemTransactionStatisticsData =
+  //         await getSystemTransactionStatistics("2023-01-01", "2023-12-31");
+  //       setSystemTransactionStatistics(systemTransactionStatisticsData);
 
-        const monthOrderPurchaseStatisticsData =
-          await getMonthOrderPurchaseStatistics("2023-01-01", "2023-12-31");
-        setMonthOrderPurchaseStatistics(monthOrderPurchaseStatisticsData);
+  //       const monthOrderPurchaseStatisticsData =
+  //         await getMonthOrderPurchaseStatistics("2023-01-01", "2023-12-31");
+  //       setMonthOrderPurchaseStatistics(monthOrderPurchaseStatisticsData);
 
-        const monthOrderRentStatisticsData = await getMonthOrderRentStatistics(
-          "2023-01-01",
-          "2023-12-31"
-        );
-        setMonthOrderRentStatistics(monthOrderRentStatisticsData);
+  //       const monthOrderRentStatisticsData = await getMonthOrderRentStatistics(
+  //         "2023-01-01",
+  //         "2023-12-31"
+  //       );
+  //       setMonthOrderRentStatistics(monthOrderRentStatisticsData);
 
-        const allMonthOrderCostStatisticsData =
-          await getAllMonthOrderCostStatistics("2023-01-01", "2023-12-31");
-        setAllMonthOrderCostStatistics(allMonthOrderCostStatisticsData);
+  //       const allMonthOrderCostStatisticsData =
+  //         await getAllMonthOrderCostStatistics("2023-01-01", "2023-12-31");
+  //       setAllMonthOrderCostStatistics(allMonthOrderCostStatisticsData);
 
-        const orderStatusStatisticsData = await getOrderStatusStatistics();
-        setOrderStatusStatistics(orderStatusStatisticsData);
+  //       const orderStatusStatisticsData = await getOrderStatusStatistics();
+  //       setOrderStatusStatistics(orderStatusStatisticsData);
 
-        const systemTotalMoneyStatisticsData =
-          await getSystemTotalMoneyStatistics();
-        setSystemTotalMoneyStatistics(systemTotalMoneyStatisticsData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      }
-    };
+  //       const systemTotalMoneyStatisticsData =
+  //         await getSystemTotalMoneyStatistics();
+  //       setSystemTotalMoneyStatistics(systemTotalMoneyStatisticsData);
+  //     } catch (error) {
+  //       console.error("Error fetching dashboard data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
-  const renderRatingDistribution = () => {
-    if (!systemRatingStatistics.ratingDistribution) return null;
-    return systemRatingStatistics.ratingDistribution.map((item) => (
-      <div key={item.ratingValue} className="mb-2">
-        <Text>{`Rating ${item.ratingValue}: ${item.count}`}</Text>
-        <Progress
-          percent={(item.count / systemRatingStatistics.totalRatings) * 100}
-        />
-      </div>
-    ));
-  };
+  // const renderRatingDistribution = () => {
+  //   if (!systemRatingStatistics.ratingDistribution) return null;
+  //   return systemRatingStatistics.ratingDistribution.map((item) => (
+  //     <div key={item.ratingValue} className="mb-2">
+  //       <Text>{`Rating ${item.ratingValue}: ${item.count}`}</Text>
+  //       <Progress
+  //         percent={(item.count / systemRatingStatistics.totalRatings) * 100}
+  //       />
+  //     </div>
+  //   ));
+  // };
 
-  const renderTopRatedProducts = () => {
-    if (!systemRatingStatistics.topRatedProducts) return null;
-    return (
-      <List
-        dataSource={systemRatingStatistics.topRatedProducts}
-        renderItem={(product) => (
-          <List.Item>
-            <Text>{`Product ID: ${product.productID}, Average Rating: ${product.averageRating}, Total Ratings: ${product.totalRatings}`}</Text>
-          </List.Item>
-        )}
-      />
-    );
-  };
+  // const renderTopRatedProducts = () => {
+  //   if (!systemRatingStatistics.topRatedProducts) return null;
+  //   return (
+  //     <List
+  //       dataSource={systemRatingStatistics.topRatedProducts}
+  //       renderItem={(product) => (
+  //         <List.Item>
+  //           <Text>{`Product ID: ${product.productID}, Average Rating: ${product.averageRating}, Total Ratings: ${product.totalRatings}`}</Text>
+  //         </List.Item>
+  //       )}
+  //     />
+  //   );
+  // };
 
   const orderStatusColumns = [
     {

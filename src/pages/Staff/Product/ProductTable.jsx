@@ -35,13 +35,15 @@ const formatDate = (dateString) => {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
 };
 
 const ProductCard = ({
   product,
   categoryNames,
-  expandedDescriptions,
   handleExpandDescription,
   handleView,
 }) => {
@@ -63,11 +65,13 @@ const ProductCard = ({
     <Card
       hoverable
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <Tag color={getStatusClass(product.status)}>
             {getProductStatusEnum(product.status)}
           </Tag>
-          <Text strong style={{ fontSize: '16px' }}>{product.productName}</Text>
+          <Text strong style={{ fontSize: "16px" }}>
+            {product.productName}
+          </Text>
         </div>
       }
       extra={
@@ -77,57 +81,86 @@ const ProductCard = ({
           onClick={() => handleView(product.productID)}
         />
       }
-      style={{ 
-        marginBottom: '16px',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-        transition: 'all 0.3s ease'
+      style={{
+        marginBottom: "16px",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+        transition: "all 0.3s ease",
       }}
     >
       <Row gutter={16}>
         <Col span={8}>
-          <div style={{ 
-            position: 'relative',
-            paddingTop: '100%',
-            overflow: 'hidden',
-            borderRadius: '8px'
-          }}>
+          <div
+            style={{
+              position: "relative",
+              paddingTop: "100%",
+              overflow: "hidden",
+              borderRadius: "8px",
+            }}
+          >
             <img
-              src={product.listImage?.[0]?.image || "https://via.placeholder.com/100?text=No+Image"}
+              src={
+                product.listImage?.[0]?.image ||
+                "https://via.placeholder.com/100?text=No+Image"
+              }
               alt={product.productName}
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)'
-                }
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                },
               }}
             />
           </div>
         </Col>
         <Col span={16}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ marginBottom: '12px' }}>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Thông tin cơ bản</Text>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '4px' }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ marginBottom: "12px" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Thông tin cơ bản
+              </Text>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "120px 1fr",
+                  gap: "4px",
+                }}
+              >
                 <Text strong>Mã Sản Phẩm:</Text>
                 <Text>{product.productID}</Text>
                 <Text strong>Số Serial:</Text>
                 <Text>{product.serialNumber}</Text>
                 <Text strong>Nhà Cung Cấp:</Text>
-                <Text>{loading ? <Spin size="small" /> : supplierName || "Không xác định"}</Text>
+                <Text>
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    supplierName || "Không xác định"
+                  )}
+                </Text>
                 <Text strong>Loại Hàng:</Text>
-                <Text>{categoryNames[product.categoryID] || "Không xác định"}</Text>
+                <Text>
+                  {categoryNames[product.categoryID] || "Không xác định"}
+                </Text>
               </div>
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Giá</Text>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '4px' }}>
+            <div style={{ marginBottom: "12px" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Giá
+              </Text>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "120px 1fr",
+                  gap: "4px",
+                }}
+              >
                 <Text strong>Giá Cọc:</Text>
                 <Text>{formatPrice(product.depositProduct)}</Text>
                 <Text strong>Giá Thuê:</Text>
@@ -137,9 +170,17 @@ const ProductCard = ({
               </div>
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Chi tiết</Text>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '4px' }}>
+            <div style={{ marginBottom: "12px" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Chi tiết
+              </Text>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "120px 1fr",
+                  gap: "4px",
+                }}
+              >
                 <Text strong>Thương Hiệu:</Text>
                 <Text>{getBrandName(product.brand)}</Text>
                 <Text strong>Chất Lượng:</Text>
@@ -150,16 +191,20 @@ const ProductCard = ({
             </div>
 
             <div>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Mô tả</Text>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Mô tả
+              </Text>
               <Paragraph
-                ellipsis={{ rows: 2, expandable: true, symbol: 'Xem thêm' }}
+                ellipsis={{ rows: 2, expandable: true, symbol: "Xem thêm" }}
                 onClick={() => handleExpandDescription(product.productID)}
               >
                 {product.productDescription}
               </Paragraph>
             </div>
 
-            <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: 'auto' }}>
+            <div
+              style={{ fontSize: "12px", color: "#8c8c8c", marginTop: "auto" }}
+            >
               Cập nhật: {formatDate(product.updatedAt)}
             </div>
           </div>

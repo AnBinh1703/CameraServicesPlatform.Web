@@ -11,7 +11,7 @@ const { Title } = Typography;
 
 const ProductListTable = () => {
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(9);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -31,27 +31,28 @@ const ProductListTable = () => {
   }, []);
 
   const handleView = React.useCallback(async (productId) => {
-    console.log('handleView called with productId:', productId);
+    console.log("handleView called with productId:", productId);
     setLoading(true);
     try {
-      console.log('Fetching product data...');
+      console.log("Fetching product data...");
       const response = await getProductById(productId);
-      console.log('API Response:', response);
-      
-      if (response && response.productID) {  // Check for direct product data
-        console.log('Setting product data:', response);
-        setSelectedProduct(response);  // Set the response directly
+      console.log("API Response:", response);
+
+      if (response && response.productID) {
+        // Check for direct product data
+        console.log("Setting product data:", response);
+        setSelectedProduct(response); // Set the response directly
         setIsModalVisible(true);
-        console.log('Modal visibility set to true');
+        console.log("Modal visibility set to true");
       } else {
-        console.log('No product data in response');
+        console.log("No product data in response");
         message.error("Không thể tải thông tin sản phẩm");
       }
     } catch (error) {
       console.error("Error details:", error);
       message.error("Lỗi khi tải thông tin sản phẩm");
     } finally {
-      console.log('Loading finished');
+      console.log("Loading finished");
       setLoading(false);
     }
   }, []);
@@ -88,11 +89,18 @@ const ProductListTable = () => {
         current={pageIndex}
         pageSize={pageSize}
         total={total}
-        onChange={(page, pageSize) => {
+        onChange={(page, size) => {
           setPageIndex(page);
-          setPageSize(pageSize);
+          setPageSize(size);
         }}
-        style={{ marginTop: "16px", textAlign: "center" }}
+        pageSizeOptions={[10, 20, 50, 100]}
+        showSizeChanger={true}
+        showQuickJumper={true}
+        style={{
+          marginTop: "16px",
+          textAlign: "center",
+          padding: "16px 0",
+        }}
       />
       <ProductDetailsModal
         visible={isModalVisible}

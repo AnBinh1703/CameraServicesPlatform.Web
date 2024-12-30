@@ -1,14 +1,7 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Select, Spin, Tooltip } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
+import { Button, Modal, Spin, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
-import {
-  createCombo,
-  getAllCombos,
-  getComboById,
-  updateCombo,
-} from "../../../api/comboApi";
-
-const { Option } = Select;
+import { getAllCombos, getComboById } from "../../../api/comboApi";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("vi-VN", {
@@ -28,14 +21,7 @@ const ComboList = ({ refresh }) => {
   const [combos, setCombos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCombo, setSelectedCombo] = useState(null);
-  const [newCombo, setNewCombo] = useState({
-    comboName: "",
-    comboPrice: 0,
-    durationCombo: 0,
-  });
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchCombos = async () => {
@@ -56,68 +42,15 @@ const ComboList = ({ refresh }) => {
     const response = await getComboById(comboId);
     if (response.isSuccess) {
       setSelectedCombo(response.result);
-      setIsUpdateMode(true);
       setIsModalVisible(true);
-      form.setFieldsValue({
-        comboName: response.result.comboName,
-        comboPrice: response.result.comboPrice,
-        durationCombo: response.result.durationCombo,
-      });
     } else {
       console.error(response.messages);
     }
-  };
-
-  const handleCreateCombo = async (values) => {
-    const response = await createCombo(values);
-    if (response.isSuccess) {
-      setCombos([...combos, response.result]);
-      closeModal();
-    } else {
-      console.error(response.messages);
-    }
-  };
-
-  const handleFormSubmit = async (values) => {
-    try {
-      if (isUpdateMode) {
-        const updatedCombo = {
-          ...selectedCombo,
-          ...values,
-        };
-        await handleUpdateCombo(updatedCombo);
-      } else {
-        await handleCreateCombo(values);
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
-
-  const handleUpdateCombo = async (updatedCombo) => {
-    const response = await updateCombo(updatedCombo);
-    if (response.isSuccess) {
-      setCombos(
-        combos.map((combo) =>
-          combo.comboId === updatedCombo.comboId ? response.result : combo
-        )
-      );
-      closeModal();
-    } else {
-      console.error(response.messages);
-    }
-  };
-
-  const openCreateModal = () => {
-    setIsUpdateMode(false);
-    form.resetFields();
-    setIsModalVisible(true);
   };
 
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedCombo(null);
-    form.resetFields();
   };
 
   if (loading) {
@@ -126,29 +59,25 @@ const ComboList = ({ refresh }) => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4 flex items-center">
-        <PlusOutlined className="mr-2" /> Danh sách combo
-      </h2>
-      <div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={openCreateModal}
-          className="mb-4"
-        >
-          Tạo Combo Mới
-        </Button>
-      </div>
+      <h2 className="text-2xl font-bold mb-4">Danh sách combo</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {combos.map((combo) => (
           <div
             key={combo.comboId}
-            className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-            onDoubleClick={() => handleViewDetails(combo.comboId)}
+            className={`p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 ${
+              combo.isDisable ? 'opacity-60' : ''
+            }`}
           >
-            <h3 className="text-xl font-semibold text-blue-600 mb-3">
-              {combo.comboName}
-            </h3>
+            <div className="flex justify-between items-start">
+              <h3 className="text-xl font-semibold text-blue-600 mb-3">
+                {combo.comboName}
+              </h3>
+              {combo.isDisable && (
+                <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-600 rounded">
+                  Vô hiệu hóa
+                </span>
+              )}
+            </div>
             <div className="space-y-2">
               <p className="text-lg font-medium">
                 <span className="text-gray-600">Giá: </span>
@@ -172,10 +101,10 @@ const ComboList = ({ refresh }) => {
               </div>
             </div>
             <div className="flex justify-end mt-4">
-              <Tooltip title="Chỉnh sửa">
+              <Tooltip title="Xem chi tiết">
                 <Button
                   type="primary"
-                  icon={<EditOutlined />}
+                  icon={<EyeOutlined />}
                   onClick={() => handleViewDetails(combo.comboId)}
                   className="hover:scale-105 transition-transform duration-200"
                 />
@@ -186,51 +115,59 @@ const ComboList = ({ refresh }) => {
       </div>
 
       <Modal
-        title={isUpdateMode ? "Cập nhật Combo" : "Tạo Combo Mới"}
+        title="Chi tiết Combo"
         visible={isModalVisible}
         onCancel={closeModal}
-        footer={null}
+        footer={[
+          <Button key="close" onClick={closeModal}>
+            Đóng
+          </Button>
+        ]}
       >
-        <Form form={form} onFinish={handleFormSubmit} layout="vertical">
-          <Form.Item
-            name="comboName"
-            label="Tên Combo"
-            rules={[{ required: true, message: "Vui lòng nhập tên combo!" }]}
-          >
-            <Input className="w-full" placeholder="Nhập tên combo" />
-          </Form.Item>
-          <Form.Item
-            name="comboPrice"
-            label="Giá Combo (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá combo!" }]}
-          >
-            <Input
-              type="number"
-              className="w-full"
-              placeholder="Nhập giá combo"
-              min={0}
-              step={1000}
-            />
-          </Form.Item>
-          <Form.Item
-            name="durationCombo"
-            label="Thời gian"
-            rules={[{ required: true, message: "Vui lòng chọn thời gian!" }]}
-          >
-            <Select placeholder="Chọn thời gian">
-              {Object.entries(durationText).map(([key, value]) => (
-                <Option key={key} value={Number(key)}>
-                  {value}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item className="mb-0">
-            <Button type="primary" htmlType="submit" className="w-full">
-              {isUpdateMode ? "Cập nhật" : "Tạo"}
-            </Button>
-          </Form.Item>
-        </Form>
+        {selectedCombo && (
+          <div className="space-y-6 p-4">
+            <div className="grid grid-cols-3 items-center border-b pb-3">
+              <label className="font-semibold text-gray-600">Tên Combo:</label>
+              <p className="col-span-2 text-lg font-medium text-blue-600">
+                {selectedCombo.comboName}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 items-center border-b pb-3">
+              <label className="font-semibold text-gray-600">Giá Combo:</label>
+              <p className="col-span-2 text-lg font-medium text-green-600">
+                {formatCurrency(selectedCombo.comboPrice)}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 items-center border-b pb-3">
+              <label className="font-semibold text-gray-600">Thời gian:</label>
+              <p className="col-span-2 text-lg">
+                {durationText[selectedCombo.durationCombo]}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 items-center border-b pb-3">
+              <label className="font-semibold text-gray-600">Ngày tạo:</label>
+              <p className="col-span-2 text-gray-700">
+                {new Date(selectedCombo.createdAt).toLocaleDateString("vi-VN")}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 items-center">
+              <label className="font-semibold text-gray-600">Cập nhật:</label>
+              <p className="col-span-2 text-gray-700">
+                {new Date(selectedCombo.updatedAt).toLocaleDateString("vi-VN")}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 items-center border-b pb-3">
+              <label className="font-semibold text-gray-600">Trạng thái:</label>
+              <p className="col-span-2">
+                {selectedCombo.isDisable ? (
+                  <span className="text-red-600 font-medium">Vô hiệu hóa</span>
+                ) : (
+                  <span className="text-green-600 font-medium">Đang hoạt động</span>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

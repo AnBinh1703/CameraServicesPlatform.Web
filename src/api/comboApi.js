@@ -136,17 +136,64 @@ export const updateComboOfSupplier = async (comboData) => {
   }
 };
 // Function to get combos of a supplier by supplier ID
-export const getCombosBySupplierId = async (supplierId, pageIndex = 1, pageSize = 10) => {
+export const getCombosBySupplierId = async (
+  supplierId,
+  pageIndex = 1,
+  pageSize = 10
+) => {
   try {
-    const response = await api.get(`/comboOfSupplier/get-combo-of-supplier-by-supplier-id`, {
-      params: { supplierId, pageIndex, pageSize },
-    });
+    const response = await api.get(
+      `/comboOfSupplier/get-combo-of-supplier-by-supplier-id`,
+      {
+        params: { supplierId, pageIndex, pageSize },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error(`Failed to fetch combos by supplier ID:`, error);
     return {
       isSuccess: false,
       messages: [`Failed to fetch combos by supplier ID`],
+    };
+  }
+};
+// Function to get expired combos of supplier
+export const getExpiredCombosOfSupplier = async (
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const response = await api.get(
+      `/comboOfSupplier/get-combo-of-supplier-expired`,
+      {
+        params: { pageIndex, pageSize },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch expired combos of supplier:`, error);
+    return {
+      isSuccess: false,
+      messages: [`Failed to fetch expired combos of supplier`],
+    };
+  }
+};
+
+// Function to get near-expired combos of supplier
+export const getNearExpiredCombosOfSupplier = async (
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const response = await api.get(`/comboOfSupplier/get-combo-near-expired`, {
+      params: { pageIndex, pageSize },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch near-expired combos of supplier:`, error);
+    return {
+      isSuccess: false,
+      messages: [`Failed to fetch near-expired combos of supplier`],
     };
   }
 };

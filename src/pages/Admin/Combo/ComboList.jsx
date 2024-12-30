@@ -184,20 +184,20 @@ const ComboList = ({ refresh }) => {
         <Form form={form} onFinish={handleFormSubmit} layout="vertical">
           <Form.Item
             name="comboName"
-            label="Tên Combo"
-            rules={[{ required: true, message: "Vui lòng nhập tên combo!" }]}
+            label="Tên Gói"
+            rules={[{ required: true, message: "Vui lòng nhập tên gói!" }]}
           >
-            <Input className="w-full" placeholder="Nhập tên combo" />
+            <Input className="w-full" placeholder="Nhập tên góigói" />
           </Form.Item>
           <Form.Item
             name="comboPrice"
-            label="Giá Combo (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá combo!" }]}
+            label="Giá GóiGói (VNĐ)"
+            rules={[{ required: true, message: "Vui lòng nhập giá gói!" }]}
           >
             <Input 
               type="number" 
               className="w-full"
-              placeholder="Nhập giá combo"
+              placeholder="Nhập giá gói"
               min={0}
               step={1000}
             />
