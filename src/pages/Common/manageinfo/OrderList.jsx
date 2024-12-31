@@ -25,7 +25,7 @@ const OrderList = ({
   };
 
   return (
-    <div className="lg:col-span-5 bg-white shadow-lg rounded-lg   md:p-4">
+    <div className="lg:col-span-5 bg-white shadow-lg rounded-lg md:p-4">
       <h2 className="text-2xl font-bold text-teal-600 mb-8 text-center">
         <span className="border-b-2 border-teal-400 pb-2">
           Đơn hàng của bạn
@@ -61,25 +61,38 @@ const OrderList = ({
                   Mã nhà cung cấp
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Số tiền đặt cọc
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Thời gian thuê
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Trạng thái thanh toán
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Ngày bắt đầu thuê
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Ngày kết thúc thuê
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Ngày trả
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Trạng thái
                 </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600 hidden md:table-cell">
-                  Địa chỉ giao hàng
-                </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600 hidden lg:table-cell">
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Phương thức giao hàng
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Loại
+                  Loại đơn hàng
                 </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600 hidden sm:table-cell">
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Ngày đặt hàng
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Tổng số tiền
+                  Tổng tiền
                 </th>
-                <th className="px-4 py-4"></th>
-                <th className="px-4 py-4"></th>
                 <th className="px-4 py-4"></th>
               </tr>
             </thead>
@@ -87,7 +100,24 @@ const OrderList = ({
               {orders.map((order) => (
                 <OrderItem
                   key={order.orderID}
-                  order={order}
+                  order={{
+                    ...order,
+                    deposit: order.deposit || "N/A",
+                    durationValue: order.durationValue 
+                      ? `${order.durationValue} ${order.durationUnit === 0 ? 'ngày' : 'tháng'}`
+                      : "N/A",
+                    isPayment: order.isPayment ? "Đã thanh toán" : "Chưa thanh toán",
+                    rentalStartDate: order.rentalStartDate 
+                      ? new Date(order.rentalStartDate).toLocaleDateString('vi-VN')
+                      : "N/A",
+                    rentalEndDate: order.rentalEndDate
+                      ? new Date(order.rentalEndDate).toLocaleDateString('vi-VN')
+                      : "N/A",
+                    returnDate: order.returnDate
+                      ? new Date(order.returnDate).toLocaleDateString('vi-VN')
+                      : "N/A",
+                    orderDate: new Date(order.orderDate).toLocaleDateString('vi-VN'),
+                  }}
                   supplierMap={supplierMap}
                   orderStatusMap={orderStatusMap}
                   deliveryStatusMap={deliveryStatusMap}

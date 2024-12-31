@@ -153,7 +153,7 @@ const ProposalProductFollowJobBuy = () => {
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
           }}
         >
-          Đề Xuất Sản Phẩm Theo Công Việc Mua
+          Đề Xuất Sản Phẩm Theo Công Việc 
         </Title>
       </Header>
       <Content style={{ padding: "20px" }}>

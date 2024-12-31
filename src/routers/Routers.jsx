@@ -107,7 +107,7 @@ function Routers() {
         },
         {
           path: "settings",
-          element: <div>Settings</div>,
+          element: <Settings/>,
         },
         { path: "manage-policy", element: <ManagePolicy /> },
         { path: "manage-category", element: <ManageCategory /> },
@@ -115,6 +115,7 @@ function Routers() {
         { path: "manage-combo", element: <ManageComboByAd /> },
 
         { path: "create-staff", element: <CreateStaffForm /> },
+        
       ],
     },
     {

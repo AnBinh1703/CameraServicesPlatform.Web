@@ -32,7 +32,7 @@ const CreateOrderRent = () => {
   const [rentalEndDate, setRentalEndDate] = useState(null);
   const [shippingAddress, setShippingAddress] = useState("");
   const [returnDate, setReturnDate] = useState(null);
-  const [reservationMoney, setReservationMoney] = useState(300000); // Default value
+  const [reservationMoney, setReservationMoney] = useState(); // Default value
   const location = useLocation();
   const { productID, supplierID } = location.state || {};
   const [loadingProduct, setLoadingProduct] = useState(true);

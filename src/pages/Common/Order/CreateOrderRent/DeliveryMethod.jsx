@@ -1,20 +1,23 @@
-import { Card, Descriptions, Form, Input, Radio } from "antd";
-import React from "react";
+import { Card, Descriptions, Form, Radio } from "antd";
+import React, { useEffect } from "react";
 
 const DeliveryMethod = ({
-  shippingAddress,
   setShippingAddress,
   deliveryMethod,
   setDeliveryMethod,
   supplierInfo,
 }) => {
+  useEffect(() => {
+    setDeliveryMethod(0);
+    // Debug supplier info
+    console.log("Supplier Info:", supplierInfo);
+  }, [supplierInfo]);
+
   const handleDeliveryMethodChange = (e) => {
     console.log("Selected delivery method:", e.target.value);
     setDeliveryMethod(e.target.value);
   };
-  const handleShippingAddressChange = (e) => {
-    setShippingAddress(e.target.value);
-  };
+
   return (
     <Card title="Phương thức giao hàng" bordered={false}>
       <Form.Item
@@ -29,42 +32,26 @@ const DeliveryMethod = ({
         <Radio.Group
           onChange={handleDeliveryMethodChange}
           value={deliveryMethod}
+          defaultValue={0}
         >
           <Radio value={0}>Nhận tại cửa hàng</Radio>
-          {/* <Radio value={0}>Giao hàng tận nơi</Radio> */}
         </Radio.Group>
       </Form.Item>
-      {/* {deliveryMethod === 1 && (
-        <Form.Item
-          label="Địa chỉ giao hàng"
-          name="shippingAddress"
-          rules={[
-            {
-              required: true,
-              message: "Vui lòng nbsp địa chỉ giao hàng!",
-            },
-          ]}
-        >
-          <Input
-            value={shippingAddress}
-            onChange={handleShippingAddressChange}
-          />
-        </Form.Item>
-      )} */}
 
-      {deliveryMethod === 0 && supplierInfo && (
-        <Descriptions bordered>
+      {/* Modified supplier info display */}
+      <div className="mt-4">
+        <Descriptions bordered column={1}>
           <Descriptions.Item label="Tên nhà cung cấp">
-            {supplierInfo.supplierName}
+            {supplierInfo?.supplierName || "Loading..."}
           </Descriptions.Item>
           <Descriptions.Item label="Số điện thoại">
-            {supplierInfo.contactNumber}
+            {supplierInfo?.contactNumber || "Loading..."}
           </Descriptions.Item>
           <Descriptions.Item label="Địa chỉ nhà cung cấp">
-            {supplierInfo.supplierAddress}
+            {supplierInfo?.supplierAddress || "Loading..."}
           </Descriptions.Item>
         </Descriptions>
-      )}
+      </div>
     </Card>
   );
 };

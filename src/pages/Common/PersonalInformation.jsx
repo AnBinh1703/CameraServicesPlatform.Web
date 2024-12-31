@@ -1,5 +1,5 @@
-import { useSelector } from "react-redux";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import "tailwindcss/tailwind.css";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 import PersonalModal from "./Account/PersonalModal";
@@ -49,7 +49,9 @@ const PersonalInformation = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Thông tin cá nhân</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Thông tin cá nhân
+          </h1>
           <p className="mt-2 text-sm text-gray-600">
             Quản lý thông tin cá nhân và tài khoản của bạn
           </p>

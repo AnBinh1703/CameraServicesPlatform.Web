@@ -1,4 +1,4 @@
-import { Button, Card, Modal, Rate, Spin, Typography, message } from "antd";
+import { Breadcrumb, Button, Card, Modal, Rate, Spin, Typography, message } from "antd";
 import React, { useEffect, useState } from "react";
 import {
   FaCommentDots,
@@ -130,253 +130,218 @@ const ProductDetailPage = () => {
     }
   };
 
-  if (loading) {
-    return <Spin size="large" className="flex justify-center mt-10" />;
-  }
-
   return (
-    <div className="container mx-auto p-6">
-      {product && (
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/2 mb-4 md:mb-0 flex justify-center">
-            <div className="flex flex-col h-full">
-              {product.listImage && product.listImage.length > 0 ? (
-                <img
-                  src={product.listImage[0].image}
-                  alt={product.productName}
-                  className="w-full h-auto cursor-pointer rounded-lg shadow-md"
-                  onClick={() => showImageModal(product.listImage[0].image)}
-                />
-              ) : (
-                <div className="w-full h-auto cursor-pointer rounded-lg shadow-md bg-gray-200 flex items-center justify-center">
-                  <span>No Image Available</span>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto p-6">
+        <Breadcrumb className="mb-6">
+          <Breadcrumb.Item href="/">Trang chủ</Breadcrumb.Item>
+          <Breadcrumb.Item>{categoryName}</Breadcrumb.Item>
+          <Breadcrumb.Item>{product?.productName}</Breadcrumb.Item>
+        </Breadcrumb>
 
-          <div className="md:w-1/2 md:pl-6 flex justify-center">
-            <Card className="shadow-lg rounded-lg w-full h-full flex flex-col">
-              <div className="flex justify-between items-center">
-                <Title level={2} className="text-center text-lg font-bold">
-                  {product.productName}
-                </Title>
-                <button
-                  onClick={handleAddToWishlist}
-                  className="focus:outline-none"
-                >
-                  {isWishlisted ? (
-                    <FaHeart size={24} className="text-red-500" />
+        {loading ? (
+          <Spin size="large" className="flex justify-center mt-10" />
+        ) : product && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Image Gallery Section */}
+              <div className="lg:w-1/2">
+                <div className="relative group">
+                  {product.listImage && product.listImage.length > 0 ? (
+                    <img
+                      src={product.listImage[0].image}
+                      alt={product.productName}
+                      className="w-full h-[500px] object-cover rounded-lg cursor-pointer transition-transform hover:scale-105"
+                      onClick={() => showImageModal(product.listImage[0].image)}
+                    />
                   ) : (
-                    <FaRegHeart size={24} className="text-gray-500" />
-                  )}
-                </button>
-              </div>
-              <Paragraph className="text-center">
-                {product.productDescription}
-              </Paragraph>
-              <div className="text-center">
-                {product.priceRent != null && (
-                  <p className="font-bold">
-                    Giá thuê:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.priceRent)}
-                      /giờ
-                    </span>
-                  </p>
-                )}
-                {product.priceBuy != null && (
-                  <p className="font-bold">
-                    Giá mua:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.priceBuy)}
-                    </span>
-                  </p>
-                )}
-                {product.depositProduct != null && (
-                  <p className="font-bold">
-                    Tiền đặt cọc:
-                    <span className="text-red-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.depositProduct)}
-                    </span>
-                  </p>
-                )}
-                {product.pricePerDay != null && (
-                  <p className="font-bold">
-                    Giá thuê theo ngày:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.pricePerDay)}
-                      /ngày
-                    </span>
-                  </p>
-                )}
-                {product.pricePerHour != null && (
-                  <p className="font-bold">
-                    Giá thuê theo giờ:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.pricePerHour)}
-                      /giờ
-                    </span>
-                  </p>
-                )}
-                {product.pricePerMonth != null && (
-                  <p className="font-bold">
-                    Giá thuê theo tháng:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.pricePerMonth)}
-                      /tháng
-                    </span>
-                  </p>
-                )}
-                {product.pricePerWeek != null && (
-                  <p className="font-bold">
-                    Giá thuê theo tuần:
-                    <span className="text-green-500">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(product.pricePerWeek)}
-                      /tuần
-                    </span>
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <p>
-                  <strong>Thương hiệu:</strong> {getBrandName(product.brand)}
-                </p>
-                <p>
-                  <strong>Nhà cung cấp:</strong> {supplierName}
-                </p>
-                <p>
-                  <strong>Danh mục:</strong> {categoryName}
-                </p>
-                <p className="font-semibold text-left">
-                  <strong>Tình trạng:</strong>
-                  <span
-                    className={
-                      product.status === 0
-                        ? "text-green-600"
-                        : product.status === 1
-                        ? "text-blue-600"
-                        : product.status === 3
-                        ? "text-gray-600"
-                        : "text-orange-600"
-                    }
-                  >
-                    {getProductStatusEnum(product.status) || "Unknown Status"}
-                    {/* Fallback for undefined statuses */}
-                  </span>
-                </p>
-
-                <p>
-                  <strong>Chất lượng:</strong> {product.quality}
-                </p>
-                <p>
-                  <strong>Serial Number:</strong> {product.serialNumber}
-                </p>
-                <p>
-                  <strong>Ngày tạo:</strong>
-                  {new Date(product.createdAt).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Ngày cập nhật:</strong>
-                  {new Date(product.updatedAt).toLocaleString()}
-                </p>
-                <div className="mt-4">
-                  <Title level={4}>Đánh giá </Title>
-                  {ratings.length > 0 ? (
-                    ratings.map((rating) => (
-                      <div
-                        key={rating.ratingID}
-                        className="mb-4 p-4 border rounded-lg shadow-sm"
-                      >
-                        <div className="flex items-center mb-2">
-                          <Rate disabled defaultValue={rating.ratingValue} />
-                          <span className="ml-2 text-gray-600">
-                            {rating.ratingValue} / 5
-                          </span>
-                        </div>
-                        <div className="flex items-center mb-2">
-                          <FaCommentDots className="text-gray-600 mr-2" />
-                          <p className="text-gray-800">
-                            {rating.reviewComment}
-                          </p>
-                        </div>
-                        <p className="text-gray-500 text-sm">
-                          <strong>Date:</strong>
-                          {new Date(rating.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex items-center justify-center text-gray-500 mt-4">
-                      <FaRegSadCry size={24} className="mr-2" />
-                      <p>Sản phẩm chưa có đánh giá!</p>
+                    <div className="w-full h-[500px] bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-500">No Image Available</span>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="flex justify-between mt-4">
-                {product.status === 0 && (
-                  <Button
-                    type="default"
-                    onClick={() => handleCreateOrderBuy(product)}
-                    className="bg-primary text-white hover:bg-opacity-80 transition duration-200"
-                  >
-                    Đặt hàng ngay
-                  </Button>
-                )}
-                {product.status === 1 && (
-                  <Button
-                    type="primary"
-                    onClick={() => handleCreateOrderRent(product)}
-                    className="bg-mainColor hover:bg-opacity-80 transition duration-200"
-                  >
-                    Thuê ngay
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
 
-      {/* Modal hiển thị hình ảnh sản phẩm */}
-      <Modal
-        title={product?.productName}
-        open={isModalVisible} // Changed from `visible` to `open`
-        footer={null}
-        onCancel={handleCancel}
-        width={800}
-      >
-        {product && (
-          <img
-            src={selectedImage}
-            alt={product.productName}
-            className="w-full h-auto"
-          />
+              {/* Product Details Section */}
+              <div className="lg:w-1/2">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-800">{product.productName}</h1>
+                    <p className="text-gray-600 mt-2">{product.productDescription}</p>
+                  </div>
+                  <button
+                    onClick={handleAddToWishlist}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    {isWishlisted ? (
+                      <FaHeart size={24} className="text-red-500" />
+                    ) : (
+                      <FaRegHeart size={24} className="text-gray-400" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Pricing Grid Section */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {product.pricePerHour && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Giá theo giờ</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.pricePerHour)}
+                      </p>
+                    </div>
+                  )}
+                  {product.pricePerDay && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Giá theo ngày</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.pricePerDay)}
+                      </p>
+                    </div>
+                  )}
+                  {product.pricePerWeek && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Giá theo tuần</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.pricePerWeek)}
+                      </p>
+                    </div>
+                  )}
+                  {product.pricePerMonth && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Giá theo tháng</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.pricePerMonth)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Deposit Information */}
+                {product.depositProduct && (
+                  <div className="bg-yellow-50 p-4 rounded-lg mb-6">
+                    <p className="text-sm text-yellow-700">Tiền đặt cọc</p>
+                    <p className="text-xl font-bold text-yellow-600">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(product.depositProduct)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Product Information Grid */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gray-50 p-3 rounded">
+                    <p className="text-sm text-gray-500">Serial Number</p>
+                    <p className="font-medium">{product.serialNumber}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <p className="text-sm text-gray-500">Số lần cho thuê</p>
+                    <p className="font-medium">{product.countRent} lần</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <p className="text-sm text-gray-500">Chất lượng</p>
+                    <p className="font-medium capitalize">{product.quality}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <p className="text-sm text-gray-500">Đánh giá</p>
+                    <div className="flex items-center">
+                      <Rate disabled defaultValue={product.rating} />
+                      <span className="ml-2">{product.rating}/5</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dates Information */}
+                <div className="text-sm text-gray-500 space-y-2 mb-6">
+                  <p>Ngày tạo: {new Date(product.createdAt).toLocaleDateString('vi-VN')}</p>
+                  <p>Cập nhật: {new Date(product.updatedAt).toLocaleDateString('vi-VN')}</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                  {product.status === 0 && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={() => handleCreateOrderBuy(product)}
+                      className="flex-1 h-12 text-lg bg-blue-600 hover:bg-blue-700"
+                    >
+                      Đặt mua ngay
+                    </Button>
+                  )}
+                  {product.status === 1 && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={() => handleCreateOrderRent(product)}
+                      className="flex-1 h-12 text-lg bg-green-600 hover:bg-green-700"
+                    >
+                      Thuê ngay
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
+              {ratings.length > 0 ? (
+                <div className="grid gap-4">
+                  {ratings.map((rating) => (
+                    <div key={rating.ratingID} className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-4 mb-2">
+                        <Rate disabled defaultValue={rating.ratingValue} />
+                        <span className="text-gray-600">{rating.ratingValue}/5</span>
+                      </div>
+                      <p className="text-gray-700 mb-2">{rating.reviewComment}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(rating.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <FaRegSadCry size={32} className="mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-500">Chưa có đánh giá nào</p>
+                </div>
+              )}
+            </div>
+          </div>
         )}
-      </Modal>
+
+        {/* Image Modal */}
+        <Modal
+          open={isModalVisible}
+          footer={null}
+          onCancel={handleCancel}
+          width={800}
+          className="image-modal"
+        >
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt={product?.productName}
+              className="w-full h-auto"
+            />
+          )}
+        </Modal>
+      </div>
     </div>
   );
 };

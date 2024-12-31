@@ -72,11 +72,11 @@ const OrderHistory = () => {
       if (response.isSuccess) {
         setOrders(response.result || []);
       } else {
-        message.error("Failed to fetch orders.");
+        message.error("Không thể tải danh sách đơn hàng.");
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
-      message.error("An error occurred, please try again later.");
+      message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -97,11 +97,11 @@ const OrderHistory = () => {
         setBeforeImage(beforeImageResponse.result);
         setAfterImage(afterImageResponse.result);
       } else {
-        message.error("Failed to fetch order details.");
+        message.error("Không thể tải chi tiết đơn hàng.");
       }
     } catch (error) {
       console.error("Error fetching order details:", error);
-      message.error("An error occurred, please try again later.");
+      message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -168,7 +168,7 @@ const OrderHistory = () => {
       setSupplierMap(supplierDict);
     } catch (error) {
       console.error("Error fetching category or supplier names:", error);
-      message.error("Error fetching category or supplier names.");
+      message.error("Lỗi khi tải thông tin danh mục hoặc nhà cung cấp.");
     }
   };
 
@@ -184,7 +184,7 @@ const OrderHistory = () => {
       if (data.isSuccess && data.result) {
         window.location.href = data.result;
       } else {
-        message.error("Failed to initiate payment.");
+        message.error("Không thể thực hiện thanh toán.");
       }
     } catch (error) {
       message.error("Đã xảy ra lỗi, vui lòng thử lại sau");
@@ -217,7 +217,7 @@ const OrderHistory = () => {
                   <div>
                     <a href="/" className="text-gray-400 hover:text-gray-500">
                       <i className="fas fa-home"></i>
-                      <span className="sr-only">Home</span>
+                      <span className="sr-only">Trang chủ</span>
                     </a>
                   </div>
                 </li>
@@ -225,14 +225,14 @@ const OrderHistory = () => {
                   <div className="flex items-center">
                     <i className="fas fa-chevron-right text-gray-400 text-sm"></i>
                     <span className="ml-4 text-sm font-medium text-gray-500">
-                      Order History
+                      Lịch sử đơn hàng
                     </span>
                   </div>
                 </li>
               </ol>
             </nav>
             <h1 className="mt-2 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl">
-              Order History
+              Lịch sử đơn hàng
             </h1>
           </div>
         </div>
@@ -240,7 +240,7 @@ const OrderHistory = () => {
         {/* Main content */}
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <LoadingComponent isLoading={true} title="Loading orders..." />
+            <LoadingComponent isLoading={true} title="Đang tải đơn hàng..." />
           </div>
         ) : (
           <div className="p-12">
