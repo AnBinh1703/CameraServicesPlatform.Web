@@ -23,7 +23,9 @@ import ProductPageRent from "../pages/Common/Product/ProductPageRent";
 
 import ManageComboByAd from "../pages/Admin/Combo/ManageComboByAd";
 import DashboardAdmin from "../pages/Admin/DashboardAdmin";
+import Settings from "../pages/Admin/Settings";
 import CreateOrderRent from "../pages/Common/Order/CreateOrderRent/CreateOrderRent";
+import OrderHistory from "../pages/Common/OrderHistory";
 import PersonalReview from "../pages/Common/PersonalReview";
 import ManageCreateReportForm from "../pages/Common/Report/ManageCreateReportForm";
 import VerifyPayment from "../pages/Common/VerifyPayment";
@@ -46,7 +48,6 @@ import ManageProductOfSuplier from "../pages/Supllier/Product/ManageProductOfSup
 import ManageReportProductOfSupplier from "../pages/Supllier/ReportProduct/ManageReportProductOfSupplier";
 import ManageVoucherOfSuplier from "../pages/Supllier/Voucher/ManageVoucherOfSuplier";
 import ProtectedRouteAdmin from "./PrivateRoute/ProtectedRouteAdmin";
-import OrderHistory from "../pages/Common/OrderHistory";
 function Routers() {
   const routing = useRoutes([
     {
@@ -107,7 +108,7 @@ function Routers() {
         },
         {
           path: "settings",
-          element: <Settings/>,
+          element: <Settings />,
         },
         { path: "manage-policy", element: <ManagePolicy /> },
         { path: "manage-category", element: <ManageCategory /> },
@@ -115,7 +116,6 @@ function Routers() {
         { path: "manage-combo", element: <ManageComboByAd /> },
 
         { path: "create-staff", element: <CreateStaffForm /> },
-        
       ],
     },
     {

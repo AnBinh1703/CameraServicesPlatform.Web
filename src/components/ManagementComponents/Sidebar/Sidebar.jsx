@@ -78,6 +78,11 @@ const SideBar = () => {
         link: "manage-policy",
         icon: <FaClipboardList />,
       },
+      {
+        name: "Cấu hình",
+        link: "settings",
+        icon: <FaClipboardList />,
+      },
     ],
   };
 
