@@ -11,6 +11,7 @@ import {
   getProductVouchersByProductId,
   getVoucherById,
 } from "../../../../api/voucherApi";
+import { getNewReservationMoney } from "../../../../api/systemAdminApi"; // Add this import
 
 import DeliveryMethod from "./DeliveryMethod";
 import OrderConfirmation from "./OrderConfirmation";
@@ -32,7 +33,7 @@ const CreateOrderRent = () => {
   const [rentalEndDate, setRentalEndDate] = useState(null);
   const [shippingAddress, setShippingAddress] = useState("");
   const [returnDate, setReturnDate] = useState(null);
-  const [reservationMoney, setReservationMoney] = useState(); // Default value
+  const [reservationMoney, setReservationMoney] = useState();  
   const location = useLocation();
   const { productID, supplierID } = location.state || {};
   const [loadingProduct, setLoadingProduct] = useState(true);
@@ -80,7 +81,7 @@ const CreateOrderRent = () => {
 
   useEffect(() => {
     const fetchSupplierInfo = async () => {
-      if (deliveryMethod === 1 && supplierID) {
+      if (supplierID) {
         try {
           const supplierData = await getSupplierById(supplierID);
           if (
@@ -93,13 +94,14 @@ const CreateOrderRent = () => {
             message.error("Không thể lấy thông tin nhà cung cấp.");
           }
         } catch (error) {
+          console.error("Error fetching supplier:", error);
           message.error("Không thể lấy thông tin nhà cung cấp.");
         }
       }
     };
 
     fetchSupplierInfo();
-  }, [deliveryMethod, supplierID]);
+  }, [supplierID]);
 
   // Fetch vouchers by product ID
 
@@ -125,6 +127,25 @@ const CreateOrderRent = () => {
 
     fetchVouchers();
   }, [productID]);
+
+  // Add new useEffect for reservation money
+  useEffect(() => {
+    const fetchReservationMoney = async () => {
+      try {
+        const response = await getNewReservationMoney();
+        if (response.isSuccess && response.result) {
+          setReservationMoney(response.result.reservationMoney);
+        } else {
+          message.error("Failed to fetch reservation money.");
+        }
+      } catch (error) {
+        console.error("Error fetching reservation money:", error);
+        message.error("Failed to fetch reservation money.");
+      }
+    };
+
+    fetchReservationMoney();
+  }, []);
 
   // Handle voucher selection
   const handleVoucherSelect = async (e) => {

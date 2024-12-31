@@ -9,12 +9,9 @@ const DeliveryMethod = ({
 }) => {
   useEffect(() => {
     setDeliveryMethod(0);
-    // Debug supplier info
-    console.log("Supplier Info:", supplierInfo);
-  }, [supplierInfo]);
+  }, []);
 
   const handleDeliveryMethodChange = (e) => {
-    console.log("Selected delivery method:", e.target.value);
     setDeliveryMethod(e.target.value);
   };
 
@@ -38,20 +35,21 @@ const DeliveryMethod = ({
         </Radio.Group>
       </Form.Item>
 
-      {/* Modified supplier info display */}
-      <div className="mt-4">
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Tên nhà cung cấp">
-            {supplierInfo?.supplierName || "Loading..."}
-          </Descriptions.Item>
-          <Descriptions.Item label="Số điện thoại">
-            {supplierInfo?.contactNumber || "Loading..."}
-          </Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ nhà cung cấp">
-            {supplierInfo?.supplierAddress || "Loading..."}
-          </Descriptions.Item>
-        </Descriptions>
-      </div>
+      {supplierInfo && (
+        <div className="mt-4">
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Tên nhà cung cấp">
+              {supplierInfo.supplierName || "N/A"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Số điện thoại">
+              {supplierInfo.contactNumber || "N/A"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Địa chỉ nhà cung cấp">
+              {supplierInfo.supplierAddress || "N/A"}
+            </Descriptions.Item>
+          </Descriptions>
+        </div>
+      )}
     </Card>
   );
 };

@@ -1,6 +1,7 @@
 import { message } from "antd";
 import React from "react";
 import { createExtend } from "../../../api/extendApi";
+import { formatPrice, formatDateTime } from "../../../utils/util"; // Add this import
 import OrderItem from "./OrderItem";
 
 const OrderList = ({
@@ -18,9 +19,9 @@ const OrderList = ({
     const extendData = { orderId: order.orderID };
     const result = await createExtend(extendData);
     if (result) {
-      message.success("Extend created successfully.");
+      message.success("Gia hạn thành công.");
     } else {
-      message.error("Failed to create extend.");
+      message.error("Không thể gia hạn.");
     }
   };
 
@@ -58,16 +59,28 @@ const OrderList = ({
                   Mã đơn hàng
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Mã nhà cung cấp
+                  Nhà cung cấp
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Số tiền đặt cọc
+                  Tiền đặt cọc
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Tiền bảo lưu
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Trạng thái đơn hàng
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Địa chỉ giao hàng
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Phương thức giao hàng
+                </th>
+                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+                  Loại đơn hàng
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Thời gian thuê
-                </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Trạng thái thanh toán
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Ngày bắt đầu thuê
@@ -77,15 +90,6 @@ const OrderList = ({
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Ngày trả
-                </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Trạng thái
-                </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Phương thức giao hàng
-                </th>
-                <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
-                  Loại đơn hàng
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
                   Ngày đặt hàng
@@ -102,21 +106,28 @@ const OrderList = ({
                   key={order.orderID}
                   order={{
                     ...order,
-                    deposit: order.deposit || "N/A",
-                    durationValue: order.durationValue 
-                      ? `${order.durationValue} ${order.durationUnit === 0 ? 'ngày' : 'tháng'}`
+                    deposit: order.deposit ? formatPrice(order.deposit) : "N/A",
+                    reservationMoney: order.reservationMoney ? formatPrice(order.reservationMoney) : "N/A",
+                    durationText: order.durationValue 
+                      ? `${order.durationValue} ${
+                          order.durationUnit === 0 ? 'giờ' : 
+                          order.durationUnit === 1 ? 'ngày' :
+                          order.durationUnit === 2 ? 'tuần' : 'tháng'
+                        }`
                       : "N/A",
                     isPayment: order.isPayment ? "Đã thanh toán" : "Chưa thanh toán",
                     rentalStartDate: order.rentalStartDate 
-                      ? new Date(order.rentalStartDate).toLocaleDateString('vi-VN')
+                      ? formatDateTime(order.rentalStartDate)
                       : "N/A",
                     rentalEndDate: order.rentalEndDate
-                      ? new Date(order.rentalEndDate).toLocaleDateString('vi-VN')
-                      : "N/A",
+                      ? formatDateTime(order.rentalEndDate)
+                      : "N/A", 
                     returnDate: order.returnDate
-                      ? new Date(order.returnDate).toLocaleDateString('vi-VN')
+                      ? formatDateTime(order.returnDate)
                       : "N/A",
-                    orderDate: new Date(order.orderDate).toLocaleDateString('vi-VN'),
+                    orderDate: formatDateTime(order.orderDate),
+                    shippingAddress: order.shippingAddress || "Nhận tại cửa hàng",
+                    orderDetails: order.orderDetails || []
                   }}
                   supplierMap={supplierMap}
                   orderStatusMap={orderStatusMap}
