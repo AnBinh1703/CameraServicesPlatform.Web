@@ -2,7 +2,6 @@ import {
   CarOutlined,
   CheckCircleOutlined,
   CheckOutlined,
-  CloseOutlined,
   SmileOutlined,
 } from "@ant-design/icons";
 import { message, Modal, Table } from "antd";
@@ -27,7 +26,6 @@ import CreateReturnDetailForm from "../ReturnDetail/CreateReturnDetailForm";
 import ActionsComponent from "./TrackingOrder/ActionsComponent";
 import ImagesComponent from "./TrackingOrder/ImagesComponent";
 import OrderDetailsTable from "./TrackingOrder/OrderDetailsTable";
-import StepsComponent from "./TrackingOrder/StepsComponent";
 
 const TrackingOrder = ({ order, onUpdate }) => {
   const [orderDetails, setOrderDetails] = useState([]);
@@ -289,55 +287,145 @@ const TrackingOrder = ({ order, onUpdate }) => {
 
   const steps = [
     {
-      title: "Phê duyệt",
+      title: "Phê duyệt đơn hàng",
+      description: "Xác nhận và phê duyệt đơn hàng mới",
       status: 0,
       icon: <CheckOutlined />,
       action: "approve",
-    },
-    {
-      title: "Yêu cầu hủy",
-      status: 0,
-      icon: <CloseOutlined />,
-      action: "cancel",
-    },
-    {
-      title: "Chấp nhận hủy",
-      status: 6,
-      icon: <CheckCircleOutlined />,
-      action: "accept-cancel",
-    },
-    {
-      title: "Đợi khách hàng đến nhận",
-      status: 1,
-      icon: <SmileOutlined />,
-      action: "ship",
-    },
-    {
-      title: "Đang vận chuyện sản phẩm",
-      status: 1,
-      icon: <CarOutlined />,
-      action: "ship",
-    },
-    {
-      title: "Đợi khách hàng trả hàng",
-      status: [12, 3],
-      icon: <SmileOutlined />,
-      action: "ship",
-    },
-    {
-      title: "Hoàn thành",
-      status: [3, 4],
-      icon: <CheckCircleOutlined />,
-      action: "complete",
+      color: "green",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-300",
+      textColor: "text-green-700",
     },
 
     {
+      title: "Xác nhận hủy đơn",
+      description: "Chấp nhận yêu cầu hủy từ khách hàng",
+      status: 6,
+      icon: <CheckCircleOutlined />,
+      action: "accept-cancel",
+      color: "yellow",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-300",
+      textColor: "text-yellow-700",
+    },
+    {
+      title: "Đang xử lý",
+      description: "Đơn hàng đang được xử lý và chuẩn bị",
+      status: 1,
+      icon: <SmileOutlined />,
+      action: "ship",
+      color: "blue",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-300",
+      textColor: "text-blue-700",
+    },
+    {
+      title: "Đang vận chuyển",
+      description: "Sản phẩm đang được vận chuyển đến khách hàng",
+      status: 1,
+      icon: <CarOutlined />,
+      action: "ship",
+      color: "purple",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-300",
+      textColor: "text-purple-700",
+    },
+    {
+      title: "Chờ trả hàng",
+      description: "Đợi khách hàng trả sản phẩm",
+      status: [12, 3],
+      icon: <SmileOutlined />,
+      action: "ship",
+      color: "indigo",
+      bgColor: "bg-indigo-50",
+      borderColor: "border-indigo-300",
+      textColor: "text-indigo-700",
+    },
+    {
+      title: "Hoàn thành",
+      description: "Đơn hàng đã được hoàn thành",
+      status: [3, 4],
+      icon: <CheckCircleOutlined />,
+      action: "complete",
+      color: "green",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-300",
+      textColor: "text-green-700",
+    },
+    {
       title: "Chờ hoàn tiền",
+      description: "Đang xử lý hoàn tiền cho khách hàng",
       status: [2, 7],
       icon: <CheckCircleOutlined />,
       action: "pending-refund",
+      color: "orange",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-300",
+      textColor: "text-orange-700",
     },
   ];
+
+  const StepsComponent = ({ currentStep, steps }) => (
+    <div className="w-full max-w-5xl mx-auto">
+      <ol className="flex flex-col md:flex-row items-start md:items-center justify-between w-full p-4 space-y-4 md:space-y-0 md:space-x-8 xl:px-8">
+        {steps.map((step, index) => {
+          const isActive = index === currentStep;
+          const isCompleted = index < currentStep;
+
+          return (
+            <li key={index} className={`flex-1 w-full`}>
+              <div
+                className={`relative flex flex-col items-center ${
+                  index !== steps.length - 1
+                    ? 'after:content-[""] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-4 after:inline-block dark:after:border-gray-700'
+                    : ""
+                }`}
+              >
+                <span
+                  className={`flex items-center justify-center w-10 h-10 rounded-full lg:h-12 lg:w-12 shrink-0 ${
+                    isActive
+                      ? `${step.bgColor} ${step.borderColor}`
+                      : isCompleted
+                      ? "bg-green-100 border-green-500"
+                      : "bg-gray-100 border-gray-300"
+                  } border-2 transition-colors duration-200`}
+                >
+                  <span
+                    className={`text-lg ${
+                      isActive
+                        ? step.textColor
+                        : isCompleted
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {step.icon}
+                  </span>
+                </span>
+                <div className="mt-3 flex flex-col items-center">
+                  <h3
+                    className={`text-sm font-medium ${
+                      isActive
+                        ? step.textColor
+                        : isCompleted
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {step.title}
+                  </h3>
+                  <p className="text-xs mt-1 text-center text-gray-500">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
 
   const currentStep = steps.findIndex(
     (step) =>
@@ -475,57 +563,145 @@ const TrackingOrder = ({ order, onUpdate }) => {
   };
 
   return (
-    <div>
-      <StepsComponent currentStep={currentStep} steps={steps} />
-      <ActionsComponent
-        order={order}
-        showConfirm={showConfirm}
-        handleReturnClick={handleReturnClick}
-        handleExtendClick={handleExtendClick}
-        returnInitiated={returnInitiated}
-        handleUploadBefore={handleUploadBefore}
-        handleUploadAfter={handleUploadAfter}
-      />
-      <ImagesComponent
-        beforeImageUrl={beforeImageUrl}
-        afterImageUrl={afterImageUrl}
-      />
-      <OrderDetailsTable
-        orderDetails={orderDetails}
-        columns={orderDetailsColumns}
-        loading={loading}
-      />
-      {order.orderStatus === 12 && (
-        <Table
-          columns={extendColumns}
-          dataSource={extendsData}
-          rowKey="extendId"
-          pagination={false}
-        />
-      )}
-      <input
-        type="file"
-        id="uploadBeforeInput"
-        style={{ display: "none" }}
-        onChange={(e) => handleUploadBefore(e.target.files[0])}
-      />
-      <input
-        type="file"
-        id="uploadAfterInput"
-        style={{ display: "none" }}
-        onChange={(e) => handleUploadAfter(e.target.files[0])}
-      />
-      <Modal
-        title="Create Return Detail"
-        visible={showReturnDetailForm}
-        onCancel={() => setShowReturnDetailForm(false)}
-        footer={null}
-      >
-        <CreateReturnDetailForm
-          orderID={selectedOrderID}
-          onSuccess={() => setShowReturnDetailForm(false)}
-        />
-      </Modal>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Order Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Đơn hàng #{order?.orderID}
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Ngày đặt: {moment(order?.orderDate).format("DD/MM/YYYY HH:mm")}
+              </p>
+            </div>
+            <div className="text-right">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  order?.orderStatus === 1
+                    ? "bg-blue-100 text-blue-800"
+                    : order?.orderStatus === 2
+                    ? "bg-green-100 text-green-800"
+                    : order?.orderStatus === 3
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {order?.orderType === 0 ? "Mua" : "Thuê"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 overflow-x-auto">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 px-4">
+            Theo dõi tiến trình
+          </h2>
+          <StepsComponent currentStep={currentStep} steps={steps} />
+        </div>
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Order Details */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Chi tiết đơn hàng
+                </h2>
+                <OrderDetailsTable
+                  orderDetails={orderDetails}
+                  columns={orderDetailsColumns}
+                  loading={loading}
+                />
+              </div>
+            </div>
+
+            {/* Extends Table */}
+            {order.orderStatus === 12 && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    Thông tin gia hạn
+                  </h2>
+                  <Table
+                    columns={extendColumns}
+                    dataSource={extendsData}
+                    rowKey="extendId"
+                    pagination={false}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Actions Card */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Thao tác
+              </h2>
+              <ActionsComponent
+                order={order}
+                showConfirm={showConfirm}
+                handleReturnClick={handleReturnClick}
+                handleExtendClick={handleExtendClick}
+                returnInitiated={returnInitiated}
+                handleUploadBefore={handleUploadBefore}
+                handleUploadAfter={handleUploadAfter}
+              />
+            </div>
+
+            {/* Images Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Hình ảnh sản phẩm
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ImagesComponent
+                  beforeImageUrl={beforeImageUrl}
+                  afterImageUrl={afterImageUrl}
+                />
+              </div>
+              <input
+                type="file"
+                id="uploadBeforeInput"
+                className="hidden"
+                onChange={(e) => handleUploadBefore(e.target.files[0])}
+              />
+              <input
+                type="file"
+                id="uploadAfterInput"
+                className="hidden"
+                onChange={(e) => handleUploadAfter(e.target.files[0])}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Return Detail Modal */}
+        <Modal
+          title={
+            <h3 className="text-xl font-semibold text-gray-800">
+              Tạo chi tiết trả hàng
+            </h3>
+          }
+          visible={showReturnDetailForm}
+          onCancel={() => setShowReturnDetailForm(false)}
+          footer={null}
+          width={800}
+          className="rounded-lg"
+        >
+          <CreateReturnDetailForm
+            orderID={selectedOrderID}
+            onSuccess={() => setShowReturnDetailForm(false)}
+          />
+        </Modal>
+      </div>
     </div>
   );
 };

@@ -3,6 +3,8 @@ import {
   FileDoneOutlined,
   ReloadOutlined,
   ShoppingCartOutlined,
+  UpOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -15,6 +17,7 @@ import {
   Table,
   Tabs,
   Typography,
+  Collapse,
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
@@ -46,6 +49,10 @@ const ManageOrder = () => {
     dayjs().subtract(1, "month")
   );
   const [endDate, setEndDate] = useState(() => dayjs());
+  const [collapseStates, setCollapseStates] = useState({
+    costStats: true,
+    orderStats: true,
+  });
 
   const fetchSupplierId = async () => {
     if (user.id) {
@@ -244,6 +251,13 @@ const ManageOrder = () => {
     setRefreshList(!refreshList);
   };
 
+  const toggleCollapse = (key) => {
+    setCollapseStates((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   const summaryItems = [
     {
       title: "Tổng Doanh Thu",
@@ -324,14 +338,16 @@ const ManageOrder = () => {
             </Button>
           </Space>
         </div>
-        <Row gutter={[16, 16]}>
+        <Row gutter={[8, 8]}>
           {summaryItems.map((item) => (
-            <Col xs={24} sm={12} md={3} key={item.title}>
-              <Card className="summary-card flex items-center">
-                <div className="icon-container mr-2">{item.icon}</div>
-                <Text className="text-sm text-gray-500">{item.title}</Text>
-                <div>
-                  <Text className="text-xl font-bold">{item.value}</Text>
+            <Col xs={24} sm={12} md={6} lg={3} key={item.title}>
+              <Card className="summary-card" bodyStyle={{ padding: '8px' }}>
+                <div className="flex items-center space-x-2">
+                  <div className="icon-container-sm">{item.icon}</div>
+                  <div className="flex flex-col">
+                    <Text className="text-xs text-gray-500 mb-1">{item.title}</Text>
+                    <Text className="text-sm font-semibold">{item.value}</Text>
+                  </div>
                 </div>
               </Card>
             </Col>
@@ -340,33 +356,63 @@ const ManageOrder = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
             <Card
-              title="Thống Kê Chi Phí Đơn Hàng"
+              title={
+                <div className="flex justify-between items-center">
+                  <span>Thống Kê Chi Phí Đơn Hàng</span>
+                  <Button
+                    type="text"
+                    onClick={() => toggleCollapse("costStats")}
+                    icon={
+                      collapseStates.costStats ? (
+                        <UpOutlined />
+                      ) : (
+                        <DownOutlined />
+                      )
+                    }
+                  />
+                </div>
+              }
               className="custom-card"
               bordered={false}
             >
-              <Table
-                dataSource={data.orderCostStatistics}
-                columns={orderCostColumns}
-                pagination={false}
-                rowKey="month"
-                className="custom-table"
-              />
+              {collapseStates.costStats && (
+                <Table
+                  dataSource={data.orderCostStatistics}
+                  columns={orderCostColumns}
+                  pagination={false}
+                  rowKey="month"
+                  className="custom-table"
+                />
+              )}
             </Card>
           </Col>
           <Col xs={24} lg={12}></Col>
         </Row>
         <Card
-          title="Thống Kê Đơn Hàng"
+          title={
+            <div className="flex justify-between items-center">
+              <span>Thống Kê Đơn Hàng</span>
+              <Button
+                type="text"
+                onClick={() => toggleCollapse("orderStats")}
+                icon={
+                  collapseStates.orderStats ? <UpOutlined /> : <DownOutlined />
+                }
+              />
+            </div>
+          }
           className="custom-card"
           bordered={false}
         >
-          <Table
-            dataSource={[data.orderStatistics]}
-            columns={orderStatisticsColumns}
-            pagination={false}
-            rowKey="key"
-            className="custom-table"
-          />
+          {collapseStates.orderStats && (
+            <Table
+              dataSource={[data.orderStatistics]}
+              columns={orderStatisticsColumns}
+              pagination={false}
+              rowKey="key"
+              className="custom-table"
+            />
+          )}
         </Card>
         <Card
           title="Danh Sách Đơn Hàng"
@@ -398,20 +444,21 @@ const ManageOrder = () => {
           box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
         .summary-card {
-          display: flex;
-          align-items: center;
-          padding: 16px;
-          border-radius: 12px;
+          padding: 8px;
+          border-radius: 8px;
           background: #f7f9fc;
         }
-        .icon-container {
+        .icon-container-sm {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 48px;
-          height: 48px;
+          width: 32px;
+          height: 32px;
           background-color: rgba(24, 144, 255, 0.1);
           border-radius: 50%;
+        }
+        .icon-container-sm svg {
+          font-size: 16px;
         }
         .custom-tabs .ant-tabs-tab {
           padding: 8px 16px;

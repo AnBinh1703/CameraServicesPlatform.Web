@@ -130,12 +130,7 @@ export const createOrderRent = async (orderData) => {
 export const updateOrderStatusShipped = async (orderId) => {
   try {
     const response = await api.put(
-      `/order/update-order-status-Shipped/${orderId}`,
-      {
-        headers: {
-          accept: "text/plain",
-        },
-      }
+      `/order/update-order-status-Shipped/${orderId}`
     );
     return response.data;
   } catch (error) {
@@ -165,15 +160,7 @@ export const purchaseOrder = async (orderId) => {
 };
 export const acceptCancelOrder = async (orderId) => {
   try {
-    const res = await api.put(
-      `/order/accept-cancel-order/${orderId}`,
-      {},
-      {
-        headers: {
-          accept: "text/plain",
-        },
-      }
-    );
+    const res = await api.put(`/order/accept-cancel-order/${orderId}`, {});
     return res.data;
   } catch (err) {
     console.error("Error accepting order cancellation:", err);
@@ -201,12 +188,7 @@ export const updateOrderStatusPlaced = async (orderId) => {
   try {
     const res = await api.put(
       `/order/update-order-status-placed/${orderId}`,
-      {},
-      {
-        headers: {
-          accept: "text/plain",
-        },
-      }
+      {}
     );
     return res.data;
   } catch (err) {
@@ -260,12 +242,7 @@ export const updateOrderStatusApproved = async (orderId) => {
   try {
     const response = await api.put(
       `/order/update-order-status-Approved/${orderId}`,
-      {},
-      {
-        headers: {
-          accept: "text/plain",
-        },
-      }
+      {}
     );
     return response.data;
   } catch (error) {
@@ -278,12 +255,12 @@ export const updateOrderStatusApproved = async (orderId) => {
     );
   }
 };
-export const cancelOrder = async (orderId) => {
+export const cancelOrder = async (orderId, cancelMessage) => {
   try {
-    const res = await api.put(
-      `/order/cancel-order/${orderId}`,
-      {} // Sending an empty object as the request body
-    );
+    const res = await api.put(`/order/cancel-order`, {
+      orderID: orderId,
+      cancelMessage: cancelMessage,
+    });
     return res.data;
   } catch (err) {
     console.error("Error canceling order:", err);
@@ -367,6 +344,132 @@ export const getImageProductBeforeByOrderId = async (orderId) => {
     return res.data;
   } catch (err) {
     console.error("Error fetching image product before by order ID:", err);
+    return null;
+  }
+};
+
+export const updateOrderJustStatusCompleted = async (orderId) => {
+  try {
+    const response = await api.put(
+      `/order/update-order-just-status-completed/${orderId}`,
+      {}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order just status to completed:", error);
+    return (
+      error.response?.data || {
+        isSuccess: false,
+        messages: ["Error updating order status"],
+      }
+    );
+  }
+};
+
+export const updateOrderStatusPayment = async (orderId) => {
+  try {
+    const response = await api.put(
+      `/order/update-order-status-payment/${orderId}`,
+      {}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating order status to payment:", error);
+    return (
+      error.response?.data || {
+        isSuccess: false,
+        messages: ["Error updating order status"],
+      }
+    );
+  }
+};
+
+export const getAllOrderRent = async (pageIndex, pageSize) => {
+  try {
+    const res = await api.get(
+      `/order/get-all-order-rent?pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching all rental orders:", err);
+    return null;
+  }
+};
+
+export const getAllOrderBuy = async (pageIndex, pageSize) => {
+  try {
+    const res = await api.get(
+      `/order/get-all-order-buy?pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching all buy orders:", err);
+    return null;
+  }
+};
+
+export const getOrderByOrderStatus = async (
+  orderStatus,
+  pageIndex,
+  pageSize
+) => {
+  try {
+    const res = await api.get(
+      `/order/get-order-by-order-status?orderStatus=${orderStatus}&pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders by status:", err);
+    return null;
+  }
+};
+
+export const getOrderStatusOfSupplierId = async (
+  supplierId,
+  orderStatus,
+  pageIndex,
+  pageSize
+) => {
+  try {
+    const res = await api.get(
+      `/order/get-order-status-of-supplierId?SupplierId=${supplierId}&orderStatus=${orderStatus}&pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching supplier orders by status:", err);
+    return null;
+  }
+};
+
+export const getOrderOfAccountByOrderId = async (
+  orderId,
+  pageIndex,
+  pageSize
+) => {
+  try {
+    const res = await api.get(
+      `/order/get-order-of-account-by-order-id?OrderId=${orderId}&pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching account order by ID:", err);
+    return null;
+  }
+};
+
+export const getOrderOrderStatusOfAccount = async (
+  accountId,
+  orderStatus,
+  pageIndex,
+  pageSize
+) => {
+  try {
+    const res = await api.get(
+      `/order/get-order-order-status-of-account?AccountID=${accountId}&orderStatus=${orderStatus}&pageIndex=${pageIndex}&pageSize=${pageSize}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching account orders by status:", err);
     return null;
   }
 };

@@ -9,14 +9,14 @@ const OrderDetails = ({
   afterImage,
   setIsOrderDetail,
 }) => (
-  <div className="lg:col-span-3 bg-white shadow-xl rounded-lg p-6">
+  <div className="lg:col-span-4 bg-white shadow-xl rounded-lg p-6">
     <button
       onClick={() => {
         setIsOrderDetail(false);
       }}
       className="text-teal-600 hover:text-teal-800 mb-4 flex items-center"
     >
-      <i className="fa-solid fa-arrow-left mr-2"></i> Back
+      <i className="fa-solid fa-arrow-left mr-2"></i> Quay lại
     </button>
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-teal-600 text-center">
@@ -33,7 +33,7 @@ const OrderDetails = ({
               <th className="py-3 px-4 border-b">Giảm giá</th>
               <th className="py-3 px-4 border-b">Số seri</th>
               <th className="py-3 px-4 border-b">Tên nhà cung cấp</th>
-              <th className="py-3 px-4 border-b">Tên danh mục</th>
+              <th className="py-3 px-4 border-b">Danh mục</th>
               <th className="py-3 px-4 border-b">Ngày tạo</th>
               <th className="py-3 px-4 border-b">Ngày cập nhật</th>
             </tr>
@@ -107,7 +107,7 @@ const OrderDetails = ({
             ) : (
               <tr>
                 <td colSpan="10" className="text-center py-4">
-                  No products found
+                  Không tìm thấy sản phẩm nào
                 </td>
               </tr>
             )}

@@ -46,7 +46,7 @@ import ManageProductOfSuplier from "../pages/Supllier/Product/ManageProductOfSup
 import ManageReportProductOfSupplier from "../pages/Supllier/ReportProduct/ManageReportProductOfSupplier";
 import ManageVoucherOfSuplier from "../pages/Supllier/Voucher/ManageVoucherOfSuplier";
 import ProtectedRouteAdmin from "./PrivateRoute/ProtectedRouteAdmin";
-
+import OrderHistory from "../pages/Common/OrderHistory";
 function Routers() {
   const routing = useRoutes([
     {
@@ -72,7 +72,7 @@ function Routers() {
         { path: "create-order-buy", element: <CreateOrderBuy /> },
         { path: "create-order-rent", element: <CreateOrderRent /> },
         { path: "personal-review", element: <PersonalReview /> },
-
+        { path: "personal-order-history", element: <OrderHistory /> },
         { path: "/product/:id", element: <ProductDetailPage /> },
         { path: "order-detail", element: <OrderDetail /> },
         { path: "category", element: <Category /> },
