@@ -100,7 +100,7 @@ const OrderItem = ({
     setDurationUnit(value);
     setDurationValue(durationOptions[value].min);
     const { min, max } = durationOptions[value];
-    message.info(`Vui lòng chọn thời gian thuê từ ${min} đến ${max}`);
+    message.info(`Please select a duration between ${min} and ${max}.`);
   };
 
   const calculateReturnDate = (endDate) => {
@@ -239,81 +239,83 @@ const OrderItem = ({
       };
       const result = await createExtend(data);
       if (result) {
-        message.success("Gia hạn thành công");
+        message.success("Extend created successfully");
         setIsExtendModalVisible(false);
       } else {
-        message.error("Không thể gia hạn");
+        message.error("Failed to create extend");
       }
     } catch (error) {
-      console.error("Lỗi khi gia hạn:", error);
-      message.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
+      console.error("Error creating extend:", error);
+      message.error("An error occurred, please try again later.");
     }
   };
 
   return (
-    <tr
-      className={
-        order.orderStatus === 1 && order.deliveriesMethod === 0
-          ? "bg-yellow-100"
-          : "cursor-pointer hover:bg-gray-50 transition-colors"
-      }
-      onClick={() => handleClick(order)}
-    >
-      <td className="py-3 px-4 border-b">{order.orderID}</td>
-      <td className="py-3 px-4 border-b">
-        {supplierMap[order.supplierID]?.supplierName || "N/A"}
-      </td>
-      <td className="py-3 px-4 border-b">{order.deposit}</td>
-      <td className="py-3 px-4 border-b">{order.reservationMoney}</td>
-      <td className="py-3 px-4 border-b">
-        <StatusBadge status={order.orderStatus} map={orderStatusMap} />
-      </td>
-      <td className="py-3 px-4 border-b">{order.shippingAddress}</td>
-      <td className="py-3 px-4 border-b">
-        <StatusBadge status={order.deliveriesMethod} map={deliveryStatusMap} />
-      </td>
-      <td className="py-3 px-4 border-b">
-        <StatusBadge status={order.orderType} map={orderTypeMap} />
-      </td>
-      <td className="py-3 px-4 border-b">{order.durationText}</td>
-      <td className="py-3 px-4 border-b">{order.rentalStartDate}</td>
-      <td className="py-3 px-4 border-b">{order.rentalEndDate}</td>
-      <td className="py-3 px-4 border-b">{order.returnDate}</td>
-      <td className="py-3 px-4 border-b">{order.orderDate}</td>
-      <td className="py-3 px-4 border-b">{formatPrice(order.totalAmount)}</td>
-      {order.orderStatus === 0 && (
-        <div className="flex justify-center">
-          <button
-            className="bg-primary text-white rounded-md py-2 px-4 my-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePaymentAgain(order.orderID);
-            }}
-          >
-            Thanh toán ngay
-          </button>
-        </div>
-      )}
-      <td>
-        <OrderCancelButton order={order} />
-        {order.orderStatus === 1 && order.deliveriesMethod === 0 && (
-          <button
-            className="bg-blue-500 text-white rounded-md py-2 px-4 my-2"
-            onClick={async (e) => {
-              e.stopPropagation();
-              await updateOrderStatusPlaced(order.orderID);
-              message.success("Order status updated to 'Đến nhận'");
-            }}
-          >
-            Đến nhận
-          </button>
-        )}
-      </td>
-      <td>
-        {order.orderStatus === 3 && order.orderType === 0 && (
-          <>
+    <>
+      <tr
+        key={order.orderID}
+        className={
+          order.orderStatus === 1 && order.deliveriesMethod === 0
+            ? "bg-yellow-100"
+            : "cursor-pointer hover:bg-gray-50 transition-colors"
+        }
+        onClick={() => handleClick(order)}
+      >
+        <td className="py-3 px-4 border-b">{order.orderID}</td>
+        <td className="py-3 px-4 border-b">
+          <div className="space-y-1">
+            <div><strong>Tên nhà cung cấp: </strong>{supplierMap[order.supplierID]?.supplierName || "N/A"}</div>
+            <div><strong>Địa chỉ: </strong>{supplierMap[order.supplierID]?.supplierAddress || "N/A"}</div>
+            <div><strong>Mô tả: </strong>{supplierMap[order.supplierID]?.supplierDescription || "N/A"}</div>
+            <div><strong>Số điện thoại: </strong>{supplierMap[order.supplierID]?.contactNumber || "N/A"}</div>
+          </div>
+        </td>
+        <td className="py-3 px-4 border-b">{formatPrice(order.deposit)}</td>
+        <td className="py-3 px-4 border-b">{formatPrice(order.reservationMoney)}</td>
+        <td className="py-3 px-4 border-b">
+          <StatusBadge status={order.orderStatus} map={orderStatusMap} />
+        </td>
+        <td className="py-3 px-4 border-b">{order.shippingAddress || "Nhận tại cửa hàng"}</td>
+        <td className="py-3 px-4 border-b">
+          <StatusBadge status={order.deliveriesMethod} map={deliveryStatusMap} />
+        </td>
+        <td className="py-3 px-4 border-b">
+          <StatusBadge status={order.orderType} map={orderTypeMap} />
+        </td>
+        <td className="py-3 px-4 border-b">{order.durationText}</td>
+        <td className="py-3 px-4 border-b">{order.rentalStartDate}</td>
+        <td className="py-3 px-4 border-b">{order.rentalEndDate}</td>
+        <td className="py-3 px-4 border-b">{order.returnDate}</td>
+        <td className="py-3 px-4 border-b">{order.orderDate}</td>
+        <td className="py-3 px-4 border-b">{formatPrice(order.totalAmount)}</td>
+        <td className="py-3 px-4 border-b flex gap-2">
+          {order.orderStatus === 0 && (
             <button
-              className="bg-green-500 text-white rounded-md py-2 px-4 my-2"
+              className="bg-primary text-white rounded-md py-2 px-4"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePaymentAgain(order.orderID);
+              }}
+            >
+              Thanh toán ngay
+            </button>
+          )}
+          <OrderCancelButton order={order} />
+          {order.orderStatus === 1 && order.deliveriesMethod === 0 && (
+            <button
+              className="bg-blue-500 text-white rounded-md py-2 px-4"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await updateOrderStatusPlaced(order.orderID);
+                message.success("Đã cập nhật trạng thái thành 'Đến nhận'");
+              }}
+            >
+              Đến nhận
+            </button>
+          )}
+          {order.orderStatus === 3 && order.orderType === 0 && (
+            <button
+              className="bg-green-500 text-white rounded-md py-2 px-4"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsFormModalVisible(true);
@@ -321,25 +323,113 @@ const OrderItem = ({
             >
               Trả hàng
             </button>
-          </>
-        )}
-        {order.orderStatus === 3 && order.orderType === 1 && (
-          <>
+          )}
+          {order.orderStatus === 3 && order.orderType === 1 && (
             <button
-              className="bg-orange-500 text-white rounded-md py-2 px-4 my-2"
+              className="bg-orange-500 text-white rounded-md py-2 px-4"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExtendModalVisible(true);
               }}
             >
-              Extend
+              Gia hạn
             </button>
-          </>
-        )}
-      </td>
-      <td></td>
-    </tr>
-    // ...existing modals...
+          )}
+        </td>
+      </tr>
+
+      {/* Modal: Input Form Data */}
+      <Modal
+        title="Trả hàng"
+        visible={isFormModalVisible}
+        onCancel={() => setIsFormModalVisible(false)}
+        onOk={handleCreateReturnDetail}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="returnDate"
+            label="Ngày trả"
+            rules={[{ required: true, message: "Vui lòng chọn ngày trả" }]}
+          >
+            <Input type="datetime-local" />
+          </Form.Item>
+          <Form.Item
+            name="condition"
+            label="Tình trạng"
+            rules={[{ required: true, message: "Vui lòng nhập tình trạng" }]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modal: Extend Form Data */}
+      <Modal
+        title="Gia hạn đơn hàng"
+        visible={isExtendModalVisible}
+        onCancel={() => setIsExtendModalVisible(false)}
+        onOk={handleCreateExtend}
+      >
+        <Form form={extendForm} layout="vertical">
+          <Form.Item
+            name="durationUnit"
+            label="Đơn vị thời gian"
+            rules={[{ required: true, message: "Vui lòng chọn đơn vị thời gian" }]}
+          >
+            <Select onChange={handleDurationUnitChange}>
+              <Select.Option value={0}>Giờ</Select.Option>
+              <Select.Option value={1}>Ngày</Select.Option>
+              <Select.Option value={2}>Tuần</Select.Option>
+              <Select.Option value={3}>Tháng</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="durationValue"
+            label="Thời gian thuê"
+            rules={[{ required: true, message: "Vui lòng nhập thời gian thuê" }]}
+          >
+            <InputNumber
+              min={durationOptions[durationUnit]?.min || 1}
+              max={durationOptions[durationUnit]?.max || 1}
+              value={durationValue}
+              onChange={handleDurationValueChange}
+            />
+          </Form.Item>
+          <Form.Item
+            name="rentalExtendStartDate"
+            label="Ngày bắt đầu gia hạn"
+            rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu" }]}
+          >
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
+          </Form.Item>
+          <Form.Item
+            name="rentalExtendEndDate"
+            label="Ngày kết thúc gia hạn"
+            rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc" }]}
+          >
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
+          </Form.Item>
+          <Form.Item
+            name="extendReturnDate"
+            label="Ngày trả"
+            rules={[{ required: true, message: "Vui lòng chọn ngày trả" }]}
+          >
+            <DatePicker showTime format="DD-MM-YYYY HH:mm:ss" />
+          </Form.Item>
+          <Form.Item
+            name="totalAmount"
+            label="Tổng tiền"
+            rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
+          >
+            <InputNumber 
+              min={0}
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   );
 };
 

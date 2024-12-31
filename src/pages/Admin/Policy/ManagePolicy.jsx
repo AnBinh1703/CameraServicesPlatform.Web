@@ -128,23 +128,23 @@ const ManagePolicy = () => {
 
   const columns = [
     {
-      title: "Policy ID",
+      title: "Mã Chính Sách",
       dataIndex: "policyID",
       key: "policyID",
     },
     {
-      title: "Policy Type",
+      title: "Loại Chính Sách",
       dataIndex: "policyType",
       key: "policyType",
     },
     {
-      title: "Policy Content",
+      title: "Nội Dung",
       dataIndex: "policyContent",
       key: "policyContent",
       render: (text) => (
         <div
           style={{
-            maxWidth: "200px",
+            maxWidth: "300px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -155,44 +155,38 @@ const ManagePolicy = () => {
       ),
     },
     {
-      title: "Applicable Object",
+      title: "Đối Tượng Áp Dụng",
       dataIndex: "applicableObject",
       key: "applicableObject",
     },
     {
-      title: "Effective Date",
+      title: "Ngày Hiệu Lực",
       dataIndex: "effectiveDate",
       key: "effectiveDate",
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => moment(date).format('DD/MM/YYYY'),
     },
     {
-      title: "Value",
+      title: "Giá Trị",
       dataIndex: "value",
       key: "value",
-      render: (value) => new Date(value).toLocaleDateString(),
+      render: (value) => moment(value).format('DD/MM/YYYY'),
     },
     {
-      title: "Actions",
+      title: "Thao Tác",
       key: "actions",
       render: (_, record) => (
-        <div>
-          <Button type="link" onClick={() => handleViewDetail(record.policyID)}>
-            View
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button type="primary" size="small" onClick={() => handleViewDetail(record.policyID)}>
+            Xem
           </Button>
-          <Button
-            type="link"
-            onClick={() => {
-              setIsUpdating(true);
-              setSelectedPolicy(record); // Set selected policy for updating
-            }}
-          >
-            Edit
+          <Button type="default" size="small" onClick={() => {
+            setIsUpdating(true);
+            setSelectedPolicy(record);
+          }}>
+            Sửa
           </Button>
-          <Button
-            type="link"
-            onClick={() => handleDeletePolicy(record.policyID)}
-          >
-            Delete
+          <Button type="danger" size="small" onClick={() => handleDeletePolicy(record.policyID)}>
+            Xóa
           </Button>
         </div>
       ),
@@ -200,173 +194,164 @@ const ManagePolicy = () => {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Manage Policies</h2>
-      <Input
-        placeholder="Search Policies"
-        value={searchTerm}
-        onChange={(e) => handleSearch(e.target.value)}
-        style={{ marginBottom: "20px", width: "300px" }}
-      />
-      <Button
-        type="primary"
-        onClick={handleCreatePolicy}
-        style={{ marginBottom: "20px" }}
+    <div style={{ padding: "24px", background: '#f5f5f5' }}>
+      <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ marginBottom: '24px' }}>Quản Lý Chính Sách</h2>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <Input.Search
+            placeholder="Tìm kiếm chính sách..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: "300px" }}
+          />
+          <Button type="primary" onClick={handleCreatePolicy}>
+            Thêm Chính Sách Mới
+          </Button>
+        </div>
+
+        <Table
+          dataSource={filteredPolicies}
+          columns={columns}
+          rowKey="policyID"
+          pagination={{
+            current: pageIndex,
+            pageSize,
+            onChange: (page) => setPageIndex(page),
+            total: filteredPolicies.length,
+            showSizeChanger: false,
+            showTotal: (total) => `Tổng số: ${total} chính sách`,
+          }}
+        />
+      </div>
+
+      {/* View Detail Modal */}
+      <Modal
+        title="Chi Tiết Chính Sách"
+        open={isViewingDetail}
+        onCancel={handleModalClose}
+        footer={[
+          <Button key="close" onClick={handleModalClose}>
+            Đóng
+          </Button>
+        ]}
+        width={600}
       >
-        Create Policy
-      </Button>
-      <Divider />
-      <Table
-        dataSource={filteredPolicies} // Use filtered policies for display
-        columns={columns}
-        rowKey="policyID"
-        pagination={{
-          current: pageIndex,
-          pageSize,
-          onChange: (page) => setPageIndex(page),
-        }}
-      />
+        {selectedPolicy ? (
+          <div style={{ padding: '12px' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Mã Chính Sách:</strong> {selectedPolicy.policyID}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Loại Chính Sách:</strong> {selectedPolicy.policyType}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Nội Dung:</strong> {selectedPolicy.policyContent}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Đối Tượng Áp Dụng:</strong> {selectedPolicy.applicableObject}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Ngày Hiệu Lực:</strong> {moment(selectedPolicy.effectiveDate).format('DD/MM/YYYY')}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Giá Trị:</strong> {moment(selectedPolicy.value).format('DD/MM/YYYY')}
+            </div>
+          </div>
+        ) : (
+          <p>Không có dữ liệu</p>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title="Chỉnh Sửa Chính Sách"
+        open={isUpdating}
+        onCancel={handleModalClose}
+        footer={null}
+        width={600}
+      >
+        {selectedPolicy ? (
+          <div style={{ padding: '12px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Loại Chính Sách:</strong>
+              </div>
+              <Input
+                value={selectedPolicy.policyType}
+                onChange={(e) => setSelectedPolicy({...selectedPolicy, policyType: e.target.value})}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Nội Dung:</strong>
+              </div>
+              <Input.TextArea
+                value={selectedPolicy.policyContent}
+                onChange={(e) => setSelectedPolicy({...selectedPolicy, policyContent: e.target.value})}
+                rows={4}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Đối Tượng Áp Dụng:</strong>
+              </div>
+              <Input
+                value={selectedPolicy.applicableObject}
+                onChange={(e) => setSelectedPolicy({...selectedPolicy, applicableObject: e.target.value})}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Ngày Hiệu Lực:</strong>
+              </div>
+              <DatePicker
+                value={selectedPolicy.effectiveDate ? moment(selectedPolicy.effectiveDate) : null}
+                onChange={(date, dateString) => setSelectedPolicy({...selectedPolicy, effectiveDate: dateString})}
+                style={{ width: '100%' }}
+                format="DD/MM/YYYY"
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>Giá Trị:</strong>
+              </div>
+              <Input
+                value={selectedPolicy.value}
+                onChange={(e) => setSelectedPolicy({...selectedPolicy, value: e.target.value})}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '24px' }}>
+              <Button onClick={handleModalClose}>
+                Hủy
+              </Button>
+              <Button type="primary" onClick={() => handleUpdatePolicy(selectedPolicy.policyID, selectedPolicy)}>
+                Cập Nhật
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p>Đang tải...</p>
+        )}
+      </Modal>
 
       {/* Create Policy Modal */}
       <Modal
-        title="Create Policy"
-        open={isCreating} // Use 'open' instead of 'visible'
+        title="Thêm Chính Sách Mới"
+        open={isCreating}
         onCancel={handleModalClose}
         footer={null}
+        width={600}
       >
         <CreatePolicy
           onClose={handleModalClose}
           fetchPolicies={fetchPolicies}
         />
-      </Modal>
-      <Modal
-        title="Policy Details"
-        open={isViewingDetail} // Check if this is properly controlled
-        onCancel={handleModalClose}
-        footer={null}
-      >
-        {selectedPolicy ? (
-          <div>
-            <p>
-              <strong>Policy ID:</strong> {selectedPolicy.policyID}
-            </p>
-            <p>
-              <strong>Policy Type:</strong> {selectedPolicy.policyType}
-            </p>
-            <p>
-              <strong>Policy Content:</strong> {selectedPolicy.policyContent}
-            </p>
-            <p>
-              <strong>Applicable Object:</strong>
-              {selectedPolicy.applicableObject}
-            </p>
-            <p>
-              <strong>Effective Date:</strong>
-              {new Date(selectedPolicy.effectiveDate).toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Value:</strong>
-              {new Date(selectedPolicy.value).toLocaleDateString()}
-            </p>
-          </div>
-        ) : (
-          <p>No policy selected</p>
-        )}
-      </Modal>
-
-      <Modal
-        title="Edit Policy"
-        open={isUpdating} // Modal should open when this is true
-        onCancel={handleModalClose}
-        footer={null}
-      >
-        {selectedPolicy ? (
-          <div>
-            <p>
-              <strong>Policy ID:</strong> {selectedPolicy.policyID}
-            </p>
-
-            <div>
-              <strong>Policy Type:</strong>
-              <Input
-                value={selectedPolicy.policyType}
-                onChange={(e) =>
-                  setSelectedPolicy({
-                    ...selectedPolicy,
-                    policyType: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <strong>Policy Content:</strong>
-              <Input
-                value={selectedPolicy.policyContent}
-                onChange={(e) =>
-                  setSelectedPolicy({
-                    ...selectedPolicy,
-                    policyContent: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <strong>Applicable Object:</strong>
-              <Input
-                value={selectedPolicy.applicableObject}
-                onChange={(e) =>
-                  setSelectedPolicy({
-                    ...selectedPolicy,
-                    applicableObject: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <strong>Effective Date:</strong>
-              <DatePicker
-                value={
-                  selectedPolicy.effectiveDate
-                    ? moment(selectedPolicy.effectiveDate)
-                    : null
-                }
-                onChange={(date, dateString) =>
-                  setSelectedPolicy({
-                    ...selectedPolicy,
-                    effectiveDate: dateString,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <strong>Value:</strong>
-              <Input
-                value={selectedPolicy.value}
-                onChange={(e) =>
-                  setSelectedPolicy({
-                    ...selectedPolicy,
-                    value: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <Button
-              type="primary"
-              onClick={() =>
-                handleUpdatePolicy(selectedPolicy.policyID, selectedPolicy)
-              }
-            >
-              Update Policy
-            </Button>
-          </div>
-        ) : (
-          <p>Loading policy...</p>
-        )}
       </Modal>
     </div>
   );
