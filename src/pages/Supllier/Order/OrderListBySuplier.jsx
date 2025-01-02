@@ -12,7 +12,7 @@ const OrderListBySupplier = ({ refresh }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
   const [supplierId, setSupplierId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isTrackingModalVisible, setIsTrackingModalVisible] = useState(false);
@@ -67,7 +67,11 @@ const OrderListBySupplier = ({ refresh }) => {
                 return order;
               })
             );
-            setOrders(ordersWithAccountNames || []);
+            // Sort orders by date in descending order (newest first)
+            const sortedOrders = ordersWithAccountNames.sort(
+              (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+            );
+            setOrders(sortedOrders || []);
           } else {
             message.error("Lấy đơn hàng không thành công.");
           }
