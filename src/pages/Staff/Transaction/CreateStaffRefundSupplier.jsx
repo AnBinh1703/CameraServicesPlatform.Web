@@ -271,7 +271,7 @@ const CreateStaffRefundSupplier = () => {
         if (!detail.productName) {
           try {
             const productData = await getProductById(detail.productID);
-            detail.productName = productData.name || "N/A";
+            detail.productName = productData.name;
           } catch (error) {
             console.error("Error fetching product name:", error);
             detail.productName = "N/A";

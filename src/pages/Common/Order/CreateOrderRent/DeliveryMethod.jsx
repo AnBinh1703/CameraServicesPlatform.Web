@@ -39,13 +39,13 @@ const DeliveryMethod = ({
         <div className="mt-4">
           <Descriptions bordered column={1}>
             <Descriptions.Item label="Tên nhà cung cấp">
-              {supplierInfo.supplierName || "N/A"}
+              {supplierInfo.supplierName}
             </Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">
-              {supplierInfo.contactNumber || "N/A"}
+              {supplierInfo.contactNumber}
             </Descriptions.Item>
             <Descriptions.Item label="Địa chỉ nhà cung cấp">
-              {supplierInfo.supplierAddress || "N/A"}
+              {supplierInfo.supplierAddress}
             </Descriptions.Item>
           </Descriptions>
         </div>

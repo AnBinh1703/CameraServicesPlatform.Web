@@ -315,7 +315,7 @@ const CreateStaffRefundMember = () => {
         if (!detail.productName) {
           try {
             const productData = await getProductById(detail.productID);
-            detail.productName = productData.name || "N/A";
+            detail.productName = productData.name;
           } catch (error) {
             console.error("Error fetching product name:", error);
             detail.productName = "N/A";
@@ -530,7 +530,7 @@ const CreateStaffRefundMember = () => {
             {selectedOrderDetails.map((detail) => (
               <li key={detail.orderDetailsID}>
                 <p>Product ID: {detail.productID}</p>
-                <p>Product Name: {detail.productName || "N/A"}</p>
+                <p>Product Name: {detail.productName}</p>
                 <p>Product Quality: {detail.productQuality}</p>
                 <p>
                   Product Price:

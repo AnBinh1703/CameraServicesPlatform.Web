@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import { createExtend } from "../../../api/extendApi";
 import { getProductById } from "../../../api/productApi"; // Import the getProductById function
 import { createReturnDetailForMember } from "../../../api/returnDetailApi";
-import { formatDateTime, formatPrice } from "../../../utils/util";
+import { formatPrice } from "../../../utils/util";
 import OrderCancelButton from "./OrderCancelButton";
 
 const StatusBadge = ({ status, map }) => {
@@ -264,20 +264,39 @@ const OrderItem = ({
         <td className="py-3 px-4 border-b">{order.orderID}</td>
         <td className="py-3 px-4 border-b">
           <div className="space-y-1">
-            <div><strong>Tên nhà cung cấp: </strong>{supplierMap[order.supplierID]?.supplierName || "N/A"}</div>
-            <div><strong>Địa chỉ: </strong>{supplierMap[order.supplierID]?.supplierAddress || "N/A"}</div>
-            <div><strong>Mô tả: </strong>{supplierMap[order.supplierID]?.supplierDescription || "N/A"}</div>
-            <div><strong>Số điện thoại: </strong>{supplierMap[order.supplierID]?.contactNumber || "N/A"}</div>
+            <div>
+              <strong>Tên nhà cung cấp: </strong>
+              {supplierMap[order.supplierID]?.supplierName}
+            </div>
+            <div>
+              <strong>Địa chỉ: </strong>
+              {supplierMap[order.supplierID]?.supplierAddress}
+            </div>
+            <div>
+              <strong>Mô tả: </strong>
+              {supplierMap[order.supplierID]?.supplierDescription}
+            </div>
+            <div>
+              <strong>Số điện thoại: </strong>
+              {supplierMap[order.supplierID]?.contactNumber}
+            </div>
           </div>
         </td>
         <td className="py-3 px-4 border-b">{formatPrice(order.deposit)}</td>
-        <td className="py-3 px-4 border-b">{formatPrice(order.reservationMoney)}</td>
+        <td className="py-3 px-4 border-b">
+          {formatPrice(order.reservationMoney)}
+        </td>
         <td className="py-3 px-4 border-b">
           <StatusBadge status={order.orderStatus} map={orderStatusMap} />
         </td>
-        <td className="py-3 px-4 border-b">{order.shippingAddress || "Nhận tại cửa hàng"}</td>
         <td className="py-3 px-4 border-b">
-          <StatusBadge status={order.deliveriesMethod} map={deliveryStatusMap} />
+          {order.shippingAddress || "Nhận tại cửa hàng"}
+        </td>
+        <td className="py-3 px-4 border-b">
+          <StatusBadge
+            status={order.deliveriesMethod}
+            map={deliveryStatusMap}
+          />
         </td>
         <td className="py-3 px-4 border-b">
           <StatusBadge status={order.orderType} map={orderTypeMap} />
@@ -374,7 +393,9 @@ const OrderItem = ({
           <Form.Item
             name="durationUnit"
             label="Đơn vị thời gian"
-            rules={[{ required: true, message: "Vui lòng chọn đơn vị thời gian" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn đơn vị thời gian" },
+            ]}
           >
             <Select onChange={handleDurationUnitChange}>
               <Select.Option value={0}>Giờ</Select.Option>
@@ -386,7 +407,9 @@ const OrderItem = ({
           <Form.Item
             name="durationValue"
             label="Thời gian thuê"
-            rules={[{ required: true, message: "Vui lòng nhập thời gian thuê" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập thời gian thuê" },
+            ]}
           >
             <InputNumber
               min={durationOptions[durationUnit]?.min || 1}
@@ -421,10 +444,12 @@ const OrderItem = ({
             label="Tổng tiền"
             rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
           >
-            <InputNumber 
+            <InputNumber
               min={0}
-              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
             />
           </Form.Item>
         </Form>

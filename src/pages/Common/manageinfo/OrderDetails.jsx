@@ -43,7 +43,7 @@ const OrderDetails = ({
               dataDetai.map((orderdetails) => (
                 <tr key={orderdetails.productID} className="hover:bg-gray-50">
                   <td className="py-2 px-4 border-b">
-                    {orderdetails.product.productName || "N/A"}
+                    {orderdetails.product.productName}
                   </td>
                   <td className="py-2 px-4 border-b">
                     {new Intl.NumberFormat("vi-VN", {
@@ -69,7 +69,7 @@ const OrderDetails = ({
                     }).format(orderdetails.discount || 0)}
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {orderdetails.product.serialNumber || "N/A"}
+                    {orderdetails.product.serialNumber}
                   </td>
                   <td className="py-3 px-4 border-b">
                     <div>
@@ -94,7 +94,7 @@ const OrderDetails = ({
                     </div>
                   </td>
                   <td className="py-2 px-4 border-b">
-                    {categoryMap[orderdetails.product.categoryID] || "N/A"}
+                    {categoryMap[orderdetails.product.categoryID]}
                   </td>
                   <td className="py-2 px-4 border-b">
                     {formatDateTime(orderdetails.product.createdAt)}

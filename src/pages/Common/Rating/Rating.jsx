@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { FaStar } from "react-icons/fa";  
+import { FaStar } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { getProductById } from "../../../api/productApi";  
-import { getAllRatings } from "../../../api/ratingApi";  
+import { getProductById } from "../../../api/productApi";
+import { getAllRatings } from "../../../api/ratingApi";
 
 const Rating = () => {
   const user = useSelector((state) => state.user.user || {});
@@ -30,7 +30,7 @@ const Rating = () => {
           data.result.map(async (rating) => {
             try {
               const product = await getProductById(rating.productID);
-              console.log("Fetched product:", product); 
+              console.log("Fetched product:", product);
               return {
                 ...rating,
                 productName: product.productName,
@@ -75,9 +75,7 @@ const Rating = () => {
             className="bg-white p-6 rounded-lg shadow-md"
           >
             <p className="font-semibold">Mã sản phẩm: {rating.productID}</p>
-            <p className="font-semibold">
-              Tên sản phẩm: {rating.productName || "N/A"}
-            </p>
+            <p className="font-semibold">Tên sản phẩm: {rating.productName}</p>
             {rating.productImage && (
               <img
                 src={rating.productImage}

@@ -1,5 +1,13 @@
 import { EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Input, message, Modal, Pagination, Typography, Select } from "antd"; // Import Select component
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Pagination,
+  Select,
+  Typography,
+} from "antd"; // Import Select component
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -90,7 +98,7 @@ const ProductListBySupplier = () => {
         setProducts([]);
       }
     } catch (error) {
-      console.error("Lỗi khi lấy sản ph���m:", error);
+      console.error("Lỗi khi lấy sản phẩẩm:", error);
       setProducts([]);
       message.error("Lỗi khi lấy sản phẩm.");
     } finally {
@@ -194,7 +202,10 @@ const ProductListBySupplier = () => {
   };
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
   };
 
   const renderPriceRent = (priceRent, record) => {
@@ -342,7 +353,7 @@ const ProductListBySupplier = () => {
 
   return (
     <div>
-      <Title level={2}>DANH SÁCH S���N PHẨM</Title>
+      <Title level={2}>DANH SÁCH SẢN PHẨM</Title>
 
       <div
         style={{

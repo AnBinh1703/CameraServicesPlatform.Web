@@ -214,19 +214,43 @@ const ProductDetailsInfoRent = ({
     disabledHours: () =>
       [...Array(24)].map((_, i) => i).filter((h) => h < 7 || h >= 20),
   });
+
+  const [form] = Form.useForm();
+
+  const handleFormSubmit = () => {
+    form.validateFields()
+      .then(values => {
+        // Handle form submission
+        console.log('Form values:', values);
+      })
+      .catch(errorInfo => {
+        console.log('Validation Failed:', errorInfo);
+      });
+  };
+
   return (
     <Card
-      title="Thông tin sản phẩm"
+      title={<span style={{ fontSize: "18px", fontWeight: "600" }}>Thông tin sản phẩm</span>}
       bordered={false}
-      style={{ marginBottom: "24px" }}
+      style={{ marginBottom: "24px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
     >
       {loading ? (
-        <Spin tip="Đang tải thông tin sản phẩm..." />
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <Spin size="large" tip="Đang tải thông tin sản phẩm..." />
+        </div>
       ) : product ? (
         <>
-          <Row gutter={16}>
+          <Row gutter={24}>
             <Col span={12}>
-              <Descriptions column={1} bordered>
+              <Descriptions 
+                column={1} 
+                bordered 
+                style={{ 
+                  background: "#fff",
+                  borderRadius: "8px",
+                  overflow: "hidden"
+                }}
+              >
                 <Descriptions.Item
                   label={
                     <span>
@@ -328,42 +352,60 @@ const ProductDetailsInfoRent = ({
             <Col span={12}>
               <Card
                 title={
-                  <span>
+                  <span style={{ fontSize: "16px" }}>
                     <PictureOutlined /> Hình ảnh sản phẩm
                   </span>
                 }
                 bordered={false}
+                style={{ borderRadius: "8px" }}
               >
-                <div className="flex flex-wrap mt-2">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                   {product.listImage && product.listImage.length > 0 ? (
                     product.listImage.map((imageObj, index) => (
                       <img
                         key={imageObj.productImagesID}
                         src={imageObj.image}
                         alt={`Hình ảnh sản phẩm ${index + 1}`}
-                        className="w-24 h-24 mr-2 mb-2 object-cover"
                         style={{
-                          width: "100px",
-                          height: "100px",
+                          width: "120px",
+                          height: "120px",
                           objectFit: "cover",
-                          margin: "4px",
+                          borderRadius: "4px",
+                          transition: "transform 0.2s",
+                          cursor: "pointer",
+                          "&:hover": {
+                            transform: "scale(1.05)"
+                          }
                         }}
                       />
                     ))
                   ) : (
-                    <p>Không có hình ảnh cho sản phẩm này.</p>
+                    <p style={{ color: "#999" }}>Không có hình ảnh cho sản phẩm này.</p>
                   )}
                 </div>
               </Card>
             </Col>
           </Row>
-          <Form layout="vertical" style={{ marginTop: "24px" }}>
+          <Form
+            layout="vertical"
+            style={{ marginTop: "32px" }}
+            form={form}
+            onFinish={handleFormSubmit}
+          >
             <Card
-              title="Tính giá thuê"
+              title={<span style={{ fontSize: "16px" }}>Tính giá thuê</span>}
               bordered={false}
-              style={{ width: "100%" }}
+              style={{ 
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+              }}
             >
-              <Form.Item label="Đơn vị thời gian" style={{ width: "100%" }}>
+              <Form.Item
+                label="Đơn vị thời gian"
+                style={{ width: "100%", marginBottom: "16px" }}
+                name="durationUnit"
+                rules={[{ required: true, message: "Vui lòng chọn đơn vị thời gian" }]}
+              >
                 <Select
                   value={durationUnit}
                   onChange={handleDurationUnitChange}
@@ -375,16 +417,35 @@ const ProductDetailsInfoRent = ({
                   <Option value={3}>Tháng</Option>
                 </Select>
               </Form.Item>
-              <Form.Item label="Giá trị thời gian" style={{ width: "100%" }}>
+              <Form.Item
+                label="Giá trị thời gian"
+                style={{ width: "100%", marginBottom: "16px" }}
+                name="durationValue"
+                rules={[
+                  { required: true, message: "Vui lòng nhập giá trị thời gian" },
+                  {
+                    type: "number",
+                    min: durationOptions[durationUnit]?.min || 1,
+                    max: durationOptions[durationUnit]?.max || 1,
+                    message: `Vui lòng nhập giá trị từ ${durationOptions[durationUnit]?.min || 1} đến ${durationOptions[durationUnit]?.max || 1}`,
+                  },
+                ]}
+              >
                 <InputNumber
                   min={durationOptions[durationUnit]?.min || 1}
                   max={durationOptions[durationUnit]?.max || 1}
                   value={durationValue}
                   onChange={handleDurationValueChange}
+                  style={{ width: "100%" }}
                 />
               </Form.Item>
 
-              <Form.Item label="Ngày bắt đầu thuê" style={{ width: "100%" }}>
+              <Form.Item
+                label="Ngày bắt đầu thuê"
+                style={{ width: "100%", marginBottom: "16px" }}
+                name="rentalStartDate"
+                rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu thuê" }]}
+              >
                 <DatePicker
                   showTime={{
                     format: "HH:mm",
@@ -408,7 +469,11 @@ const ProductDetailsInfoRent = ({
                   placeholder="Chọn ngày và giờ bắt đầu thuê"
                 />
               </Form.Item>
-              <Form.Item label="Ngày kết thúc thuê" style={{ width: "100%" }}>
+              <Form.Item
+                label="Ngày kết thúc thuê"
+                style={{ width: "100%", marginBottom: "16px" }}
+                name="rentalEndDate"
+              >
                 <DatePicker
                   showTime
                   value={rentalEndDate}
@@ -417,7 +482,11 @@ const ProductDetailsInfoRent = ({
                   style={{ width: "100%" }}
                 />
               </Form.Item>
-              <Form.Item label="Ngày trả hàng" style={{ width: "100%" }}>
+              <Form.Item
+                label="Ngày trả hàng"
+                style={{ width: "100%", marginBottom: "16px" }}
+                name="returnDate"
+              >
                 <DatePicker
                   showTime
                   value={returnDate}
@@ -427,26 +496,25 @@ const ProductDetailsInfoRent = ({
                 />
               </Form.Item>
             </Card>
-            <div
-              style={{ marginTop: "16px", width: "100%", textAlign: "center" }}
-            >
+            <div style={{ marginTop: "24px", textAlign: "center" }}>
               <Card
                 bordered={false}
                 style={{
-                  backgroundColor: "#f6f8fa",
-                  padding: "16px",
+                  backgroundColor: "#f6ffed",
+                  padding: "24px",
                   borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  border: "1px solid #b7eb8f"
                 }}
               >
-                <strong style={{ fontSize: "16px", color: "#333" }}>
-                  Giá thuê sản phẩm:
-                </strong>
+                <div style={{ fontSize: "16px", color: "#333", marginBottom: "8px" }}>
+                  Giá thuê sản phẩm
+                </div>
                 <div
                   style={{
-                    fontSize: "24px",
+                    fontSize: "28px",
                     color: "#52c41a",
-                    marginTop: "8px",
+                    fontWeight: "bold"
                   }}
                 >
                   {new Intl.NumberFormat("vi-VN", {
@@ -456,16 +524,28 @@ const ProductDetailsInfoRent = ({
                 </div>
               </Card>
             </div>
+            <Form.Item style={{ textAlign: "center", marginTop: "24px" }}>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                size="large"
+                style={{ 
+                  minWidth: "200px",
+                  height: "40px",
+                  borderRadius: "6px"
+                }}
+              >
+                Xác nhận
+              </Button>
+            </Form.Item>
           </Form>
 
           <Button
             type="link"
             onClick={toggleContractTerms}
-            style={{ marginTop: "16px" }}
+            style={{ marginTop: "24px", display: "block" }}
           >
-            {showContractTerms
-              ? "Ẩn điều khoản hợp đồng"
-              : "Hiển thị điều khoản hợp đồng"}
+            {showContractTerms ? "Ẩn điều khoản hợp đồng" : "Hiển thị điều khoản hợp đồng"}
           </Button>
           {showContractTerms &&
             contractTemplate &&
@@ -508,7 +588,7 @@ const ProductDetailsInfoRent = ({
             )}
         </>
       ) : (
-        <p>Không tìm thấy thông tin sản phẩm.</p>
+        <Empty description="Không tìm thấy thông tin sản phẩm" />
       )}
     </Card>
   );

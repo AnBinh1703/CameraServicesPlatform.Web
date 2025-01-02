@@ -137,12 +137,12 @@ const DashboardSupplier = () => {
 
               return {
                 ...combo,
-                comboName: comboDetail?.result?.comboName || "N/A",
-                comboPrice: comboDetail?.result?.comboPrice || "N/A",
-                durationCombo: comboDetail?.result?.durationCombo || "N/A",
-                startTime: combo.startTime || "N/A",
-                endTime: combo.endTime || "N/A",
-                isDisable: true  // Set isDisable to true
+                comboName: comboDetail?.result?.comboName,
+                comboPrice: comboDetail?.result?.comboPrice,
+                durationCombo: comboDetail?.result?.durationCombo,
+                startTime: combo.startTime,
+                endTime: combo.endTime,
+                isDisable: true, // Set isDisable to true
               };
             });
 

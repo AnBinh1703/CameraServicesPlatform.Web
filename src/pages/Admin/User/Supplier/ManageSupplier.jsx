@@ -1,17 +1,28 @@
 import {
   CheckCircleOutlined,
+  ClockCircleOutlined,
   CloseCircleOutlined,
   EyeOutlined,
-  SearchOutlined,
-  UserOutlined,
+  FileTextOutlined,
+  HomeOutlined,
   IdcardOutlined,
   PhoneOutlined,
-  HomeOutlined,
-  ClockCircleOutlined,
-  FileTextOutlined,
+  SearchOutlined,
+  UserOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Input, message, Modal, Space, Table, Typography, Divider, Badge, Descriptions } from "antd";
+import {
+  Badge,
+  Button,
+  Card,
+  Descriptions,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Typography,
+} from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { getAllSuppliers, getSupplierById } from "../../../../api/supplierApi";
@@ -59,7 +70,12 @@ const ManageSupplier = () => {
     try {
       const response = await getSupplierById(supplierId);
       console.log("Supplier details response:", response.result);
-      if (response && response.result && response.result.items && response.result.items.length > 0) {
+      if (
+        response &&
+        response.result &&
+        response.result.items &&
+        response.result.items.length > 0
+      ) {
         // Access the first item in the items array
         setSelectedSupplier(response.result.items[0]);
         setIsModalVisible(true);
@@ -211,7 +227,9 @@ const ManageSupplier = () => {
   // Render supplier table with search bar
   return (
     <Card>
-      <Title level={2} style={{ marginBottom: 20 }}>Quản lý nhà cung cấp</Title>
+      <Title level={2} style={{ marginBottom: 20 }}>
+        Quản lý nhà cung cấp
+      </Title>
       <Table
         columns={columns}
         dataSource={suppliers}
@@ -238,7 +256,7 @@ const ManageSupplier = () => {
         footer={[
           <Button key="close" onClick={() => setIsModalVisible(false)}>
             Đóng
-          </Button>
+          </Button>,
         ]}
         width={800}
         style={{ top: 20 }}
@@ -246,67 +264,97 @@ const ManageSupplier = () => {
         {selectedSupplier && (
           <Card bordered={false}>
             <Descriptions column={1} bordered>
-              <Descriptions.Item 
-                label={<><IdcardOutlined /> Mã nhà cung cấp</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <IdcardOutlined /> Mã nhà cung cấp
+                  </>
+                }
                 span={2}
               >
-                {selectedSupplier?.supplierID || "N/A"}
+                {selectedSupplier?.supplierID}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><UserOutlined /> Tên nhà cung cấp</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <UserOutlined /> Tên nhà cung cấp
+                  </>
+                }
                 span={2}
               >
-                {selectedSupplier?.supplierName || "N/A"}
+                {selectedSupplier?.supplierName}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><PhoneOutlined /> Số điện thoại</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <PhoneOutlined /> Số điện thoại
+                  </>
+                }
               >
-                {selectedSupplier?.contactNumber || "N/A"}
+                {selectedSupplier?.contactNumber}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><HomeOutlined /> Địa chỉ</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <HomeOutlined /> Địa chỉ
+                  </>
+                }
                 span={2}
               >
-                {selectedSupplier?.supplierAddress || "N/A"}
+                {selectedSupplier?.supplierAddress}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><ClockCircleOutlined /> Ngày tạo</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <ClockCircleOutlined /> Ngày tạo
+                  </>
+                }
               >
                 {moment(selectedSupplier?.createdAt).format("DD/MM/YYYY HH:mm")}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><ClockCircleOutlined /> Cập nhật lúc</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <ClockCircleOutlined /> Cập nhật lúc
+                  </>
+                }
               >
                 {moment(selectedSupplier?.updatedAt).format("DD/MM/YYYY HH:mm")}
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<>Trạng thái</>}
-              >
-                <Badge 
+              <Descriptions.Item label={<>Trạng thái</>}>
+                <Badge
                   status={selectedSupplier?.isDisable ? "error" : "success"}
                   text={selectedSupplier?.isDisable ? "Đã khóa" : "Hoạt động"}
                 />
               </Descriptions.Item>
 
-              <Descriptions.Item 
-                label={<><FileTextOutlined /> Mô tả</>}
+              <Descriptions.Item
+                label={
+                  <>
+                    <FileTextOutlined /> Mô tả
+                  </>
+                }
                 span={2}
               >
-                {selectedSupplier?.supplierDescription || "N/A"}
+                {selectedSupplier?.supplierDescription}
               </Descriptions.Item>
 
               {selectedSupplier?.blockReason && (
-                <Descriptions.Item 
-                  label={<><WarningOutlined /> Lý do chặn</>}
+                <Descriptions.Item
+                  label={
+                    <>
+                      <WarningOutlined /> Lý do chặn
+                    </>
+                  }
                   span={2}
                 >
-                  <span style={{ color: '#ff4d4f' }}>
+                  <span style={{ color: "#ff4d4f" }}>
                     {selectedSupplier.blockReason}
                   </span>
                 </Descriptions.Item>
