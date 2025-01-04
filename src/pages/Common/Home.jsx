@@ -1,8 +1,10 @@
 import { Input, Layout, Spin, Typography } from "antd";
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
+import PersonalModal from "../Common/Account/PersonalModal";
 import ProductList from "./Product/ProductList";
 import ProposalProductFollowHobby from "./Product/ProposalProductFollowHobby";
 import ProposalProductFollowJobBuy from "./Product/ProposalProductFollowJobBuy";
@@ -12,6 +14,28 @@ const { Title } = Typography;
 const { Search } = Input;
 
 const Home = () => {
+  const { user } = useSelector((state) => state.user || {});
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isJobHobbyModalOpen, setIsJobHobbyModalOpen] = useState(false);
+
+  const showUpdateAccountModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleModalOk = () => {
+    setIsModalVisible(false);
+  };
+
+  useEffect(() => {
+    if (user && user.job === null && user.hobby === null) {
+      setIsJobHobbyModalOpen(true);
+    }
+  }, [user]);
+
   const images = [
     {
       url: "https://th.bing.com/th/id/R.71e5cd9565219e6a53ef5805025b4bc6?rik=VDvYSPf2D5ty%2bw&pid=ImgRaw&r=0",
@@ -72,10 +96,20 @@ const Home = () => {
 
       <ProductList />
       <section className="my-8 px-4">
-        <h2 className="text-2xl font-bold mb-4">Đề xuất</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Đề xuất</h2>
+        </div>
 
-        <ProposalProductFollowHobby />
-        <ProposalProductFollowJobBuy />
+        {user ? (
+          <>
+            {user.hobby && <ProposalProductFollowHobby />}
+            {user.job && <ProposalProductFollowJobBuy />}
+          </>
+        ) : null}
+
+        {isJobHobbyModalOpen && (
+          <PersonalModal onClose={() => setIsJobHobbyModalOpen(false)} />
+        )}
       </section>
       <Rating />
       <h2 className="text-2xl font-bold mb-4">Các thương hiệu đồng hành </h2>

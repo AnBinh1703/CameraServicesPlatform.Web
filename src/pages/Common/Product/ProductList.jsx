@@ -38,7 +38,7 @@ const ProductList = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Set items per page
+  const itemsPerPage = 8; // Set items per page
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
   const currentProducts = products.slice(
@@ -226,191 +226,192 @@ const ProductList = () => {
 
         {!loading && currentProducts.length > 0 ? (
           <>
-            <Row gutter={[16, 16]}>
+            <Row gutter={[24, 24]}>
               {currentProducts.map((product) => (
-                <Col span={6} key={product.productID}>
+                <Col xs={24} sm={12} md={8} lg={6} key={product.productID}>
                   <Card
                     hoverable
                     cover={
-                      product.listImage.length > 0 && (
-                        <img
-                          alt={product.productName}
-                          src={product.listImage[0].image}
+                      <div style={{ position: 'relative', height: 240 }}>
+                        {product.listImage.length > 0 && (
+                          <img
+                            alt={product.productName}
+                            src={product.listImage[0].image}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                            loading="lazy"
+                          />
+                        )}
+                        <div
                           style={{
-                            height: 200,
-                            objectFit: "cover",
-                            borderRadius: "8px 8px 0 0",
+                            position: 'absolute',
+                            top: 10,
+                            right: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
                           }}
-                          loading="lazy"
-                        />
-                      )
+                        >
+                          {(product.priceBuy || product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) && (
+                            <div
+                              style={{
+                                background: product.priceBuy ? '#ff4d4f' : '#1890ff',
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                color: 'white',
+                                fontSize: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontWeight: '500',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                              }}
+                            >
+                              {product.priceBuy ? (
+                                <span>Chỉ bán</span>
+                              ) : (product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) ? (
+                                <span>Chỉ cho thuê</span>
+                              ) : (
+                                <span>Cho thuê & Bán</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     }
-                    onDoubleClick={() =>
-                      handleCardDoubleClick(product.productID)
-                    }
+                    onDoubleClick={() => handleCardDoubleClick(product.productID)}
+                    className="product-card"
                     style={{
-                      marginBottom: "20px",
-                      height: "100%",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                      transition: "transform 0.3s",
+                      height: '100%',
+                      overflow: 'hidden',
                     }}
-                    bodyStyle={{ padding: "16px" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.05)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
+                    bodyStyle={{ padding: '16px' }}
                   >
                     <Card.Meta
                       title={
-                        <div className="flex justify-between items-center">
-                          {product.productName}
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center' 
+                        }}>
+                          <Typography.Title level={5} ellipsis style={{ margin: 0, maxWidth: '80%' }}>
+                            {product.productName}
+                          </Typography.Title>
                           <button
                             onClick={() => handleAddToWishlist(product)}
-                            className="focus:outline-none"
+                            className="wishlist-button"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                           >
                             {wishlistedProducts.includes(product.productID) ? (
-                              <FaHeart size={24} className="text-red-500" />
+                              <FaHeart style={{ color: '#ff4d4f', fontSize: '20px' }} />
                             ) : (
-                              <FaRegHeart size={24} className="text-gray-500" />
+                              <FaRegHeart style={{ color: '#8c8c8c', fontSize: '20px' }} />
                             )}
                           </button>
                         </div>
                       }
                       description={
-                        <div>
-                          <p>{product.productDescription}</p>
-                          <p>
-                            <strong>Seri:</strong>
-                            <span
-                              style={{ color: "green", fontWeight: "bold" }}
-                            >
-                              {product.serialNumber}
+                        <div style={{ fontSize: '14px' }}>
+                          <Typography.Paragraph
+                            ellipsis={{ rows: 2 }}
+                            style={{ color: '#666', marginBottom: 12 }}
+                          >
+                            {product.productDescription}
+                          </Typography.Paragraph>
+
+                          <div style={{ 
+                            display: 'flex', 
+                            flexWrap: 'wrap', 
+                            gap: '8px', 
+                            marginBottom: 12 
+                          }}>
+                            <Tag color="gold">{product.serialNumber}</Tag>
+                            <Tag color="blue">{getBrandName(product.brand)}</Tag>
+                            <Tag color="green">{product.quality}</Tag>
+                          </div>
+
+                          <div style={{ 
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            marginBottom: 12,
+                            background: '#f8f9fa',
+                            padding: '8px',
+                            borderRadius: '6px'
+                          }}>
+                            {product.priceBuy && (
+                              <div className="price-row">
+                                <span>Giá bán:</span>
+                                <span className="price-buy">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.priceBuy)}
+                                </span>
+                              </div>
+                            )}
+                            {product.pricePerHour && (
+                              <div className="price-row">
+                                <span>Giá thuê/giờ:</span>
+                                <span className="price">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerHour)}
+                                </span>
+                              </div>
+                            )}
+                            {product.pricePerDay && (
+                              <div className="price-row">
+                                <span>Giá thuê/ngày:</span>
+                                <span className="price">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerDay)}
+                                </span>
+                              </div>
+                            )}
+                            {product.depositProduct && (
+                              <div className="price-row">
+                                <span>Tiền cọc:</span>
+                                <span className="price-deposit">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.depositProduct)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ 
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginTop: 12 
+                          }}>
+                            <div>
+                              {Array.from({ length: 5 }, (_, index) => (
+                                <span
+                                  key={index}
+                                  style={{
+                                    color: index < (product.rating || 0) ? '#fadb14' : '#f0f0f0',
+                                    fontSize: '16px',
+                                  }}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                            <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                              {moment(product.createdAt).format("DD/MM/YYYY")}
                             </span>
-                          </p>
-                          <p>
-                            <strong>Tạo:</strong>
-                            <span style={{ color: "blue" }}>
-                              {moment(product.createdAt).format(
-                                "DD/MM/YYYY HH:mm"
-                              )}
-                            </span>
-                          </p>
-                          {product.priceRent != null && (
-                            <p>
-                              <strong>Giá (Thuê)/giờ:</strong>
-                              <span style={{ color: "blue" }}>
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.priceRent)}
-                              </span>
-                            </p>
-                          )}
-                          {product.priceBuy != null && (
-                            <p>
-                              <strong>Giá (Mua):</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.priceBuy)}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerHour != null && (
-                            <p>
-                              <strong>Giá (Thuê)/giờ:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.pricePerHour)}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerDay != null && (
-                            <p>
-                              <strong>Giá (Thuê)/ngày:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.pricePerDay)}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerWeek != null && (
-                            <p>
-                              <strong>Giá (Thuê)/tuần:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.pricePerWeek)}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerMonth != null && (
-                            <p>
-                              <strong>Giá (Thuê)/tháng:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.pricePerMonth)}
-                              </span>
-                            </p>
-                          )}
-                          {product.depositProduct != null && (
-                            <p>
-                              <strong>Giá cọc:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(product.depositProduct)}
-                              </span>
-                            </p>
-                          )}
-                          <p>
-                            <strong>Đánh giá:</strong>
-                            {Array.from({ length: 5 }, (_, index) => (
-                              <span
-                                key={index}
-                                style={{
-                                  color:
-                                    index < product.rating
-                                      ? "yellow"
-                                      : "lightgray",
-                                  fontSize: "20px",
-                                }}
-                              >
-                                {index < product.rating ? "★" : "☆"}
-                              </span>
-                            ))}
-                          </p>
-                          <p>
-                            <strong>Thương hiệu:</strong>
-                            {getBrandName(product.brand) || "Không xác định"}
-                          </p>
-                          <Tag color="blue">
-                            <strong>Chất lượng:</strong> {product.quality}
-                          </Tag>
+                          </div>
                         </div>
                       }
                     />
@@ -432,158 +433,159 @@ const ProductList = () => {
         )}
       </Content>
       <Modal
-        title={productDetail?.productName || "Chi tiết sản phẩm"}
+        title={
+          <div style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold',
+            borderBottom: '2px solid #f0f0f0',
+            paddingBottom: '12px',
+            marginBottom: '20px'
+          }}>
+            {productDetail?.productName || "Chi tiết sản phẩm"}
+          </div>
+        }
         visible={isModalVisible}
         onCancel={handleModalClose}
+        width={1000}
         footer={[
-          <Button key="close" onClick={handleModalClose}>
+          <Button key="close" onClick={handleModalClose} size="large">
             Đóng
           </Button>,
-
           <Button
             key="wishlist"
             onClick={() => handleAddToWishlist(productDetail)}
             className="focus:outline-none"
-          >
-            {wishlistedProducts.includes(productDetail?.productID) ? (
-              <FaHeart size={24} className="text-red-500" />
-            ) : (
-              <FaRegHeart size={24} className="text-gray-500" />
-            )}
-          </Button>,
+            type="primary"
+            icon={wishlistedProducts.includes(productDetail?.productID) ? 
+              <FaHeart /> : <FaRegHeart />}
+            size="large"
+          />
         ]}
-        bodyStyle={{ padding: "20px", borderRadius: "8px" }}
+        bodyStyle={{ padding: "24px", borderRadius: "8px" }}
         centered
       >
         {productDetail ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <img
-              src={productDetail.listImage[0]?.image}
-              alt={productDetail.productName}
-              style={{
-                width: "100%",
-                height: "auto",
-                marginBottom: "20px",
-                borderRadius: "8px",
-              }}
-              loading="lazy"
-            />
-            <Descriptions
-              bordered
-              column={1}
-              layout="horizontal"
-              style={{ width: "100%" }}
-            >
-              <Descriptions.Item label="Serial Number">
-                <span style={{ color: "blue" }}>
-                  {productDetail.serialNumber}
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả">
-                {productDetail.productDescription}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <span>
-                    <FileTextOutlined /> Cọc sản phẩm
-                  </span>
-                }
-              >
-                {productDetail.depositProduct}
-              </Descriptions.Item>
-              {productDetail.priceRent != null && (
-                <Descriptions.Item label="Giá (Thuê)">
-                  <span style={{ color: "blue" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.priceRent)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              {productDetail.priceBuy != null && (
-                <Descriptions.Item label="Giá (Mua)">
-                  <span style={{ color: "green", fontWeight: "bold" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.priceBuy)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              {productDetail.pricePerHour != null && (
-                <Descriptions.Item label="Giá (Thuê)/giờ">
-                  <span style={{ color: "blue" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.pricePerHour)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              {productDetail.pricePerDay != null && (
-                <Descriptions.Item label="Giá (Thuê)/ngày">
-                  <span style={{ color: "blue" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.pricePerDay)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              {productDetail.pricePerWeek != null && (
-                <Descriptions.Item label="Giá (Thuê)/tuần">
-                  <span style={{ color: "blue" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.pricePerWeek)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              {productDetail.pricePerMonth != null && (
-                <Descriptions.Item label="Giá (Thuê)/tháng">
-                  <span style={{ color: "blue" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(productDetail.pricePerMonth)}
-                  </span>
-                </Descriptions.Item>
-              )}
-              <Descriptions.Item label="Nhà cung cấp">
-                {supplierName || "Không xác định"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Danh mục">
-                {categoryName || "Không xác định"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Thương hiệu">
-                {getBrandName(productDetail.brand) || "Không xác định"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Chất lượng">
-                <Tag color="blue">
-                  <strong>Chất lượng:</strong> {productDetail.quality}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Specifications" span={2}>
-                <ul style={{ paddingLeft: "20px" }}>
+          <div style={{ display: "flex", gap: "24px" }}>
+            {/* Left side - Image */}
+            <div style={{ flex: "0 0 40%" }}>
+              <div style={{ 
+                position: 'relative',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}>
+                <img
+                  src={productDetail.listImage[0]?.image}
+                  alt={productDetail.productName}
+                  style={{
+                    width: "100%",
+                    height: "400px",
+                    objectFit: "cover",
+                  }}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            {/* Right side - Details */}
+            <div style={{ flex: "1" }}>
+              <div style={{ marginBottom: "24px" }}>
+                <Typography.Title level={4}>Thông tin cơ bản</Typography.Title>
+                <div style={{ 
+                  background: '#f8f9fa', 
+                  padding: '16px', 
+                  borderRadius: '8px',
+                  marginBottom: '16px' 
+                }}>
+                  <Row gutter={[16, 16]}>
+                    <Col span={12}>
+                      <div style={{ color: '#666' }}>Mã Seri:</div>
+                      <div style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                        {productDetail.serialNumber}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div style={{ color: '#666' }}>Chất lượng:</div>
+                      <Tag color="blue" style={{ padding: '4px 12px' }}>
+                        {productDetail.quality}
+                      </Tag>
+                    </Col>
+                  </Row>
+                </div>
+                
+                <Typography.Title level={4}>Giá cả</Typography.Title>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '16px',
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '8px'
+                }}>
+                  {productDetail.priceBuy && (
+                    <div className="price-item">
+                      <div style={{ color: '#666' }}>Giá Mua:</div>
+                      <div style={{ color: '#52c41a', fontSize: '18px', fontWeight: 'bold' }}>
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(productDetail.priceBuy)}
+                      </div>
+                    </div>
+                  )}
+                  {productDetail.pricePerHour && (
+                    <div className="price-item">
+                      <div style={{ color: '#666' }}>Giá thuê/giờ:</div>
+                      <div style={{ color: '#1890ff', fontSize: '16px' }}>
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(productDetail.pricePerHour)}
+                      </div>
+                    </div>
+                  )}
+                  {/* Similar blocks for other price types */}
+                </div>
+
+                <Typography.Title level={4} style={{ marginTop: '24px' }}>Mô tả</Typography.Title>
+                <Typography.Paragraph style={{ 
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  marginBottom: '24px'
+                }}>
+                  {productDetail.productDescription}
+                </Typography.Paragraph>
+
+                <Typography.Title level={4}>Thông số kỹ thuật</Typography.Title>
+                <div style={{ 
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '8px'
+                }}>
                   {productDetail.listProductSpecification.map((spec) => (
-                    <li key={spec.productSpecificationID}>
-                      {spec.specification}: {spec.details}
-                    </li>
+                    <div 
+                      key={spec.productSpecificationID}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        padding: '8px 0',
+                        borderBottom: '1px solid #e8e8e8'
+                      }}
+                    >
+                      <span style={{ color: '#666' }}>{spec.specification}:</span>
+                      <span style={{ fontWeight: '500' }}>{spec.details}</span>
+                    </div>
                   ))}
-                </ul>
-              </Descriptions.Item>
-            </Descriptions>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
-          <p>Đang tải chi tiết sản phẩm...</p>
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <LoadingComponent />
+            <p style={{ marginTop: '16px' }}>Đang tải chi tiết sản phẩm...</p>
+          </div>
         )}
       </Modal>
     </Layout>
@@ -591,3 +593,67 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
+// Add this CSS
+`
+.price-item {
+  padding: 12px;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  border-bottom: none;
+}
+
+.ant-modal-footer {
+  border-top: none;
+  padding: 16px 24px;
+}
+
+.product-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.price {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.price-deposit {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.wishlist-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.price-buy {
+  color: #f5222d;
+  font-weight: 600;
+  font-size: 16px;
+}
+`

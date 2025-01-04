@@ -32,7 +32,7 @@ const ProposalProductFollowHobby = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Set items per page
+  const itemsPerPage = 8; // Set items per page
 
   const user = useSelector((state) => state.user.user || {});
   const accountId = user.id;
@@ -182,136 +182,159 @@ const ProposalProductFollowHobby = () => {
           <>
             <Row gutter={[16, 16]}>
               {currentProducts.map((product) => (
-                <Col span={6} key={product.productID}>
+                <Col xs={24} sm={12} md={8} lg={6} key={product.productID}>
                   <Card
                     hoverable
                     cover={
-                      product.listImage.length > 0 && (
-                        <img
-                          alt={product.productName}
-                          src={product.listImage[0].image}
+                      <div style={{ position: "relative", height: 240 }}>
+                        {product.listImage.length > 0 && (
+                          <img
+                            alt={product.productName}
+                            src={product.listImage[0].image}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            loading="lazy"
+                          />
+                        )}
+                        <div
                           style={{
-                            height: 200,
-                            objectFit: "cover",
-                            borderRadius: "8px 8px 0 0",
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "4px",
                           }}
-                          loading="lazy"
-                        />
-                      )
+                        >
+                          {(product.priceBuy ||
+                            product.pricePerDay ||
+                            product.pricePerHour ||
+                            product.pricePerMonth ||
+                            product.pricePerWeek) && (
+                            <div
+                              style={{
+                                background: product.priceBuy
+                                  ? "#ff4d4f"
+                                  : "#1890ff",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                color: "white",
+                                fontSize: "12px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                              }}
+                            >
+                              {product.priceBuy ? (
+                                <span>Chỉ bán</span>
+                              ) : product.pricePerDay ||
+                                product.pricePerHour ||
+                                product.pricePerMonth ||
+                                product.pricePerWeek ? (
+                                <span>Chỉ cho thuê</span>
+                              ) : (
+                                <span>Cho thuê & Bán</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     }
                     onDoubleClick={() =>
                       handleCardDoubleClick(product.productID)
                     }
+                    className="product-card"
                     style={{
-                      marginBottom: "20px",
                       height: "100%",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                      transition: "transform 0.3s",
+                      overflow: "hidden",
                     }}
                     bodyStyle={{ padding: "16px" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.05)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
                   >
                     <Card.Meta
-                      title={product.productName}
+                      title={
+                        <Typography.Title
+                          level={5}
+                          ellipsis
+                          style={{ marginBottom: 0 }}
+                        >
+                          {product.productName}
+                        </Typography.Title>
+                      }
                       description={
-                        <div>
-                          <p>{product.productDescription}</p>
-                          <p>
-                            <strong>Serial Number:</strong>
-                            <span
-                              style={{ color: "green", fontWeight: "bold" }}
-                            >
-                              {product.serialNumber}
-                            </span>
-                          </p>
-                          {product.priceRent != null && (
-                            <p>
-                              <strong>Giá (Thuê)/giờ:</strong>
-                              <span style={{ color: "blue" }}>
-                                VND{product.priceRent}
-                              </span>
-                            </p>
-                          )}
-                          {product.priceBuy != null && (
-                            <p>
-                              <strong>Giá (Mua):</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                VND{product.priceBuy}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerHour != null && (
-                            <p>
-                              <strong>Giá (Thuê)/giờ:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                VND{product.pricePerHour}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerDay != null && (
-                            <p>
-                              <strong>Giá (Thuê)/ngày:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                VND{product.pricePerDay}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerWeek != null && (
-                            <p>
-                              <strong>Giá (Thuê)/tuần:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                VND{product.pricePerWeek}
-                              </span>
-                            </p>
-                          )}
-                          {product.pricePerMonth != null && (
-                            <p>
-                              <strong>Giá (Thuê)/tháng:</strong>
-                              <span
-                                style={{ color: "green", fontWeight: "bold" }}
-                              >
-                                VND{product.pricePerMonth}
-                              </span>
-                            </p>
-                          )}
-                          <p>
-                            <strong>Đánh giá:</strong>
+                        <div style={{ fontSize: "14px" }}>
+                          <Typography.Paragraph
+                            ellipsis={{ rows: 2 }}
+                            style={{ color: "#666", marginBottom: 12 }}
+                          >
+                            {product.productDescription}
+                          </Typography.Paragraph>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "8px",
+                              marginBottom: 12,
+                            }}
+                          >
+                            <Tag color="gold">{product.serialNumber}</Tag>
+                            <Tag color="blue">
+                              {getBrandName(product.brand)}
+                            </Tag>
+                            <Tag color="green">{product.quality}</Tag>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                              marginBottom: 12,
+                            }}
+                          >
+                            {product.pricePerHour && (
+                              <div className="price-row">
+                                <span>Giá thuê/giờ:</span>
+                                <span className="price">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerHour)}
+                                </span>
+                              </div>
+                            )}
+                            {product.pricePerDay && (
+                              <div className="price-row">
+                                <span>Giá thuê/ngày:</span>
+                                <span className="price">
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerDay)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ marginTop: 12 }}>
                             {Array.from({ length: 5 }, (_, index) => (
                               <span
                                 key={index}
                                 style={{
                                   color:
-                                    index < product.rating
-                                      ? "yellow"
-                                      : "lightgray",
-                                  fontSize: "20px",
+                                    index < (product.rating || 0)
+                                      ? "#fadb14"
+                                      : "#f0f0f0",
+                                  fontSize: "16px",
                                 }}
                               >
-                                {index < product.rating ? "★" : "☆"}
+                                ★
                               </span>
                             ))}
-                          </p>
-                          <p>
-                            <strong>Thương hiệu:</strong>
-                            {getBrandName(product.brand) || "Không xác định"}
-                          </p>
-                          <Tag color="blue">
-                            <strong>Chất lượng:</strong> {product.quality}
-                          </Tag>
+                          </div>
                         </div>
                       }
                     />

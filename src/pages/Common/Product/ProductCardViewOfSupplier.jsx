@@ -12,7 +12,6 @@ import {
   Empty,
   Input,
   message,
-  Modal,
   Pagination,
   Row,
   Select,
@@ -20,16 +19,10 @@ import {
   Typography,
 } from "antd";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { getSupplierIdByAccountId } from "../../../api/accountApi";
+import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryById } from "../../../api/categoryApi";
-import {
-  getProductById,
-  getProductBySupplierId,
-} from "../../../api/productApi";
+import { getProductBySupplierId } from "../../../api/productApi";
 import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
-
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
@@ -39,44 +32,18 @@ const ProductCardViewOfSupplier = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
-  const user = useSelector((state) => state.user.user || {});
-  const [supplierId, setSupplierId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [categoryNames, setCategoryNames] = useState({});
   const [brandFilter, setBrandFilter] = useState(null);
-  const { id } = useParams();
-
-  useEffect(() => {
-    const fetchSupplierId = async () => {
-      if (user.id) {
-        try {
-          const response = await getSupplierIdByAccountId(user.id);
-          if (response?.isSuccess) {
-            setSupplierId(response.result);
-          } else {
-            message.error("Failed to fetch supplier ID.");
-          }
-        } catch (error) {
-          message.error("Error fetching supplier ID.");
-        }
-      }
-    };
-
-    fetchSupplierId();
-  }, [user]);
+  const { id } = useParams(); // This is the supplier ID from URL
+  const navigate = useNavigate();
 
   const fetchProducts = async () => {
-    if (!supplierId) return;
+    if (!id) return;
 
     setLoading(true);
     try {
-      const result = await getProductBySupplierId(
-        supplierId,
-        pageIndex,
-        pageSize
-      );
+      const result = await getProductBySupplierId(id, pageIndex, pageSize);
       if (Array.isArray(result)) {
         setProducts(result);
         setTotal(result.totalCount || 0);
@@ -107,22 +74,13 @@ const ProductCardViewOfSupplier = () => {
   };
 
   useEffect(() => {
-    if (supplierId) {
+    if (id) {
       fetchProducts();
     }
-  }, [supplierId, pageIndex, pageSize]);
+  }, [id, pageIndex, pageSize]);
 
-  const handleView = async (productID) => {
-    setLoading(true);
-    try {
-      const fetchedProduct = await getProductById(productID);
-      setSelectedProduct(fetchedProduct);
-      setIsModalVisible(true);
-    } catch (error) {
-      message.error("Hệ thống loading sản phẩm bị lỗi, vui lòng quay lại sau.");
-    } finally {
-      setLoading(false);
-    }
+  const handleView = (productID) => {
+    navigate(`/product/${productID}`);
   };
 
   const formatDate = (dateString) => {
@@ -134,11 +92,6 @@ const ProductCardViewOfSupplier = () => {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-  };
-
-  const handleClose = () => {
-    setIsModalVisible(false);
-    setSelectedProduct(null);
   };
 
   const handleBrandFilterChange = (value) => {
@@ -333,98 +286,6 @@ const ProductCardViewOfSupplier = () => {
           )}
         </>
       )}
-
-      <Modal
-        title={
-          <div className="flex items-center">
-            <InfoCircleOutlined className="mr-2" />
-            Chi Tiết Sản Phẩm
-          </div>
-        }
-        visible={isModalVisible}
-        onCancel={handleClose}
-        footer={[
-          <Button key="close" onClick={handleClose}>
-            Close
-          </Button>,
-        ]}
-        className="rounded-lg"
-      >
-        {selectedProduct && (
-          <div className="space-y-4">
-            <Title level={3} className="flex items-center">
-              <ShoppingCartOutlined className="mr-2" />
-              {selectedProduct.productName}
-            </Title>
-            <Paragraph className="flex items-center">
-              <InfoCircleOutlined className="mr-2" />
-              {selectedProduct.productDescription}
-            </Paragraph>
-            <Text className="flex items-center">
-              <DollarOutlined className="mr-2" />
-              Giá Mua:
-              {selectedProduct.priceBuy
-                ? new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(selectedProduct.priceBuy)
-                : "--"}
-            </Text>
-            {selectedProduct.pricePerHour && (
-              <Text className="flex items-center">
-                <ClockCircleOutlined className="mr-2" />
-                Giá Thuê Theo Giờ:
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(selectedProduct.pricePerHour)}
-              </Text>
-            )}
-            {selectedProduct.pricePerDay && (
-              <Text className="flex items-center">
-                <ClockCircleOutlined className="mr-2" />
-                Giá Thuê Theo Ngày:
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(selectedProduct.pricePerDay)}
-              </Text>
-            )}
-            {selectedProduct.pricePerWeek && (
-              <Text className="flex items-center">
-                <ClockCircleOutlined className="mr-2" />
-                Giá Thuê Theo Tuần:
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(selectedProduct.pricePerWeek)}
-              </Text>
-            )}
-            {selectedProduct.pricePerMonth && (
-              <Text className="flex items-center">
-                <ClockCircleOutlined className="mr-2" />
-                Giá Thuê Theo Tháng:
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(selectedProduct.pricePerMonth)}
-              </Text>
-            )}
-            <Text className="flex items-center">
-              <InfoCircleOutlined className="mr-2" />
-              Thương Hiệu: {getBrandName(selectedProduct.brand)}
-            </Text>
-            <Text className="flex items-center">
-              <InfoCircleOutlined className="mr-2" />
-              Trạng Thái: {getProductStatusEnum(selectedProduct.status)}
-            </Text>
-            <Text className="flex items-center">
-              <InfoCircleOutlined className="mr-2" />
-              Ngày Tạo: {formatDate(selectedProduct.createdAt)}
-            </Text>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

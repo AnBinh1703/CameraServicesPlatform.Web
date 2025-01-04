@@ -32,7 +32,7 @@ const ProposalProductFollowJobBuy = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Set items per page
+  const itemsPerPage = 88; // Set items per page
 
   const user = useSelector((state) => state.user.user || {});
   const accountId = user.id;
@@ -288,6 +288,28 @@ const ProposalProductFollowJobBuy = () => {
                               </span>
                             </p>
                           )}
+                          {(product.priceBuy || product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) && (
+                            <div
+                              style={{
+                                background: product.priceBuy ? '#ff4d4f' : '#1890ff',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                color: 'white',
+                                fontSize: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}
+                            >
+                              {product.priceBuy ? (
+                                <span>Chỉ bán</span>
+                              ) : (product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) ? (
+                                <span>Chỉ cho thuê</span>
+                              ) : (
+                                <span>Cho thuê & Bán</span>
+                              )}
+                            </div>
+                          )}
                           <p>
                             <strong>Đánh giá:</strong>
                             {Array.from({ length: 5 }, (_, index) => (
@@ -329,7 +351,7 @@ const ProposalProductFollowJobBuy = () => {
             />
           </>
         ) : (
-          !loading && <p>Không tìm thấy sản phẩm nào.</p>
+          !loading && <p>Không tìm thấy sản phẩm nào phù hợp với công việc hiện tại của bạn. Rất xin lỗi. </p>
         )}
       </Content>
       <Modal
