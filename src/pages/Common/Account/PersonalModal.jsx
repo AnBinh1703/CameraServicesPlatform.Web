@@ -1,5 +1,5 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react"; // Add useState
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
@@ -25,6 +25,8 @@ const validationSchema = Yup.object({
 const PersonalModal = ({ onClose }) => {
   const { user } = useSelector((state) => state.user || {});
   const dispatch = useDispatch();
+  const [frontPreview, setFrontPreview] = useState(null);
+  const [backPreview, setBackPreview] = useState(null);
 
   const initialValues = {
     email: user?.email || "",
@@ -35,8 +37,10 @@ const PersonalModal = ({ onClose }) => {
     job: user?.job || null,
     hobby: user?.hobby || null,
     gender: user?.gender || null,
-    frontOfCitizenIdentificationCard: null,
-    backOfCitizenIdentificationCard: null,
+    frontOfCitizenIdentificationCard:
+      user?.frontOfCitizenIdentificationCard || null,
+    backOfCitizenIdentificationCard:
+      user?.backOfCitizenIdentificationCard || null,
     bankName: user?.bankName || "",
     accountNumber: user?.accountNumber || "",
     accountHolder: user?.accountHolder || "",
@@ -64,7 +68,7 @@ const PersonalModal = ({ onClose }) => {
                   toast.success("Cập nhật dữ liệu thành công");
                   onClose(); // Close the modal after successful update
                 } else {
-                  toast.error("Failed to fetch updated user data");
+                  toast.error("Không thể lấy dữ liệu người dùng đã cập nhật");
                 }
               } else {
                 if (data.messages.length === 0) {
@@ -266,18 +270,35 @@ const PersonalModal = ({ onClose }) => {
                   htmlFor="frontOfCitizenIdentificationCard"
                   className="label font-semibold"
                 >
-                  Ảnh trước CMND
+                  Mặt trước CCCD/CMND
                 </label>
+                {(frontPreview || user?.frontOfCitizenIdentificationCard) && (
+                  <div className="mb-2">
+                    <img
+                      src={frontPreview || user.frontOfCitizenIdentificationCard}
+                      alt="Mặt trước CCCD"
+                      className="max-h-40 rounded-lg"
+                    />
+                  </div>
+                )}
                 <input
                   id="frontOfCitizenIdentificationCard"
                   name="frontOfCitizenIdentificationCard"
                   type="file"
-                  onChange={(event) =>
-                    setFieldValue(
-                      "frontOfCitizenIdentificationCard",
-                      event.currentTarget.files[0]
-                    )
-                  }
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.currentTarget.files[0];
+                    setFieldValue("frontOfCitizenIdentificationCard", file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFrontPreview(reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    } else {
+                      setFrontPreview(null);
+                    }
+                  }}
                   className="input input-bordered w-full"
                 />
                 <ErrorMessage
@@ -292,18 +313,35 @@ const PersonalModal = ({ onClose }) => {
                   htmlFor="backOfCitizenIdentificationCard"
                   className="label font-semibold"
                 >
-                  Ảnh sau CMND
+                  Mặt sau CCCD/CMND
                 </label>
+                {(backPreview || user?.backOfCitizenIdentificationCard) && (
+                  <div className="mb-2">
+                    <img
+                      src={backPreview || user.backOfCitizenIdentificationCard}
+                      alt="Mặt sau CCCD"
+                      className="max-h-40 rounded-lg"
+                    />
+                  </div>
+                )}
                 <input
                   id="backOfCitizenIdentificationCard"
                   name="backOfCitizenIdentificationCard"
                   type="file"
-                  onChange={(event) =>
-                    setFieldValue(
-                      "backOfCitizenIdentificationCard",
-                      event.currentTarget.files[0]
-                    )
-                  }
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.currentTarget.files[0];
+                    setFieldValue("backOfCitizenIdentificationCard", file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setBackPreview(reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    } else {
+                      setBackPreview(null);
+                    }
+                  }}
                   className="input input-bordered w-full"
                 />
                 <ErrorMessage
@@ -375,7 +413,7 @@ const PersonalModal = ({ onClose }) => {
                   className="btn bg-primary text-white"
                   disabled={isSubmitting}
                 >
-                  Gửi
+                  Cập nhật
                 </button>
                 <button
                   type="button"

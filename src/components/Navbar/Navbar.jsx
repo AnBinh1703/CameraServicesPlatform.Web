@@ -108,7 +108,7 @@ const NavBar = () => {
           to="/wishlist"
           className="hidden md:block  font-semibold no-underline text-primary  hover:text-gray-500"
         >
-          Wishlist
+          Yêu thích
         </Link>
 
         <div className="flex items-center gap-4">

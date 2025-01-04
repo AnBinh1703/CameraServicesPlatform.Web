@@ -108,7 +108,10 @@ const OrderConfirmation = ({
       title={
         <IconWrapper>
           <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "24px" }} />
-          <Title level={4} style={{ margin: 0, color: "#262626", fontWeight: 600 }}>
+          <Title
+            level={4}
+            style={{ margin: 0, color: "#262626", fontWeight: 600 }}
+          >
             Xác nhận đơn hàng thuê
           </Title>
         </IconWrapper>
@@ -136,7 +139,7 @@ const OrderConfirmation = ({
             </IconWrapper>
           }
         >
-          <StyledTooltipIcon />
+          <StyledTooltipIcon title="Giá thuê sản phẩm - Tiền này bạn sẽ thanh toán cho Nhà cung cấp" />
           <PriceText strong>{formatCurrency(productPriceRent)}</PriceText>
         </Descriptions.Item>
 
@@ -148,7 +151,7 @@ const OrderConfirmation = ({
             </IconWrapper>
           }
         >
-          <StyledTooltipIcon title="Số tiền đặt cọc để đảm bảo sản phẩm với nhà cung cấp - Tiền này bạn sẽ thanh toán cho Nhà cung cấp" />
+          <StyledTooltipIcon title="Số tiền đặt cọc để đảm bảo sản phẩm với nhà cung cấp - Tiền này bạn sẽ cọc cho Nhà cung cấp và được Nhà cung cấp hoàn trả lại sau khi trả lại sản phẩm, họăc dùng để đền bù SSản phẩm bạn thuê nếu có hư hại (Điều kiện: Nếu số tiền cần đền bù nhỏ hơn số tiền đặt cọc .) " />
           <PriceText strong type="warning">
             {formatCurrency(depositProduct)}
           </PriceText>

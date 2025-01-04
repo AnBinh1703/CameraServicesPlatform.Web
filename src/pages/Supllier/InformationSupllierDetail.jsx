@@ -1,10 +1,12 @@
-import { Button, Form, Input, message, Spin } from "antd";
+import { Button, Form, Input, message, Spin, Card, Avatar, Row, Col, Typography } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getSupplierIdByAccountId } from "../../api/accountApi"; // Đảm bảo rằng đây là đường dẫn nhập đúng
 import { getSupplierById, updateSupplier } from "../../api/supplierApi";
 import ProductCardViewOfSupplier from "../Common/Product/ProductCardViewOfSupplier";
+
+const { Title, Text } = Typography;
 
 const InformationSupplierDetail = () => {
   const { id } = useParams();
@@ -19,15 +21,10 @@ const InformationSupplierDetail = () => {
   // Hàm lấy supplierId từ accountId của người dùng hiện tại
   const fetchSupplierId = async () => {
     if (user.id) {
-      try {
-        const response = await getSupplierIdByAccountId(user.id);
-        if (response?.isSuccess) {
-          setSupplierId(response.result); // Lưu supplierId từ phản hồi API
-        } else {
-          message.error("Không lấy được ID nhà cung cấp.");
-        }
-      } catch (error) {
-        message.error("Có lỗi xảy ra khi lấy ID nhà cung cấp.");
+      const response = await getSupplierIdByAccountId(user.id);
+      if (response?.isSuccess) {
+        setSupplierId(response.result); // Lưu supplierId từ phản hồi API
+      } else {
       }
     }
   };
@@ -79,93 +76,140 @@ const InformationSupplierDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center">
+      <div className="flex justify-center items-center min-h-[400px]">
         <Spin size="large" />
       </div>
     );
   }
 
   if (!supplier) {
-    return <div>Không tìm thấy dữ liệu nhà cung cấp.</div>;
+    return (
+      <div className="text-center p-8">
+        <Text type="secondary">Không tìm thấy dữ liệu nhà cung cấp.</Text>
+      </div>
+    );
   }
 
   return (
-    <>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Thông Tin Nhà Cung Cấp</h1>
-        {isEditing ? (
-          <Form form={form} layout="vertical" onFinish={handleUpdateSupplier}>
-            <Form.Item
-              label="Tên Nhà Cung Cấp"
-              name="supplierName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên nhà cung cấp!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Mô Tả"
-              name="supplierDescription"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item
-              label="Địa Chỉ"
-              name="supplierAddress"
-              rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Số Điện Thoại"
-              name="contactNumber"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item label="Logo Nhà Cung Cấp" name="supplierLogo">
-              <Input type="file" accept="image/*" />
-            </Form.Item>
+    <div className="max-w-6xl mx-auto p-6">
+      <Card className="shadow-md">
+        <div className="mb-6">
+          <Title level={2} className="text-center mb-8">
+            Thông Tin Nhà Cung Cấp
+          </Title>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Cập Nhật Nhà Cung Cấp
-              </Button>
-              <Button className="ml-2" onClick={() => setIsEditing(false)}>
-                Hủy
-              </Button>
-            </Form.Item>
-          </Form>
-        ) : (
-          <div>
-            <p>
-              <strong>Tên:</strong> {supplier.supplierName}
-            </p>
-            <p>
-              <strong>Mô Tả:</strong> {supplier.supplierDescription}
-            </p>
-            <p>
-              <strong>Địa Chỉ:</strong> {supplier.supplierAddress}
-            </p>
-            <p>
-              <strong>Liên Hệ:</strong> {supplier.contactNumber}
-            </p>
-            {/* Kiểm tra nếu supplierId của người dùng khớp với supplier.supplierID */}
-            {supplierId === supplier.supplierID && (
-              <Button type="primary" onClick={() => setIsEditing(true)}>
-                Chỉnh Sửa Thông tin trang cá nhân
+          {isEditing ? (
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleUpdateSupplier}
+              className="max-w-2xl mx-auto"
+            >
+              <Row gutter={16}>
+                <Col span={24}>
+                  <Form.Item
+                    label="Tên Nhà Cung Cấp"
+                    name="supplierName"
+                    rules={[{ required: true, message: "Vui lòng nhập tên nhà cung cấp!" }]}
+                  >
+                    <Input size="large" />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item
+                    label="Mô Tả"
+                    name="supplierDescription"
+                    rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+                  >
+                    <Input.TextArea rows={4} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Địa Chỉ"
+                    name="supplierAddress"
+                    rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Số Điện Thoại"
+                    name="contactNumber"
+                    rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item label="Logo Nhà Cung Cấp" name="supplierLogo">
+                    <Input type="file" accept="image/*" className="p-2" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <div className="flex justify-center gap-4 mt-6">
+                <Button type="primary" htmlType="submit" size="large">
+                  Cập Nhật
                 </Button>
-                
-            )}
-          </div>
-        )}
+                <Button size="large" onClick={() => setIsEditing(false)}>
+                  Hủy
+                </Button>
+              </div>
+            </Form>
+          ) : (
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-8">
+                <Avatar
+                  size={120}
+                  src={supplier.supplierLogo}
+                  className="mb-4"
+                />
+                <Title level={3}>{supplier.supplierName}</Title>
+              </div>
+
+              <Card className="bg-gray-50">
+                <Row gutter={[16, 24]}>
+                  <Col span={24}>
+                    <div className="mb-4">
+                      <Text strong className="text-gray-600">Mô Tả</Text>
+                      <div className="mt-2 p-3 bg-white rounded">
+                        {supplier.supplierDescription}
+                      </div>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong className="text-gray-600">Địa Chỉ</Text>
+                    <div className="mt-2 p-3 bg-white rounded">
+                      {supplier.supplierAddress}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong className="text-gray-600">Liên Hệ</Text>
+                    <div className="mt-2 p-3 bg-white rounded">
+                      {supplier.contactNumber}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+
+              {supplierId === supplier.supplierID && (
+                <div className="text-center mt-6">
+                  <Button type="primary" size="large" onClick={() => setIsEditing(true)}>
+                    Chỉnh Sửa Thông tin
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+      
+      <div className="mt-8">
+        <ProductCardViewOfSupplier />
       </div>
-      <ProductCardViewOfSupplier />
-    </>
+    </div>
   );
 };
 

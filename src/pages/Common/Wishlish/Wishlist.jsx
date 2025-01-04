@@ -37,11 +37,11 @@ const Wishlist = () => {
           );
           setWishlist(itemsWithDetails);
         } else {
-          message.error("Failed to load wishlist.");
+          message.error("Không thể tải danh sách yêu thích.");
         }
       } catch (error) {
-        console.error("Error fetching wishlist:", error);
-        message.error("Error fetching wishlist.");
+        console.error("Lỗi khi tải danh sách yêu thích:", error);
+        message.error("Lỗi khi tải danh sách yêu thích.");
       } finally {
         setLoading(false);
       }
@@ -51,30 +51,30 @@ const Wishlist = () => {
   }, [accountId]);
 
   const handleDeleteWishlistItem = async (wishlistId) => {
-    console.log("Deleting wishlist", wishlistId);
+    console.log("Đang xóa mục yêu thích", wishlistId);
     try {
       const result = await deleteWishlistItem(wishlistId);
       if (result && result.isSuccess) {
-        message.success("Wishlist item deleted successfully!");
+        message.success("Đã xóa mục yêu thích thành công!");
         setWishlist(wishlist.filter((item) => item.wishlistID !== wishlistId));
       } else {
-        message.error("Failed to delete wishlist item.");
+        message.error("Không thể xóa mục yêu thích.");
       }
     } catch (error) {
-      console.error("Error deleting wishlist item:", error);
-      message.error("Failed to delete wishlist item.");
+      console.error("Lỗi khi xóa mục yêu thích:", error);
+      message.error("Không thể xóa mục yêu thích.");
     }
   };
 
   return (
     <div className="wishlist-container">
-      <Title level={2}>My Wishlist</Title>
+      <Title level={2}>Danh Sách Yêu Thích</Title>
       {loading ? (
         <div className="loading-spinner">
           <Spin size="large" />
         </div>
       ) : wishlist.length === 0 ? (
-        <Empty description="No items in your wishlist" />
+        <Empty description="Không có mục nào trong danh sách yêu thích" />
       ) : (
         <List
           grid={{ gutter: 16, column: 1 }}
@@ -88,7 +88,7 @@ const Wishlist = () => {
                     type="danger"
                     onClick={() => handleDeleteWishlistItem(item.wishlistID)}
                   >
-                    Delete
+                    Xóa
                   </Button>
                 }
                 hoverable
@@ -109,7 +109,7 @@ const Wishlist = () => {
                       <>
                         <p>{item.productDescription}</p>
                         <p>
-                          <strong>Price:</strong> {item.price}
+                          <strong>Giá:</strong> {item.price}
                         </p>
                       </>
                     }

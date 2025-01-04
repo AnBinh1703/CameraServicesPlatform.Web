@@ -22,7 +22,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryById } from "../../../api/categoryApi";
 import { getProductBySupplierId } from "../../../api/productApi";
-import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
+import { getProductStatusEnum } from "../../../utils/constant";
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
@@ -110,28 +110,19 @@ const ProductCardViewOfSupplier = () => {
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   return (
-    <div className="container mx-auto px-4">
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-        <Input
-          placeholder="Tìm kiếm theo tên sản phẩm"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: "100%", maxWidth: 300 }}
-          prefix={<SearchOutlined />}
-          className="mb-2 md:mb-0"
-        />
-        <Select
-          placeholder="Filter by Brand"
-          onChange={handleBrandFilterChange}
-          allowClear
-          style={{ width: 200 }}
-          className="mt-2 md:mt-0"
-        >
-          <Option value="Canon">Canon</Option>
-          <Option value="Nikon">Nikon</Option>
-          <Option value="Sony">Sony</Option>
-        </Select>
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      {/* Search and Filter Section */}
+      <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <Input
+            placeholder="Tìm kiếm theo tên sản phẩm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: "100%", maxWidth: 300 }}
+            prefix={<SearchOutlined className="text-gray-400" />}
+            className="rounded-md"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -144,11 +135,12 @@ const ProductCardViewOfSupplier = () => {
             <>
               <Row gutter={[16, 16]}>
                 {paginatedProducts.map((product) => (
-                  <Col key={product.productID} xs={24} sm={12} md={8} lg={12}>
+                  <Col key={product.productID} xs={24} sm={12} md={8} lg={6}>
                     <Card
-                      className="w-full flex flex-col justify-between overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-lg"
+                      hoverable
+                      className="h-full flex flex-col justify-between overflow-hidden rounded-lg border border-gray-200 transition-all duration-300 hover:shadow-lg"
                       cover={
-                        <div style={{ height: "200px", overflow: "hidden" }}>
+                        <div className="aspect-w-16 aspect-h-9 overflow-hidden">
                           <img
                             alt={product.productName}
                             src={
@@ -156,131 +148,149 @@ const ProductCardViewOfSupplier = () => {
                                 ? product.listImage[0].image
                                 : "https://via.placeholder.com/150?text=No+Image"
                             }
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
+                            className="object-cover w-full h-48 transition-transform duration-300 hover:scale-105"
                           />
                         </div>
                       }
                     >
-                      <Card.Meta
-                        title={
-                          <div>
-                            <ShoppingCartOutlined className="mr-2" />
-                            <Title level={5} className="mb-0 truncate">
-                              {product.productName}
-                            </Title>
-                          </div>
-                        }
-                        description={
-                          <div className="flex flex-col justify-between h-full">
-                            <div className="overflow-hidden">
-                              <Paragraph
-                                ellipsis={{ rows: 1 }}
-                                className="flex items-center"
-                              >
-                                <InfoCircleOutlined className="mr-2" />
-                                {product.productDescription}
-                              </Paragraph>
-                              <Text className="flex items-center truncate">
-                                <DollarOutlined className="mr-2" />
-                                Giá Bán:
-                                {product.priceBuy && product.priceBuy !== 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.priceBuy)
-                                  : "--"}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                <ClockCircleOutlined className="mr-2" />
-                                Giá Thuê Theo Giờ:
-                                {product.pricePerHour &&
-                                product.pricePerHour !== 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.pricePerHour)
-                                  : "--"}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                <ClockCircleOutlined className="mr-2" />
-                                Giá Thuê Theo Ngày:
-                                {product.pricePerDay &&
-                                product.pricePerDay !== 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.pricePerDay)
-                                  : "--"}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                <ClockCircleOutlined className="mr-2" />
-                                Giá Thuê Theo Tuần:
-                                {product.pricePerWeek &&
-                                product.pricePerWeek !== 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.pricePerWeek)
-                                  : "--"}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                <ClockCircleOutlined className="mr-2" />
-                                Giá Thuê Theo Tháng:
-                                {product.pricePerMonth &&
-                                product.pricePerMonth !== 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.pricePerMonth)
-                                  : "--"}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                Thương Hiệu: {getBrandName(product.brand)}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                Trạng Thái:
-                                {getProductStatusEnum(product.status)}
-                              </Text>
-                              <Text className="flex items-center truncate">
-                                <InfoCircleOutlined className="mr-2" />
-                                Ngày Tạo: {formatDate(product.createdAt)}
-                              </Text>
+                      <div className="flex flex-col h-full">
+                        <Title level={5} className="mb-2 text-lg font-medium">
+                          {product.productName}
+                        </Title>
+
+                        <Paragraph
+                          ellipsis={{ rows: 2 }}
+                          className="text-gray-600 mb-4"
+                        >
+                          {product.productDescription}
+                        </Paragraph>
+
+                        <div className="space-y-2 text-sm text-gray-600">
+                          {product.priceBuy && product.priceBuy !== 0 && (
+                            <div className="flex items-center gap-2">
+                              <DollarOutlined className="text-blue-500" />
+                              <span>
+                                Giá Bán:{" "}
+                                {new Intl.NumberFormat("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND",
+                                }).format(product.priceBuy)}
+                              </span>
                             </div>
-                            <Button
-                              type="primary"
-                              onClick={() => handleView(product.productID)}
-                              className="mt-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
-                              icon={<InfoCircleOutlined />}
-                            >
-                              Xem Chi Tiết
-                            </Button>
+                          )}
+
+                          {product.depositProduct &&
+                            product.depositProduct !== 0 && (
+                              <div className="flex items-center gap-2">
+                                <DollarOutlined className="text-red-500" />
+                                <span>
+                                  Đặt cọc:{" "}
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.depositProduct)}
+                                </span>
+                              </div>
+                            )}
+
+                          {product.pricePerHour &&
+                            product.pricePerHour !== 0 && (
+                              <div className="flex items-center gap-2">
+                                <ClockCircleOutlined className="text-purple-500" />
+                                <span>
+                                  Thuê/giờ:{" "}
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerHour)}
+                                </span>
+                              </div>
+                            )}
+
+                          {product.pricePerDay && product.pricePerDay !== 0 && (
+                            <div className="flex items-center gap-2">
+                              <ClockCircleOutlined className="text-green-500" />
+                              <span>
+                                Thuê/ngày:{" "}
+                                {new Intl.NumberFormat("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND",
+                                }).format(product.pricePerDay)}
+                              </span>
+                            </div>
+                          )}
+
+                          {product.pricePerWeek &&
+                            product.pricePerWeek !== 0 && (
+                              <div className="flex items-center gap-2">
+                                <ClockCircleOutlined className="text-blue-500" />
+                                <span>
+                                  Thuê/tuần:{" "}
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerWeek)}
+                                </span>
+                              </div>
+                            )}
+
+                          {product.pricePerMonth &&
+                            product.pricePerMonth !== 0 && (
+                              <div className="flex items-center gap-2">
+                                <ClockCircleOutlined className="text-yellow-500" />
+                                <span>
+                                  Thuê/tháng:{" "}
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.pricePerMonth)}
+                                </span>
+                              </div>
+                            )}
+
+                          {product.countRent !== undefined && (
+                            <div className="flex items-center gap-2">
+                              <ShoppingCartOutlined className="text-gray-500" />
+                              <span>Đã thuê: {product.countRent} lần</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <InfoCircleOutlined className="text-gray-400" />
+                            <span>
+                              Trạng thái: {getProductStatusEnum(product.status)}
+                            </span>
                           </div>
-                        }
-                      />
+                        </div>
+
+                        <Button
+                          type="primary"
+                          onClick={() => handleView(product.productID)}
+                          className="mt-4 w-full bg-blue-500 hover:bg-blue-600"
+                          icon={<InfoCircleOutlined />}
+                        >
+                          Xem Chi Tiết
+                        </Button>
+                      </div>
                     </Card>
                   </Col>
                 ))}
               </Row>
-              <Pagination
-                current={pageIndex}
-                pageSize={pageSize}
-                total={filteredProducts.length}
-                showSizeChanger
-                onShowSizeChange={(current, size) => {
-                  setPageSize(size);
-                }}
-                onChange={(page) => {
-                  setPageIndex(page);
-                }}
-                style={{ marginTop: "20px", textAlign: "center" }}
-              />
+
+              <div className="mt-8 flex justify-center">
+                <Pagination
+                  current={pageIndex}
+                  pageSize={pageSize}
+                  total={filteredProducts.length}
+                  showSizeChanger
+                  onShowSizeChange={(current, size) => setPageSize(size)}
+                  onChange={(page) => setPageIndex(page)}
+                  className="bg-white px-4 py-2 rounded-lg shadow-sm"
+                />
+              </div>
             </>
           ) : (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex justify-center items-center h-64 bg-white rounded-lg">
               <Empty description="Không có sản phẩm nào" />
             </div>
           )}
