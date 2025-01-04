@@ -1,9 +1,11 @@
 import {
   DollarOutlined,
+  DownOutlined,
   FileTextOutlined,
   InfoCircleOutlined,
   PictureOutlined,
   TagOutlined,
+  UpOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -11,6 +13,7 @@ import {
   Col,
   DatePicker,
   Descriptions,
+  Empty, // Add this import
   Form,
   InputNumber,
   Row,
@@ -22,6 +25,29 @@ import moment from "moment";
 import React, { useEffect } from "react";
 
 const { Option } = Select;
+
+const customDatePickerStyle = {
+  width: "100%",
+  ".ant-picker-input > input": {
+    fontSize: "14px"
+  },
+  ".ant-picker-suffix": {
+    color: "#1890ff"
+  }
+};
+
+const priceCardStyle = {
+  background: "linear-gradient(135deg, #1890ff 0%, #52c41a 100%)",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(24,144,255,0.2)",
+  padding: "24px",
+  textAlign: "center",
+  color: "white",
+  transition: "transform 0.3s ease",
+  ":hover": {
+    transform: "translateY(-2px)"
+  }
+};
 
 const ProductDetailsInfoRent = ({
   product,
@@ -41,6 +67,7 @@ const ProductDetailsInfoRent = ({
   setRentalEndDate,
   returnDate,
   setReturnDate,
+  form, // Add form prop
 }) => {
   const pricePerHour = product.pricePerHour;
   const pricePerDay = product.pricePerDay;
@@ -78,7 +105,7 @@ const ProductDetailsInfoRent = ({
     setDurationUnit(value);
     setDurationValue(durationOptions[value].min);
     const { min, max } = durationOptions[value];
-    message.info(`Please select a duration between ${min} and ${max}.`);
+    message.info(`Vui lòng chọn thời lượng từ ${min} đến ${max}.`);
   };
 
   const calculateReturnDate = (endDate) => {
@@ -108,20 +135,20 @@ const ProductDetailsInfoRent = ({
     });
 
     if (!durationOptions[durationUnit]) {
-      message.error("Invalid duration unit");
+      message.error("Đơn vị thời gian không hợp lệ");
       return;
     }
 
     // Validate inputs
     if (!durationValue || durationValue <= 0) {
-      message.error("Duration value must be greater than 0");
+      message.error("Thời lượng phải lớn hơn 0");
       return;
     }
 
     const { min, max } = durationOptions[durationUnit];
     if (durationValue < min || durationValue > max) {
       message.error(
-        `Invalid duration value. Please choose between ${min} and ${max}.`
+        `Thời lượng không hợp lệ. Vui lòng chọn từ ${min} đến ${max}.`
       );
       return;
     }
@@ -214,383 +241,507 @@ const ProductDetailsInfoRent = ({
     disabledHours: () =>
       [...Array(24)].map((_, i) => i).filter((h) => h < 7 || h >= 20),
   });
-
-  const [form] = Form.useForm();
-
-  const handleFormSubmit = () => {
-    form.validateFields()
-      .then(values => {
-        // Handle form submission
-        console.log('Form values:', values);
-      })
-      .catch(errorInfo => {
-        console.log('Validation Failed:', errorInfo);
-      });
-  };
-
   return (
-    <Card
-      title={<span style={{ fontSize: "18px", fontWeight: "600" }}>Thông tin sản phẩm</span>}
-      bordered={false}
-      style={{ marginBottom: "24px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
-    >
-      {loading ? (
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <Spin size="large" tip="Đang tải thông tin sản phẩm..." />
-        </div>
-      ) : product ? (
-        <>
-          <Row gutter={24}>
-            <Col span={12}>
-              <Descriptions 
-                column={1} 
-                bordered 
-                style={{ 
-                  background: "#fff",
-                  borderRadius: "8px",
-                  overflow: "hidden"
-                }}
-              >
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <TagOutlined /> Mã sản phẩm
-                    </span>
-                  }
+    <div> {/* Change outer Card to div to avoid nesting forms */}
+      <Card
+        title={
+          <div
+            style={{
+              fontSize: "24px",
+              fontWeight: "600",
+              background: "linear-gradient(90deg, #1890ff, #52c41a)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Thông tin sản phẩm
+          </div>
+        }
+        bordered={false}
+        className="product-details-card"
+        style={{
+          marginBottom: "24px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        }}
+      >
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "60px",
+            }}
+          >
+            <Spin
+              size="large"
+              tip={
+                <div style={{ marginTop: "15px", color: "#1890ff" }}>
+                  Đang tải thông tin sản phẩm...
+                </div>
+              }
+            />
+          </div>
+        ) : product ? (
+          <>
+            <Row gutter={[32, 32]}>
+              <Col span={12}>
+                <Descriptions
+                  column={1}
+                  bordered
+                  size="middle"
+                  labelStyle={{
+                    fontWeight: "600",
+                    backgroundColor: "#f8f9fa",
+                    width: "160px",
+                    padding: "16px",
+                    borderRadius: "4px 0 0 4px",
+                  }}
+                  contentStyle={{
+                    backgroundColor: "white",
+                    padding: "16px",
+                    borderRadius: "0 4px 4px 0",
+                  }}
                 >
-                  {product.serialNumber}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <InfoCircleOutlined /> Tên
-                    </span>
-                  }
-                >
-                  {product.productName}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <FileTextOutlined /> Mô tả
-                    </span>
-                  }
-                >
-                  {product.productDescription}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <FileTextOutlined /> Cọc sản phẩm
-                    </span>
-                  }
-                >
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(product.depositProduct)}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <FileTextOutlined /> Giá Gốc
-                    </span>
-                  }
-                >
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(product.originalPrice)}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <DollarOutlined /> Giá thuê
-                    </span>
-                  }
-                >
-                  <div style={{ color: "#52c41a" }}>
-                    <strong>Giờ: </strong>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <TagOutlined /> Mã sản phẩm
+                      </span>
+                    }
+                  >
+                    {product.serialNumber}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <InfoCircleOutlined /> Tên
+                      </span>
+                    }
+                  >
+                    {product.productName}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <FileTextOutlined /> Mô tả
+                      </span>
+                    }
+                  >
+                    {product.productDescription}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <FileTextOutlined /> Cọc sản phẩm
+                      </span>
+                    }
+                  >
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(product.pricePerHour)}
-                  </div>
-                  <div style={{ color: "#1890ff" }}>
-                    <strong>Ngày:</strong>
+                    }).format(product.depositProduct)}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <FileTextOutlined /> Giá Gốc
+                      </span>
+                    }
+                  >
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(product.pricePerDay)}
-                  </div>
-                  <div style={{ color: "#faad14" }}>
-                    <strong>Tuần:</strong>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(product.pricePerWeek)}
-                  </div>
-                  <div style={{ color: "#f5222d" }}>
-                    <strong>Tháng:</strong>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(product.pricePerMonth)}
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span>
-                      <InfoCircleOutlined /> Chất lượng
+                    }).format(product.originalPrice)}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <DollarOutlined /> Giá thuê
+                      </span>
+                    }
+                  >
+                    <div style={{ padding: "8px 0" }}>
+                      {[
+                        {
+                          label: "Giờ",
+                          price: product.pricePerHour,
+                          color: "#52c41a",
+                          icon: "⏱️",
+                        },
+                        {
+                          label: "Ngày",
+                          price: product.pricePerDay,
+                          color: "#1890ff",
+                          icon: "📅",
+                        },
+                        {
+                          label: "Tuần",
+                          price: product.pricePerWeek,
+                          color: "#722ed1",
+                          icon: "📆",
+                        },
+                        {
+                          label: "Tháng",
+                          price: product.pricePerMonth,
+                          color: "#eb2f96",
+                          icon: "📋",
+                        },
+                      ].map(({ label, price, color, icon }) => (
+                        <div
+                          key={label}
+                          style={{
+                            marginBottom: "12px",
+                            padding: "8px",
+                            background: `${color}10`,
+                            borderRadius: "6px",
+                            transition: "all 0.3s",
+                          }}
+                        >
+                          <span style={{ marginRight: "8px" }}>{icon}</span>
+                          <strong
+                            style={{
+                              color,
+                              width: "60px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {label}:
+                          </strong>
+                          <span
+                            style={{
+                              color,
+                              fontWeight: "600",
+                              fontSize: "15px",
+                            }}
+                          >
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(price)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <InfoCircleOutlined /> Chất lượng
+                      </span>
+                    }
+                  >
+                    {product.quality}
+                  </Descriptions.Item>
+                </Descriptions>
+              </Col>
+
+              <Col span={12}>
+                <Card
+                  title={
+                    <span
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        color: "#1890ff",
+                      }}
+                    >
+                      <PictureOutlined /> Hình ảnh sản phẩm
                     </span>
                   }
+                  bordered={false}
+                  style={{
+                    borderRadius: "12px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  }}
                 >
-                  {product.quality}
-                </Descriptions.Item>
-              </Descriptions>
-            </Col>
-            <Col span={12}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(120px, 1fr))",
+                      gap: "12px",
+                      padding: "12px",
+                    }}
+                  >
+                    {product.listImage?.length > 0 ? (
+                      product.listImage.map((imageObj) => (
+                        <div
+                          key={imageObj.productImagesID}
+                          style={{
+                            position: "relative",
+                            paddingTop: "100%",
+                            overflow: "hidden",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                            transition: "transform 0.3s",
+                            cursor: "pointer",
+                            ":hover": {
+                              transform: "scale(1.05)",
+                            },
+                          }}
+                        >
+                          <img
+                            src={imageObj.image}
+                            alt="Product"
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div
+                        style={{
+                          padding: "40px",
+                          textAlign: "center",
+                          color: "#999",
+                          background: "#f5f5f5",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        <PictureOutlined
+                          style={{ fontSize: "32px", marginBottom: "8px" }}
+                        />
+                        <div>Không có hình ảnh cho sản phẩm này.</div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <div
+              style={{
+                marginTop: "32px",
+                background: "#fff",
+                padding: "24px",
+                borderRadius: "12px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}
+            >
               <Card
                 title={
-                  <span style={{ fontSize: "16px" }}>
-                    <PictureOutlined /> Hình ảnh sản phẩm
+                  <span
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#1890ff",
+                    }}
+                  >
+                    Tính giá thuê
                   </span>
                 }
                 bordered={false}
-                style={{ borderRadius: "8px" }}
-              >
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {product.listImage && product.listImage.length > 0 ? (
-                    product.listImage.map((imageObj, index) => (
-                      <img
-                        key={imageObj.productImagesID}
-                        src={imageObj.image}
-                        alt={`Hình ảnh sản phẩm ${index + 1}`}
-                        style={{
-                          width: "120px",
-                          height: "120px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                          transition: "transform 0.2s",
-                          cursor: "pointer",
-                          "&:hover": {
-                            transform: "scale(1.05)"
-                          }
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <p style={{ color: "#999" }}>Không có hình ảnh cho sản phẩm này.</p>
-                  )}
-                </div>
-              </Card>
-            </Col>
-          </Row>
-          <Form
-            layout="vertical"
-            style={{ marginTop: "32px" }}
-            form={form}
-            onFinish={handleFormSubmit}
-          >
-            <Card
-              title={<span style={{ fontSize: "16px" }}>Tính giá thuê</span>}
-              bordered={false}
-              style={{ 
-                borderRadius: "8px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-              }}
-            >
-              <Form.Item
-                label="Đơn vị thời gian"
-                style={{ width: "100%", marginBottom: "16px" }}
-                name="durationUnit"
-                rules={[{ required: true, message: "Vui lòng chọn đơn vị thời gian" }]}
-              >
-                <Select
-                  value={durationUnit}
-                  onChange={handleDurationUnitChange}
-                  style={{ width: "100%" }}
-                >
-                  <Option value={0}>Giờ</Option>
-                  <Option value={1}>Ngày</Option>
-                  <Option value={2}>Tuần</Option>
-                  <Option value={3}>Tháng</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                label="Giá trị thời gian"
-                style={{ width: "100%", marginBottom: "16px" }}
-                name="durationValue"
-                rules={[
-                  { required: true, message: "Vui lòng nhập giá trị thời gian" },
-                  {
-                    type: "number",
-                    min: durationOptions[durationUnit]?.min || 1,
-                    max: durationOptions[durationUnit]?.max || 1,
-                    message: `Vui lòng nhập giá trị từ ${durationOptions[durationUnit]?.min || 1} đến ${durationOptions[durationUnit]?.max || 1}`,
-                  },
-                ]}
-              >
-                <InputNumber
-                  min={durationOptions[durationUnit]?.min || 1}
-                  max={durationOptions[durationUnit]?.max || 1}
-                  value={durationValue}
-                  onChange={handleDurationValueChange}
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Ngày bắt đầu thuê"
-                style={{ width: "100%", marginBottom: "16px" }}
-                name="rentalStartDate"
-                rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu thuê" }]}
-              >
-                <DatePicker
-                  showTime={{
-                    format: "HH:mm",
-                    hideDisabledOptions: true,
-                  }}
-                  value={rentalStartDate}
-                  onChange={handleRentalStartDateChange}
-                  format="DD - MM - YYYY HH:mm"
-                  style={{ width: "100%" }}
-                  disabledTime={disabledTime}
-                  onOk={(value) => {
-                    const hour = value.hour();
-                    if (hour < 7 || hour >= 20) {
-                      message.error(
-                        "Chỉ được chọn thời gian từ 7:00 đến 20:00"
-                      );
-                      return;
-                    }
-                    handleRentalStartDateChange(value);
-                  }}
-                  placeholder="Chọn ngày và giờ bắt đầu thuê"
-                />
-              </Form.Item>
-              <Form.Item
-                label="Ngày kết thúc thuê"
-                style={{ width: "100%", marginBottom: "16px" }}
-                name="rentalEndDate"
-              >
-                <DatePicker
-                  showTime
-                  value={rentalEndDate}
-                  disabled
-                  format="DD - MM - YYYY HH:mm"
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-              <Form.Item
-                label="Ngày trả hàng"
-                style={{ width: "100%", marginBottom: "16px" }}
-                name="returnDate"
-              >
-                <DatePicker
-                  showTime
-                  value={returnDate}
-                  disabled
-                  format="DD - MM - YYYY HH:mm"
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-            </Card>
-            <div style={{ marginTop: "24px", textAlign: "center" }}>
-              <Card
-                bordered={false}
-                style={{
-                  backgroundColor: "#f6ffed",
-                  padding: "24px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                  border: "1px solid #b7eb8f"
-                }}
-              >
-                <div style={{ fontSize: "16px", color: "#333", marginBottom: "8px" }}>
-                  Giá thuê sản phẩm
-                </div>
-                <div
-                  style={{
-                    fontSize: "28px",
-                    color: "#52c41a",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(productPriceRent)}
-                </div>
-              </Card>
-            </div>
-            <Form.Item style={{ textAlign: "center", marginTop: "24px" }}>
-              <Button 
-                type="primary" 
-                htmlType="submit" 
-                size="large"
-                style={{ 
-                  minWidth: "200px",
-                  height: "40px",
-                  borderRadius: "6px"
-                }}
-              >
-                Xác nhận
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <Button
-            type="link"
-            onClick={toggleContractTerms}
-            style={{ marginTop: "24px", display: "block" }}
-          >
-            {showContractTerms ? "Ẩn điều khoản hợp đồng" : "Hiển thị điều khoản hợp đồng"}
-          </Button>
-          {showContractTerms &&
-            contractTemplate &&
-            contractTemplate.length > 0 && (
-              <Card
-                title="Điều khoản hợp đồng"
-                bordered={false}
-                style={{ marginTop: "24px" }}
               >
                 <Row gutter={16}>
-                  <Col span={24}>
-                    <Descriptions column={1} bordered>
-                      {contractTemplate.map((item) => (
-                        <Descriptions.Item
-                          key={item.contractTemplateID}
-                          label={
-                            <span>
-                              <FileTextOutlined /> {item.templateName}
-                            </span>
-                          }
-                        >
-                          <p>
-                            <strong>Điều khoản hợp đồng:</strong>
-                            {item.contractTerms}
-                          </p>
-                          <p>
-                            <strong>Chính sách phạt:</strong>
-                            {item.penaltyPolicy}
-                          </p>
-                          <p>
-                            <strong>Chi tiết mẫu:</strong>
-                            {item.templateDetails}
-                          </p>
-                        </Descriptions.Item>
-                      ))}
-                    </Descriptions>
+                  <Col span={12}>
+                    <Form.Item label="Đơn vị thời gian">
+                      <Select
+                        value={durationUnit}
+                        onChange={handleDurationUnitChange}
+                        style={{ width: "100%" }}
+                        size="large"
+                      >
+                        {[
+                          { value: 0, label: "Giờ" },
+                          { value: 1, label: "Ngày" },
+                          { value: 2, label: "Tuần" },
+                          { value: 3, label: "Tháng" },
+                        ].map(({ value, label }) => (
+                          <Option key={value} value={value}>
+                            {label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item label="Giá trị thời gian">
+                      <InputNumber
+                        min={durationOptions[durationUnit]?.min || 1}
+                        max={durationOptions[durationUnit]?.max || 1}
+                        value={durationValue}
+                        onChange={handleDurationValueChange}
+                        style={{ width: "100%" }}
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Form.Item label="Ngày bắt đầu thuê">
+                      <DatePicker
+                        showTime
+                        value={rentalStartDate}
+                        onChange={handleRentalStartDateChange}
+                        format="DD-MM-YYYY HH:mm"
+                        style={customDatePickerStyle}
+                        className="custom-datepicker"
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="Ngày kết thúc thuê">
+                      <DatePicker
+                        showTime
+                        value={rentalEndDate}
+                        disabled
+                        format="DD-MM-YYYY HH:mm"
+                        style={customDatePickerStyle}
+                        className="custom-datepicker"
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="Ngày trả hàng">
+                      <DatePicker
+                        showTime
+                        value={returnDate}
+                        disabled
+                        format="DD-MM-YYYY HH:mm"
+                        style={customDatePickerStyle}
+                        className="custom-datepicker"
+                        size="large"
+                      />
+                    </Form.Item>
                   </Col>
                 </Row>
               </Card>
-            )}
-        </>
-      ) : (
-        <Empty description="Không tìm thấy thông tin sản phẩm" />
-      )}
-    </Card>
+
+              <div style={{ marginTop: "24px" }}>
+                <Card
+                  bordered={false}
+                  style={priceCardStyle}
+                >
+                  <div style={{ padding: "16px 0" }}>
+                    <div style={{
+                      fontSize: "20px",
+                      marginBottom: "16px",
+                      opacity: 0.9
+                    }}>
+                      Tổng giá thuê sản phẩm
+                    </div>
+                    <div style={{
+                      fontSize: "36px",
+                      fontWeight: "bold",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      letterSpacing: "1px"
+                    }}>
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND"
+                      }).format(productPriceRent)}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Contract Terms section */}
+            <div style={{ marginTop: "32px" }}>
+              <Button
+                type="link"
+                onClick={toggleContractTerms}
+                style={{
+                  padding: "12px 24px",
+                  height: "auto",
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#f0f5ff",
+                  borderRadius: "8px",
+                  transition: "all 0.3s ease",
+                  ":hover": {
+                    background: "#e6f7ff",
+                    transform: "translateY(-1px)"
+                  }
+                }}
+                icon={showContractTerms ? <UpOutlined /> : <DownOutlined />}
+              >
+                {showContractTerms
+                  ? "Ẩn điều khoản hợp đồng"
+                  : "Hiển thị điều khoản hợp đồng"}
+              </Button>
+
+              {showContractTerms && contractTemplate?.length > 0 && (
+                <Card
+                  title={
+                    <span
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        color: "#1890ff",
+                      }}
+                    >
+                      Điều khoản hợp đồng
+                    </span>
+                  }
+                  bordered={false}
+                  style={{
+                    marginTop: "16px",
+                    borderRadius: "12px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <Row gutter={16}>
+                    <Col span={24}>
+                      <Descriptions column={1} bordered>
+                        {contractTemplate.map((item) => (
+                          <Descriptions.Item
+                            key={item.contractTemplateID}
+                            label={
+                              <span>
+                                <FileTextOutlined /> {item.templateName}
+                              </span>
+                            }
+                          >
+                            <p>
+                              <strong>Điều khoản hợp đồng:</strong>
+                              {item.contractTerms}
+                            </p>
+                            <p>
+                              <strong>Chính sách phạt:</strong>
+                              {item.penaltyPolicy}
+                            </p>
+                            <p>
+                              <strong>Chi tiết mẫu:</strong>
+                              {item.templateDetails}
+                            </p>
+                          </Descriptions.Item>
+                        ))}
+                      </Descriptions>
+                    </Col>
+                  </Row>
+                </Card>
+              )}
+            </div>
+          </>
+        ) : (
+          <Empty
+            description={
+              <span style={{ color: "#999", fontSize: "16px" }}>
+                Không tìm thấy thông tin sản phẩm
+              </span>
+            }
+            style={{
+              padding: "40px",
+              background: "#f5f5f5",
+              borderRadius: "8px",
+            }}
+          />
+        )}
+      </Card>
+    </div>
   );
 };
 

@@ -5,7 +5,7 @@ import {
   PictureOutlined,
   TagOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Descriptions, Row, Spin } from "antd";
+import { Card, Col, Descriptions, Row, Spin, Empty } from "antd";
 import React from "react";
 
 const OrderReview = ({
@@ -24,17 +24,19 @@ const OrderReview = ({
   const totalAmountWithDeposit = totalAmount;
 
   return (
-    <div>
-      <h3>Xem lại đơn hàng của bạn</h3>
-      <Row gutter={16}>
+    <Card className="order-review-container" bordered={false}>
+      <h2 style={{ marginBottom: 24, color: '#1890ff' }}>Xem lại đơn hàng của bạn</h2>
+      <Row gutter={[24, 24]}>
         <Col span={24}>
           <Card
-            title="Thông tin sản phẩm"
+            title={<span style={{ color: '#1890ff' }}><InfoCircleOutlined /> Thông tin sản phẩm</span>}
             bordered={false}
-            style={{ marginBottom: "24px" }}
+            className="inner-card"
           >
             {loading ? (
-              <Spin tip="Đang tải thông tin sản phẩm..." />
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <Spin tip="Đang tải thông tin sản phẩm..." />
+              </div>
             ) : product ? (
               <>
                 <Row gutter={16}>
@@ -185,17 +187,18 @@ const OrderReview = ({
                 )}
               </>
             ) : (
-              <p>Không tìm thấy thông tin sản phẩm.</p>
+              <Empty description="Không tìm thấy thông tin sản phẩm" />
             )}
           </Card>
         </Col>
+
         <Col span={24}>
           <Card
-            title="Thông tin giao hàng"
+            title={<span style={{ color: '#1890ff' }}><InfoCircleOutlined /> Thông tin giao hàng</span>}
             bordered={false}
-            style={{ marginBottom: "16px" }}
+            className="inner-card"
           >
-            <Descriptions bordered column={1}>
+            <Descriptions bordered column={1} size="small">
               <Descriptions.Item label="Phương thức giao hàng">
                 {deliveryMethod === 0
                   ? "Nhận tại cửa hàng"
@@ -222,86 +225,86 @@ const OrderReview = ({
             </Descriptions>
           </Card>
         </Col>
+
         <Col span={24}>
-          <Card
-            title="Chi tiết Voucher"
-            bordered={false}
-            style={{ marginBottom: "24px" }}
-          >
-            {selectedVoucherDetails ? (
-              <Descriptions bordered column={1}>
-                <Descriptions.Item label="Mã Voucher">
-                  {selectedVoucherDetails.vourcherCode}
-                </Descriptions.Item>
-                <Descriptions.Item label="Mô tả">
-                  {selectedVoucherDetails.description}
-                </Descriptions.Item>
-                <Descriptions.Item label="Số tiền giảm">
-                  {selectedVoucherDetails.discountAmount}
-                </Descriptions.Item>
-              </Descriptions>
-            ) : (
-              <p>Không có voucher được chọn.</p>
-            )}
-          </Card>
-          <div
-            style={{ marginTop: "16px", width: "100%", textAlign: "center" }}
-          >
-            <Card
-              bordered={false}
-              style={{
-                backgroundColor: "#f6f8fa",
-                padding: "16px",
-                borderRadius: "8px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <strong style={{ fontSize: "16px", color: "#333" }}>
-                Giá thuê sản phẩm:
-              </strong>
-              <div
-                style={{
-                  fontSize: "24px",
-                  color: "#52c41a",
-                  marginTop: "8px",
-                }}
+          <Row gutter={[24, 24]}>
+            <Col span={12}>
+              <Card
+                title={<span style={{ color: '#1890ff' }}><TagOutlined /> Chi tiết Voucher</span>}
+                bordered={false}
+                className="inner-card"
               >
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(productPriceRent)}
-              </div>
-            </Card>
-          </div>
-          <Card
-            title="Tổng kết đơn hàng"
-            bordered={false}
-            style={{ marginTop: "16px" }}
-          >
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Tiền cọc sản phẩm">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(depositProduct)}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tiền giữ sản phẩm">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(reservationMoney)}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tổng số tiền">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalAmountWithDeposit)}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
+                {selectedVoucherDetails ? (
+                  <Descriptions bordered column={1}>
+                    <Descriptions.Item label="Mã Voucher">
+                      {selectedVoucherDetails.vourcherCode}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Mô tả">
+                      {selectedVoucherDetails.description}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Số tiền giảm">
+                      {selectedVoucherDetails.discountAmount}
+                    </Descriptions.Item>
+                  </Descriptions>
+                ) : (
+                  <p>Không có voucher được chọn.</p>
+                )}
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card
+                title={<span style={{ color: '#1890ff' }}><DollarOutlined /> Tổng kết đơn hàng</span>}
+                bordered={false}
+                className="inner-card"
+                style={{ height: '100%' }}
+              >
+                <Descriptions bordered column={1} size="small">
+                  <Descriptions.Item label="Giá thuê sản phẩm">
+                    <span style={{ color: '#52c41a', fontSize: '18px', fontWeight: 'bold' }}>
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(productPriceRent)}
+                    </span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tiền cọc sản phẩm">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(depositProduct)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tiền giữ sản phẩm">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(reservationMoney)}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tổng số tiền">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(totalAmountWithDeposit)}
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            </Col>
+          </Row>
         </Col>
       </Row>
-    </div>
+      <style jsx>{`
+        .order-review-container {
+          background: #f0f2f5;
+          padding: 24px;
+        }
+        .inner-card {
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          border-radius: 8px;
+        }
+        .ant-descriptions-item-label {
+          width: 30%;
+        }
+      `}</style>
+    </Card>
   );
 };
 

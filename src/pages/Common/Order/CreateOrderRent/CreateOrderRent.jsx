@@ -2,6 +2,7 @@ import { Button, Card, Form, Spin, Steps, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import "../../../../styles/custom-antd.css"; // Add this import
 
 import { getContractTemplateByProductId } from "../../../../api/contractTemplateApi";
 import { createOrderRentWithPayment } from "../../../../api/orderApi";
@@ -257,6 +258,7 @@ const CreateOrderRent = () => {
           setRentalEndDate={setRentalEndDate}
           returnDate={returnDate}
           setReturnDate={setReturnDate}
+          form={form} // Add form prop
         />
       ),
     },
@@ -269,6 +271,7 @@ const CreateOrderRent = () => {
           deliveryMethod={deliveryMethod}
           setDeliveryMethod={setDeliveryMethod}
           supplierInfo={supplierInfo}
+          form={form} // Add form prop
         />
       ),
     },
@@ -281,6 +284,7 @@ const CreateOrderRent = () => {
           setSelectedVoucher={setSelectedVoucher}
           handleVoucherSelect={handleVoucherSelect}
           selectedVoucherDetails={selectedVoucherDetails}
+          form={form} // Add form prop
         />
       ),
     },
@@ -310,6 +314,7 @@ const CreateOrderRent = () => {
           selectedVoucherDetails={selectedVoucherDetails}
           productPriceRent={productPriceRent}
           reservationMoney={reservationMoney}
+          form={form} // Add form prop
         />
       ),
     },

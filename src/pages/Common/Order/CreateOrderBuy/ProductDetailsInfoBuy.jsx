@@ -11,16 +11,57 @@ import React from "react";
 const ProductDetailsInfoBuy = ({ product, loading }) => {
   return (
     <Card
-      title="Thông tin sản phẩm"
+      title={
+        <div style={{
+          fontSize: "24px",
+          fontWeight: "600",
+          background: "linear-gradient(90deg, #1890ff, #52c41a)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent"
+        }}>
+          Thông tin sản phẩm
+        </div>
+      }
       bordered={false}
-      style={{ marginBottom: "24px" }}
+      style={{
+        marginBottom: "24px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+      }}
     >
       {loading ? (
-        <Spin tip="Đang tải thông tin sản phẩm..." />
+        <div style={{ 
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "60px" 
+        }}>
+          <Spin size="large" tip={
+            <div style={{ marginTop: "15px", color: "#1890ff" }}>
+              Đang tải thông tin sản phẩm...
+            </div>
+          } />
+        </div>
       ) : product ? (
-        <Row gutter={16}>
+        <Row gutter={[24, 24]}>
           <Col span={12}>
-            <Descriptions column={1} bordered>
+            <Descriptions
+              column={1}
+              bordered
+              size="middle"
+              labelStyle={{
+                fontWeight: "600",
+                backgroundColor: "#f8f9fa",
+                width: "140px",
+                padding: "16px",
+                borderRadius: "4px 0 0 4px"
+              }}
+              contentStyle={{
+                backgroundColor: "white",
+                padding: "16px",
+                borderRadius: "0 4px 4px 0"
+              }}
+            >
               <Descriptions.Item
                 label={
                   <span>
@@ -51,11 +92,19 @@ const ProductDetailsInfoBuy = ({ product, loading }) => {
               <Descriptions.Item
                 label={
                   <span>
-                    <DollarOutlined /> Giá
+                    <DollarOutlined /> Giá bán
                   </span>
                 }
               >
-                <div style={{ color: "#52c41a" }}>
+                <div style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#52c41a",
+                  padding: "8px",
+                  background: "#f6ffed",
+                  borderRadius: "6px",
+                  display: "inline-block"
+                }}>
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
@@ -76,37 +125,80 @@ const ProductDetailsInfoBuy = ({ product, loading }) => {
           <Col span={12}>
             <Card
               title={
-                <span>
+                <span style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#1890ff"
+                }}>
                   <PictureOutlined /> Hình ảnh sản phẩm
                 </span>
               }
               bordered={false}
+              style={{
+                borderRadius: "12px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
+              }}
             >
-              <div className="flex flex-wrap mt-2">
-                {product.listImage && product.listImage.length > 0 ? (
-                  product.listImage.map((imageObj, index) => (
-                    <img
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                gap: "12px",
+                padding: "12px"
+              }}>
+                {product.listImage?.length > 0 ? (
+                  product.listImage.map((imageObj) => (
+                    <div
                       key={imageObj.productImagesID}
-                      src={imageObj.image}
-                      alt={`Hình ảnh sản phẩm ${index + 1}`}
-                      className="w-24 h-24 mr-2 mb-2 object-cover"
                       style={{
-                        width: "100px",
-                        height: "100px",
-                        objectFit: "cover",
-                        margin: "4px",
+                        position: "relative",
+                        paddingTop: "100%",
+                        overflow: "hidden",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        transition: "transform 0.3s"
                       }}
-                    />
+                    >
+                      <img
+                        src={imageObj.image}
+                        alt="Product"
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover"
+                        }}
+                      />
+                    </div>
                   ))
                 ) : (
-                  <p>Không có hình ảnh cho sản phẩm này.</p>
+                  <div style={{
+                    padding: "40px",
+                    textAlign: "center",
+                    color: "#999",
+                    background: "#f5f5f5",
+                    borderRadius: "8px"
+                  }}>
+                    <PictureOutlined style={{ fontSize: "32px", marginBottom: "8px" }} />
+                    <div>Không có hình ảnh cho sản phẩm này.</div>
+                  </div>
                 )}
               </div>
             </Card>
           </Col>
         </Row>
       ) : (
-        <p>Không tìm thấy thông tin sản phẩm.</p>
+        <div style={{
+          padding: "40px",
+          textAlign: "center",
+          background: "#f5f5f5",
+          borderRadius: "8px",
+          color: "#999"
+        }}>
+          <InfoCircleOutlined style={{ fontSize: "32px", marginBottom: "16px" }} />
+          <p>Không tìm thấy thông tin sản phẩm.</p>
+        </div>
       )}
     </Card>
   );

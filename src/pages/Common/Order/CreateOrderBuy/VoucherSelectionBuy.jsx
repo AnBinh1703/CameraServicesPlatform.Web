@@ -59,8 +59,12 @@ const VoucherSelectionBuy = ({
             return (
               <Col span={8} key={voucher.productVoucherID}>
                 <Card
-                  title={vourcherCode}
-                  bordered={false}
+                  title={
+                    <div style={{ color: '#1890ff', fontWeight: 'bold' }}>
+                      {vourcherCode}
+                    </div>
+                  }
+                  bordered={true}
                   style={{
                     cursor: "pointer",
                     borderColor:
@@ -75,23 +79,29 @@ const VoucherSelectionBuy = ({
                     boxShadow:
                       selectedVoucher === voucher.vourcherID
                         ? "0 4px 8px rgba(0, 0, 0, 0.1)"
-                        : "none",
+                        : "0 2px 4px rgba(0, 0, 0, 0.05)",
+                    borderRadius: "8px",
                     transition: "all 0.3s ease",
                   }}
                   onClick={() => onCardClick(voucher.vourcherID)}
                 >
                   {selectedVoucher === voucher.vourcherID &&
                     selectedVoucherDetails && (
-                      <>
-                        <p>
-                          <strong>Mã Voucher:</strong>
-                          {selectedVoucherDetails.vourcherCode}
-                        </p>
-                        <p>
-                          <strong>Mô tả:</strong>
-                          {selectedVoucherDetails.description}
-                        </p>
-                      </>
+                      <div style={{ padding: '8px 0' }}>
+                        <div style={{ marginBottom: '8px' }}>
+                          <strong style={{ marginRight: '8px' }}>Mã Voucher:</strong>
+                          <span>{selectedVoucherDetails.vourcherCode}</span>
+                        </div>
+                        <div style={{ marginBottom: '8px' }}>
+                          <strong style={{ marginRight: '8px' }}>Mô tả:</strong>
+                          <span>{selectedVoucherDetails.description}</span>
+                        </div>
+                        {selectedVoucherDetails.discountAmount && (
+                          <div style={{ color: '#f5222d', fontWeight: 'bold' }}>
+                            Giảm: {selectedVoucherDetails.discountAmount.toLocaleString()}đ
+                          </div>
+                        )}
+                      </div>
                     )}
                 </Card>
               </Col>

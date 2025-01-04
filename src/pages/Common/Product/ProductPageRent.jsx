@@ -30,6 +30,29 @@ const { Content } = Layout;
 const { Title } = Typography;
 const { Search } = Input;
 
+const commonStyles = {
+  pageWrapper: {
+    minHeight: '100vh',
+    background: 'linear-gradient(145deg, #f6f8fc 0%, #f0f2f5 100%)',
+    padding: '24px',
+  },
+  searchSection: {
+    width: '70%',
+    maxWidth: '800px',
+    margin: '0 auto 32px',
+  },
+  card: {
+    borderRadius: '16px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease',
+  },
+  infoSection: {
+    padding: '20px',
+    borderTop: '1px solid #f0f0f0',
+  }
+};
+
 const ProductPageRent = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,29 +166,25 @@ const ProductPageRent = () => {
 
   return (
     <Layout>
-      <Content className="p-6">
-        <Title level={2} className="text-center mb-6 text-mainColor">
-          Trang Sản Phẩm
+      <Content style={commonStyles.pageWrapper}>
+        <Title level={2} className="text-center mb-8 text-2xl font-bold text-gray-800">
+          Sản Phẩm Cho Thuê
         </Title>
 
-        <div className="flex justify-center mb-6">
+        <div style={commonStyles.searchSection} className="flex gap-4">
           <Search
-            className="w-1/2"
-            placeholder="Tìm kiếm sản phẩm"
-            enterButton
+            placeholder="Tìm kiếm sản phẩm..."
+            enterButton={<SearchOutlined />}
+            size="large"
             value={searchTerm}
             onSearch={handleSearch}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-            }}
-            suffix={<SearchOutlined />} // Add search icon
+            className="flex-1"
           />
           <Button
             onClick={handleClearSearch}
-            className="ml-4 rounded-lg shadow-lg transition duration-200 hover:bg-gray-200"
-            style={{ backgroundColor: "#f0f0f0", border: "none" }}
+            size="large"
+            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg"
           >
             Xóa Tìm Kiếm
           </Button>
@@ -178,162 +197,110 @@ const ProductPageRent = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {availableProducts.map((product) => (
                 <Card
                   key={product.productID}
-                  className="shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-200"
+                  style={commonStyles.card}
+                  className="hover:-translate-y-1 hover:shadow-xl"
                   cover={
-                    product.listImage.length > 0 ? (
+                    <div className="relative pt-[75%] overflow-hidden">
                       <img
-                        src={product.listImage[0].image}
+                        src={product.listImage[0]?.image || "https://placehold.co/300x200"}
                         alt={product.productName}
-                        className="w-full object-cover h-64 rounded-t-lg"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
-                    ) : (
-                      <img
-                        src="https://placehold.co/300x200"
-                        alt="Placeholder for product image"
-                        className="w-full object-cover h-64 rounded-t-lg"
-                      />
-                    )
+                    </div>
                   }
                 >
-                  <Card.Meta
-                    title={
-                      <div className="flex justify-center">
-                        <span className="text-lg font-semibold">
-                          {product.productName}
-                        </span>
+                  <div className="p-5">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
+                      {product.productName}
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {/* Description */}
+                      <p className="text-gray-600">{product.productDescription}</p>
+
+                      {/* Pricing Section */}
+                      <div className="space-y-2 border-t border-b py-3">
+                        {product.depositProduct && (
+                          <div className="flex justify-between text-red-500">
+                            <span>Giá Cọc:</span>
+                            <span className="font-bold">{formatPrice(product.depositProduct)}</span>
+                          </div>
+                        )}
+                        {[
+                          { price: product.pricePerHour, label: 'giờ' },
+                          { price: product.pricePerDay, label: 'ngày' },
+                          { price: product.pricePerWeek, label: 'tuần' },
+                          { price: product.pricePerMonth, label: 'tháng' },
+                          { price: product.priceBuy, label: 'Giá mua' }
+                        ].map(({ price, label }) => price && (
+                          <div key={label} className="flex justify-between text-green-600">
+                            <span>Giá {label}:</span>
+                            <span className="font-bold">{formatPrice(price)}</span>
+                          </div>
+                        ))}
                       </div>
-                    }
-                  />
-                  <div className="mt-2 p-4">
-                    <p className="text-gray-700 text-left">
-                      {product.productDescription}
-                    </p>
-                    {product.depositProduct != null && (
-                      <p className="font-bold text-left text-red-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá Cọc:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.depositProduct)}
-                      </p>
-                    )}
-                    {product.pricePerHour != null && (
-                      <p className="font-bold text-left text-green-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá thuê:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.pricePerHour)}
-                        /giờ
-                      </p>
-                    )}
-                    {product.pricePerDay != null && (
-                      <p className="font-bold text-left text-green-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá thuê:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.pricePerDay)}
-                        /ngày
-                      </p>
-                    )}
-                    {product.pricePerWeek != null && (
-                      <p className="font-bold text-left text-green-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá thuê:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.pricePerWeek)}
-                        /tuần
-                      </p>
-                    )}
-                    {product.pricePerMonth != null && (
-                      <p className="font-bold text-left text-green-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá thuê:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.pricePerMonth)}
-                        /tháng
-                      </p>
-                    )}
-                    {product.priceBuy != null && (
-                      <p className="font-bold text-left text-green-500">
-                        <DollarOutlined className="inline mr-1" />
-                        Giá mua:
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.priceBuy)}
-                      </p>
-                    )}
-                    <p className="font-semibold text-left">
-                      <TagOutlined className="inline mr-1" />
-                      Thương hiệu: {getBrandName(product.brand)}
-                    </p>
-                    <p className="font-semibold text-left">
-                      <InfoCircleOutlined className="inline mr-1" />
-                      Chất lượng: {product.quality}
-                    </p>
-                    <p className="font-semibold text-left">
-                      <InfoCircleOutlined className="inline mr-1" />
-                      Trạng thái:
-                      <span className={getStatusColor(product.status)}>
-                        {getProductStatusEnum(product.status)}
-                      </span>
-                    </p>
-                    <p className="font-semibold text-left">
-                      <StarOutlined className="inline mr-1" />
-                      Đánh giá: {product.rating}
-                    </p>
-                    <p className="font-semibold text-left">
-                      <InfoCircleOutlined className="inline mr-1" />
-                      Số Serial: {product.serialNumber}
-                    </p>
-                    <p className="text-left">
-                      <ShopOutlined className="inline mr-1" />
-                      <strong>Nhà cung cấp:</strong> {product.supplierName}
-                    </p>
-                    <p className="text-left">
-                      <FolderOpenOutlined className="inline mr-1" />
-                      <strong>Danh mục:</strong> {product.categoryName}
-                    </p>
-                    <p className="font-semibold text-left">
-                      <CalendarOutlined className="inline mr-1" />
-                      Ngày tạo: {new Date(product.createdAt).toLocaleString()}
-                    </p>
-                    <p className="font-semibold text-left">
-                      <EditOutlined className="inline mr-1" />
-                      Ngày cập nhật:
-                      {new Date(product.updatedAt).toLocaleString()}
-                    </p>
-                    <Button
-                      type="primary"
-                      onClick={() => navigate(`/product/${product.productID}`)}
-                      className="mt-2 rounded-lg transition duration-200 hover:bg-blue-600"
-                    >
-                      Xem Chi Tiết
-                    </Button>
+
+                      {/* Product Details */}
+                      <div className="space-y-2 text-sm">
+                        {/* Keep all existing detail fields but with improved layout */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <p><TagOutlined className="mr-2" />Thương hiệu: {getBrandName(product.brand)}</p>
+                          <p><StarOutlined className="mr-2" />Đánh giá: {product.rating}</p>
+                          <p><InfoCircleOutlined className="mr-2" />Chất lượng: {product.quality}</p>
+                          <p className={getStatusColor(product.status)}>
+                            <InfoCircleOutlined className="mr-2" />
+                            {getProductStatusEnum(product.status)}
+                          </p>
+                        </div>
+                        
+                        {/* Additional Info */}
+                        <div className="mt-3 space-y-1 text-gray-600">
+                          <p className="text-left">
+                            <ShopOutlined className="inline mr-1" />
+                            <strong>Nhà cung cấp:</strong> {product.supplierName}
+                          </p>
+                          <p className="text-left">
+                            <FolderOpenOutlined className="inline mr-1" />
+                            <strong>Danh mục:</strong> {product.categoryName}
+                          </p>
+                          <p className="font-semibold text-left">
+                            <CalendarOutlined className="inline mr-1" />
+                            Ngày tạo: {new Date(product.createdAt).toLocaleString()}
+                          </p>
+                          <p className="font-semibold text-left">
+                            <EditOutlined className="inline mr-1" />
+                            Ngày cập nhật:
+                            {new Date(product.updatedAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="primary"
+                        block
+                        size="large"
+                        onClick={() => navigate(`/product/${product.productID}`)}
+                        className="mt-4 bg-blue-500 hover:bg-blue-600"
+                      >
+                        Xem Chi Tiết
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
             </div>
-            <div className="flex justify-center mt-6">
+            
+            <div className="flex justify-center mt-8">
               <Pagination
                 current={currentPage}
                 pageSize={pageSize}
                 total={totalProducts}
                 onChange={onPageChange}
-                showSizeChanger={false}
+                className="bg-white p-4 rounded-lg shadow"
               />
             </div>
           </>

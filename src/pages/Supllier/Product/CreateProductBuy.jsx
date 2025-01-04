@@ -1,5 +1,5 @@
 import { UploadOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Select, Space, Upload } from "antd";
+import { Button, Form, Input, message, Select, Space, Upload, Card, Row, Col } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
@@ -148,160 +148,182 @@ const CreateProductBuy = () => {
   };
 
   return (
-    <Form
-      form={form}
-      onFinish={handleCreateProduct}
-      initialValues={{ Status: 0 }} // Đảm bảo Trạng thái có giá trị mặc định
-    >
-      <Form.Item
-        name="SerialNumber"
-        label="Số Serial"
-        rules={[{ required: true, message: "Vui lòng nhập số serial!" }]}
+    <Card title="Tạo Sản Phẩm Mới" bordered={false}>
+      <Form
+        form={form}
+        onFinish={handleCreateProduct}
+        initialValues={{ Status: 0 }}
+        layout="vertical"
+        className="create-product-form"
       >
-        <Input />
-      </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="SerialNumber"
+              label="Số Serial"
+              rules={[{ required: true, message: "Vui lòng nhập số serial!" }]}
+            >
+              <Input placeholder="Nhập số serial" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="CategoryID"
+              label="Danh mục"
+              rules={[{ required: true, message: "Vui lòng chọn một danh mục!" }]}
+            >
+              <Select placeholder="Chọn một danh mục">
+                {categories.map((category) => (
+                  <Option key={category.categoryID} value={category.categoryID}>
+                    {category.categoryName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
-      <Form.Item
-        name="CategoryID"
-        label="Danh mục"
-        rules={[{ required: true, message: "Vui lòng chọn một danh mục!" }]}
-      >
-        <Select placeholder="Chọn một danh mục">
-          {categories.map((category) => (
-            <Option key={category.categoryID} value={category.categoryID}>
-              {category.categoryName}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="ProductName"
+              label="Tên sản phẩm"
+              rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}
+            >
+              <Input placeholder="Nhập tên sản phẩm" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="Brand"
+              label="Thương hiệu"
+              rules={[{ required: true, message: "Vui lòng chọn một thương hiệu" }]}
+            >
+              <Select placeholder="Chọn một thương hiệu">
+                <Option value={0}>Canon</Option>
+                <Option value={1}>Nikon</Option>
+                <Option value={2}>Sony</Option>
+                <Option value={3}>Fujifilm</Option>
+                <Option value={4}>Olympus</Option>
+                <Option value={5}>Panasonic</Option>
+                <Option value={6}>Leica</Option>
+                <Option value={7}>Pentax</Option>
+                <Option value={8}>Hasselblad</Option>
+                <Option value={9}>Sigma</Option>
+                <Option value={10}>Khác</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
-      <Form.Item
-        name="ProductName"
-        label="Tên sản phẩm"
-        rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}
-      >
-        <Input />
-      </Form.Item>
-
-      <Form.Item
-        name="ProductDescription"
-        label="Mô tả"
-        rules={[{ required: true, message: "Vui lòng nhập mô tả sản phẩm!" }]}
-      >
-        <Input.TextArea />
-      </Form.Item>
-      <Form.Item
-        name="Quality"
-        label="Chất lượng"
-        rules={[
-          { required: true, message: "Vui lòng nhập chất lượng sản phẩm!" },
-        ]}
-      >
-        <Select placeholder="Đánh giá  chất lượng sản phẩm">
-          <Option value={0}>Mới</Option>
-          <Option value={1}>Đã qua sử dụng</Option>
-        </Select>
-      </Form.Item>
-      <Form.Item name="PriceBuy" label="Giá (Mua)">
-        <Input type="number" />
-      </Form.Item>
-
-      <Form.Item
-        name="Brand"
-        label="Thương hiệu"
-        rules={[{ required: true, message: "Vui lòng chọn một thương hiệu" }]}
-      >
-        <Select placeholder="Chọn một thương hiệu">
-          <Option value={0}>Canon</Option>
-          <Option value={1}>Nikon</Option>
-          <Option value={2}>Sony</Option>
-          <Option value={3}>Fujifilm</Option>
-          <Option value={4}>Olympus</Option>
-          <Option value={5}>Panasonic</Option>
-          <Option value={6}>Leica</Option>
-          <Option value={7}>Pentax</Option>
-          <Option value={8}>Hasselblad</Option>
-          <Option value={9}>Sigma</Option>
-          <Option value={10}>Khác</Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item label="Tải lên Tài liệu">
-        <Upload
-          name="file"
-          accept=".png,.jpg,.jpeg,.pdf"
-          showUploadList={false}
-          onChange={handleFileChange}
+        <Form.Item
+          name="ProductDescription"
+          label="Mô tả"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả sản phẩm!" }]}
         >
-          <Button icon={<UploadOutlined />}>Nhấn để Tải lên</Button>
-        </Upload>
+          <Input.TextArea rows={4} placeholder="Nhập mô tả chi tiết về sản phẩm" />
+        </Form.Item>
 
-        {filePreview && (
-          <div style={{ marginTop: 10 }}>
-            <p>Xem trước tài liệu:</p>
-            <img
-              src={filePreview}
-              alt="Preview"
-              style={{ maxWidth: "100%", maxHeight: 200, objectFit: "cover" }}
-            />
-            <Button
-              type="danger"
-              onClick={handleRemoveFile}
-              style={{ marginTop: 10 }}
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item
+              name="Quality"
+              label="Chất lượng"
+              rules={[{ required: true }]}
             >
-              Xóa Tài liệu
-            </Button>
-          </div>
-        )}
-      </Form.Item>
+              <Select placeholder="Đánh giá chất lượng">
+                <Option value={0}>Mới</Option>
+                <Option value={1}>Đã qua sử dụng</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item name="PriceBuy" label="Giá (Mua)">
+              <Input type="number" placeholder="Nhập giá bán" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item name="Status" label="Trạng thái">
+              <Select placeholder="Chọn trạng thái">
+                <Option value={0}>Sản phẩm để bán</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
-      <Form.Item
-        name="Status"
-        label="Trạng thái"
-        rules={[{ required: true, message: "Trạng thái là bắt buộc!" }]}
-      >
-        <Select placeholder="Chọn trạng thái">
-          <Option value={0}>Sản phẩm để bán</Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item label="Đặc điểm sản phẩm">
-        {specifications.map((specification, index) => (
-          <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
-            <Input
-              value={specification.feature}
-              onChange={(e) =>
-                handleSpecificationChange(e.target.value, index, "feature")
-              }
-              placeholder={`Đặc điểm ${index + 1}`}
-              style={{ width: "100%" }}
-            />
-            <Input
-              value={specification.description}
-              onChange={(e) =>
-                handleSpecificationChange(e.target.value, index, "description")
-              }
-              placeholder={`Mô tả ${index + 1}`}
-              style={{ width: "40%" }}
-            />
-            <Button
-              type="danger"
-              onClick={() => handleRemoveSpecification(index)}
+        <Card title="Tải lên Hình ảnh" size="small" className="upload-card">
+          <Form.Item label="Hình ảnh sản phẩm">
+            <Upload
+              name="file"
+              accept=".png,.jpg,.jpeg"
+              showUploadList={false}
+              onChange={handleFileChange}
             >
-              Xóa
-            </Button>
-          </Space>
-        ))}
-        <Button type="dashed" onClick={handleAddSpecification}>
-          Thêm đặc điểm
-        </Button>
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading}>
-          Tạo sản phẩm
-        </Button>
-      </Form.Item>
-    </Form>
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+            {filePreview && (
+              <div style={{ marginTop: '1rem' }}>
+                <img
+                  src={filePreview}
+                  alt="Preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 200,
+                    objectFit: 'contain',
+                    borderRadius: '4px',
+                  }}
+                />
+                <Button 
+                  danger
+                  onClick={handleRemoveFile}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Xóa ảnh
+                </Button>
+              </div>
+            )}
+          </Form.Item>
+        </Card>
+
+        <Card title="Đặc điểm sản phẩm" size="small" style={{ marginTop: '1rem' }}>
+          {specifications.map((specification, index) => (
+            <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
+              <Input
+                value={specification.feature}
+                onChange={(e) =>
+                  handleSpecificationChange(e.target.value, index, "feature")
+                }
+                placeholder={`Đặc điểm ${index + 1}`}
+                style={{ width: "100%" }}
+              />
+              <Input
+                value={specification.description}
+                onChange={(e) =>
+                  handleSpecificationChange(e.target.value, index, "description")
+                }
+                placeholder={`Mô tả ${index + 1}`}
+                style={{ width: "40%" }}
+              />
+              <Button
+                type="danger"
+                onClick={() => handleRemoveSpecification(index)}
+              >
+                Xóa
+              </Button>
+            </Space>
+          ))}
+          <Button type="dashed" onClick={handleAddSpecification}>
+            Thêm đặc điểm
+          </Button>
+        </Card>
+
+        <Form.Item style={{ marginTop: '1rem', textAlign: 'right' }}>
+          <Button type="primary" htmlType="submit" loading={loading}>
+            Tạo sản phẩm
+          </Button>
+        </Form.Item>
+      </Form>
+    </Card>
   );
 };
 

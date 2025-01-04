@@ -1,0 +1,22 @@
+/* Replace -ms-high-contrast media queries with forced-colors */
+@media (forced-colors: active) {
+  .ant-btn {
+    forced-color-adjust: none;
+  }
+  
+  .ant-steps-item-icon {
+    forced-color-adjust: none;
+  }
+  
+  .ant-form-item {
+    forced-color-adjust: none;
+  }
+  
+  .ant-card {
+    forced-color-adjust: none;
+  }
+  
+  .ant-spin {
+    forced-color-adjust: none;
+  }
+}

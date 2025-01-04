@@ -2,6 +2,7 @@ import { Button, Card, Form, message, Select, Spin, Steps } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import "../../../../styles/custom-antd.css"; // Add this import
 import { createOrderWithPayment } from "../../../../api/orderApi";
 import { getProductById } from "../../../../api/productApi";
 import { getSupplierById } from "../../../../api/supplierApi";
@@ -214,7 +215,11 @@ const CreateOrderBuy = () => {
     {
       title: "Chi tiết sản phẩm",
       content: (
-        <ProductDetailsInfoBuy product={product} loading={loadingProduct} />
+        <ProductDetailsInfoBuy 
+          product={product} 
+          loading={loadingProduct}
+          form={form} // Add form prop
+        />
       ),
     },
     {
@@ -224,6 +229,7 @@ const CreateOrderBuy = () => {
           deliveryMethod={deliveryMethod}
           setDeliveryMethod={setDeliveryMethod}
           supplierInfo={supplierInfo}
+          form={form} // Add form prop
         />
       ),
     },

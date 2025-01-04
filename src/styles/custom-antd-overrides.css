@@ -1,0 +1,43 @@
+/* Override Ant Design forced colors mode */
+@media (forced-colors: active) {
+  /* Basic elements */
+  .ant-btn,
+  .ant-btn-primary,
+  .ant-btn-default {
+    forced-color-adjust: none;
+    -webkit-forced-color-adjust: none;
+  }
+
+  /* Form elements */
+  .ant-form-item,
+  .ant-input,
+  .ant-select,
+  .ant-radio-wrapper,
+  .ant-checkbox-wrapper {
+    forced-color-adjust: none;
+    -webkit-forced-color-adjust: none;
+  }
+
+  /* Layout elements */
+  .ant-card,
+  .ant-layout,
+  .ant-menu {
+    forced-color-adjust: none;
+    -webkit-forced-color-adjust: none;
+  }
+
+  /* Navigation elements */
+  .ant-steps,
+  .ant-steps-item,
+  .ant-steps-item-icon {
+    forced-color-adjust: none;
+    -webkit-forced-color-adjust: none;
+  }
+
+  /* Loading states */
+  .ant-spin,
+  .ant-spin-dot {
+    forced-color-adjust: none;
+    -webkit-forced-color-adjust: none;
+  }
+}

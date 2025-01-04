@@ -17,7 +17,7 @@ const DeliveryMethod = ({
 
   return (
     <Card title="Phương thức giao hàng" bordered={false}>
-      <Form.Item
+      <div
         label="Chọn phương thức giao hàng"
         rules={[
           {
@@ -33,7 +33,7 @@ const DeliveryMethod = ({
         >
           <Radio value={0}>Nhận tại cửa hàng</Radio>
         </Radio.Group>
-      </Form.Item>
+      </div>
 
       {supplierInfo && (
         <div className="mt-4">
