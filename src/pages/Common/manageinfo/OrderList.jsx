@@ -129,17 +129,12 @@ const OrderList = ({
   };
 
   const fetchCategoryAndSupplierNames = async (orderDetails) => {
-    console.log("Starting fetchCategoryAndSupplierNames with:", orderDetails);
-
     const uniqueCategoryIDs = [
       ...new Set(orderDetails.map((detail) => detail.product?.categoryID)),
     ].filter((id) => id);
     const uniqueSupplierIDs = [
       ...new Set(orderDetails.map((detail) => detail.product?.supplierID)),
     ].filter((id) => id);
-
-    console.log("Unique category IDs:", uniqueCategoryIDs);
-    console.log("Unique supplier IDs:", uniqueSupplierIDs);
 
     try {
       const categoryPromises = uniqueCategoryIDs.map((id) =>
@@ -153,9 +148,6 @@ const OrderList = ({
         Promise.all(categoryPromises),
         Promise.all(supplierPromises),
       ]);
-
-      console.log("API responses - categories:", categories);
-      console.log("API responses - suppliers:", suppliers);
 
       const newCategoryMap = {};
       categories.forEach((res, index) => {
@@ -182,7 +174,6 @@ const OrderList = ({
         }
       });
 
-      console.log("Final supplier dictionary:", supplierDict);
       setCategoryMap(newCategoryMap);
       setLocalSupplierMap(supplierDict);
     } catch (error) {
@@ -192,7 +183,6 @@ const OrderList = ({
   };
 
   useEffect(() => {
-    console.log("Orders changed:", orders);
     if (orders.length > 0) {
       const allOrderDetails = orders.flatMap(
         (order) => order.orderDetails || []
@@ -209,7 +199,6 @@ const OrderList = ({
   }, [initialSupplierMap]);
 
   const getProductInfo = (orderDetails) => {
-    console.log("getProductInfo called with orderDetails:", orderDetails);
     if (!orderDetails || orderDetails.length === 0) return null;
     return orderDetails.map((detail, index) => (
       <div key={index} className="border-b border-gray-100 last:border-0 py-2">

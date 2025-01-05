@@ -1,23 +1,32 @@
-import { DatePicker, Form, Input, Modal, Select, message } from "antd"; // Add message import
+import { DatePicker, Form, Input, Modal, Select, message } from "antd";
 import moment from "moment";
-import { useState, useEffect } from "react"; // Add these imports
-import { getOrderDetailsById,  } from "../../../../api/orderApi"; // Add this import
-import {getProductById} from "../../../../api/productApi"; // Add this import
+import { useState, useEffect } from "react";
+import { getOrderDetailsById } from "../../../../api/orderApi";
+import { getProductById } from "../../../../api/productApi";
+
 const ExtendModal = ({
   isVisible,
   onCancel,
   onExtend,
-  form,
   durationOptions,
-  selectedOrder, // Add this prop
-  // Remove productPrices from props
+  selectedOrder,
 }) => {
+  // Create form instance inside the component
+  const [form] = Form.useForm();
+  
   const [productPrices, setProductPrices] = useState({
     pricePerHour: 0,
     pricePerDay: 0,
     pricePerWeek: 0,
     pricePerMonth: 0,
   });
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isVisible) {
+      form.resetFields();
+    }
+  }, [isVisible, form]);
 
   useEffect(() => {
     const fetchProductPrices = async () => {
@@ -189,16 +198,18 @@ const ExtendModal = ({
 
   return (
     <Modal
-      title={`Gia hạn đơn hàng #${selectedOrder?.orderID || ""}`} // Add order ID to title
+      title={`Gia hạn đơn hàng #${selectedOrder?.orderID || ""}`}
       open={isVisible}
-      onCancel={onCancel}
+      onCancel={() => {
+        form.resetFields();
+        onCancel();
+      }}
       footer={null}
     >
       <Form
-        form={form}
+        form={form} // Pass the form instance here
         layout="vertical"
         onFinish={(values) => {
-          // Ensure orderID is included in the form data
           const formData = {
             ...values,
             orderID: selectedOrder?.orderID,
@@ -206,7 +217,11 @@ const ExtendModal = ({
           onExtend(formData);
         }}
         onValuesChange={handleFormValuesChange}
-        initialValues={{ orderID: selectedOrder?.orderID }} // Set initial value
+        initialValues={{ 
+          orderID: selectedOrder?.orderID,
+          durationUnit: 0,
+          durationValue: 1
+        }}
       >
         <Form.Item
           name="orderID"

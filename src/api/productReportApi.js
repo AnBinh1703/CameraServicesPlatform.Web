@@ -7,7 +7,7 @@ export const getAllProductReports = async (pageIndex = 1, pageSize = 10) => {
     });
     return res.data;
   } catch (err) {
-    console.error("Error fetching all product reports:", err);
+    console.error("Lỗi khi tải tất cả báo cáo sản phẩm:", err);
     return null;
   }
 };
@@ -22,7 +22,7 @@ export const getProductReportById = async (
     });
     return res.data;
   } catch (err) {
-    console.error("Error fetching product report by ID:", err);
+    console.error("Lỗi khi tải báo cáo sản phẩm theo ID:", err);
     return null;
   }
 };
@@ -40,7 +40,22 @@ export const getProductReportBySupplierId = async (
     );
     return res.data;
   } catch (err) {
-    console.error("Error fetching product report by supplier ID:", err);
+    console.error("Lỗi khi tải báo cáo sản phẩm theo ID nhà cung cấp:", err);
+    return null;
+  }
+};
+export const getProductReportByProductId = async (
+  id,
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const res = await api.get(`/productReport/get-product-report-by-productId`, {
+      params: { id, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi tải báo cáo sản phẩm theo ID sản phẩm:", err);
     return null;
   }
 };
@@ -49,7 +64,7 @@ export const createProductReport = async (data) => {
     const res = await api.post(`/productReport/create-product-report`, data);
     return res.data;
   } catch (err) {
-    console.error("Error creating product report:", err);
+    console.error("Lỗi khi tạo báo cáo sản phẩm:", err);
     return null;
   }
 };
@@ -68,7 +83,7 @@ export const updateProductReport = async (
     });
     return res.data;
   } catch (err) {
-    console.error("Error updating product report:", err);
+    console.error("Lỗi khi cập nhật báo cáo sản phẩm:", err);
     return null;
   }
 };
@@ -79,7 +94,7 @@ export const deleteProductReport = async (productReportId) => {
     });
     return res.data;
   } catch (err) {
-    console.error("Error deleting product report:", err);
+    console.error("Lỗi khi xóa báo cáo sản phẩm:", err);
     return null;
   }
 };

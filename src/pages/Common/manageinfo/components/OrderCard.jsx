@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { getAllExtendsByOrderId } from "../../../../api/extendApi";
 import { cancelOrder } from "../../../../api/orderApi";
 import { formatDateTime, formatPrice } from "../utils/orderUtils";
-import ReportRatingDialog from './ReportRatingDialog';
+import ReportRatingDialog from "./ReportRatingDialog";
+import { getProductReportByProductId } from "../../../../api/productReportApi";
 
 const OrderCard = ({
   order,
@@ -28,6 +29,8 @@ const OrderCard = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [productReports, setProductReports] = useState([]);
+  const [showReportHistory, setShowReportHistory] = useState(false);
 
   useEffect(() => {
     if (order.orderStatus === 3 || order.orderStatus === 12) {
@@ -35,11 +38,29 @@ const OrderCard = ({
     }
   }, [order.orderID]);
 
+  useEffect(() => {
+    if (order.orderDetails && order.orderDetails.length > 0) {
+      loadProductReports();
+    }
+  }, [order.orderDetails]);
+
   const loadExtendHistory = async () => {
     const response = await getAllExtendsByOrderId(order.orderID);
     if (response?.isSuccess) {
       setExtendHistory(response.result.items);
     }
+  };
+
+  const loadProductReports = async () => {
+    const productIds = order.orderDetails.map(detail => detail.productID);
+    const reports = await Promise.all(
+      productIds.map(id => getProductReportByProductId(id))
+    );
+    const validReports = reports
+      .filter(r => r?.isSuccess)
+      .flatMap(r => r.result)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setProductReports(validReports);
   };
 
   const handleCancelOrder = async () => {
@@ -72,13 +93,23 @@ const OrderCard = ({
       <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center space-x-4">
           <div className="flex-shrink-0 w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="w-6 h-6 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              Đơn hàng #{order.orderID.slice(0, 8)}...
+              Đơn hàng #{order.orderID}
               <span className="text-xs text-gray-500 font-normal">
                 {formatDateTime(order.orderDate)}
               </span>
@@ -105,8 +136,18 @@ const OrderCard = ({
         {/* Delivery Status - Enhanced card */}
         <div className="bg-gray-50 p-5 rounded-xl hover:bg-gray-100 transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <h4 className="font-medium text-gray-700">Phương thức giao hàng</h4>
           </div>
@@ -199,56 +240,137 @@ const OrderCard = ({
       </div>
 
       {/* Extend History - New styling */}
-      {(order.orderStatus === 3 || order.orderStatus === 12) && extendHistory.length > 0 && (
-        <div className="col-span-full mt-4">
+      {(order.orderStatus === 3 || order.orderStatus === 12) &&
+        extendHistory.length > 0 && (
+          <div className="col-span-full mt-4">
+            <button
+              onClick={() => setShowExtendHistory(!showExtendHistory)}
+              className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700"
+            >
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showExtendHistory ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+              {showExtendHistory ? "Ẩn lịch sử gia hạn" : "Xem lịch sử gia hạn"}
+            </button>
+
+            {showExtendHistory && (
+              <div className="mt-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                <h4 className="font-medium text-gray-700 mb-4 flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-teal-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Lịch sử gia hạn
+                </h4>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {extendHistory.map((extend) => (
+                    <div
+                      key={extend.extendId}
+                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-100"
+                    >
+                      <div className="space-y-2">
+                        <p className="font-medium text-gray-800">
+                          {extend.durationValue}{" "}
+                          {extend.durationUnit === 0
+                            ? "giờ"
+                            : extend.durationUnit === 1
+                            ? "ngày"
+                            : extend.durationUnit === 2
+                            ? "tuần"
+                            : "tháng"}
+                        </p>
+                        <div className="text-sm text-gray-600">
+                          <p>
+                            Bắt đầu:{" "}
+                            {formatDateTime(extend.rentalExtendStartDate)}
+                          </p>
+                          <p>
+                            Kết thúc:{" "}
+                            {formatDateTime(extend.rentalExtendEndDate)}
+                          </p>
+                        </div>
+                        {extend.totalAmount && (
+                          <p className="text-teal-600 font-medium mt-2">
+                            {formatPrice(extend.totalAmount)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      {/* Product Report History */}
+      {productReports.length > 0 && (
+        <div className="mt-6 border-t border-gray-100 pt-6">
           <button
-            onClick={() => setShowExtendHistory(!showExtendHistory)}
+            onClick={() => setShowReportHistory(!showReportHistory)}
             className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700"
           >
-            <svg className={`w-4 h-4 transition-transform ${showExtendHistory ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            <svg
+              className={`w-4 h-4 transition-transform ${
+                showReportHistory ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
-            {showExtendHistory ? "Ẩn lịch sử gia hạn" : "Xem lịch sử gia hạn"}
+            {showReportHistory ? "Ẩn lịch sử báo cáo" : "Xem lịch sử báo cáo"}
           </button>
 
-          {showExtendHistory && (
-            <div className="mt-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
-              <h4 className="font-medium text-gray-700 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Lịch sử gia hạn
-              </h4>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {extendHistory.map((extend) => (
-                  <div
-                    key={extend.extendId}
-                    className="bg-white p-4 rounded-lg shadow-sm border border-gray-100"
-                  >
-                    <div className="space-y-2">
+          {showReportHistory && (
+            <div className="mt-4 space-y-4">
+              {productReports.map(report => (
+                <div
+                  key={report.productReportID}
+                  className="bg-gray-50 p-4 rounded-lg"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
                       <p className="font-medium text-gray-800">
-                        {extend.durationValue}{" "}
-                        {extend.durationUnit === 0
-                          ? "giờ"
-                          : extend.durationUnit === 1
-                          ? "ngày"
-                          : extend.durationUnit === 2
-                          ? "tuần"
-                          : "tháng"}
+                        Trạng thái: {report.statusType}
                       </p>
-                      <div className="text-sm text-gray-600">
-                        <p>Bắt đầu: {formatDateTime(extend.rentalExtendStartDate)}</p>
-                        <p>Kết thúc: {formatDateTime(extend.rentalExtendEndDate)}</p>
-                      </div>
-                      {extend.totalAmount && (
-                        <p className="text-teal-600 font-medium mt-2">
-                          {formatPrice(extend.totalAmount)}
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-600 mt-1">
+                        {report.reason}
+                      </p>
                     </div>
+                    <span className="text-sm text-gray-500">
+                      {formatDateTime(report.createdAt)}
+                    </span>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -302,10 +424,10 @@ const OrderCard = ({
             Hủy đơn hàng
           </button>
         )}
-        
-        {(order.orderStatus === 7 || 
-          order.orderStatus === 10 || 
-          order.orderStatus === 11 || 
+
+        {(order.orderStatus === 7 ||
+          order.orderStatus === 10 ||
+          order.orderStatus === 11 ||
           order.orderStatus === 2) && (
           <>
             <button
@@ -322,7 +444,7 @@ const OrderCard = ({
             </button>
           </>
         )}
-        
+
         {/* Report Dialog */}
         <ReportRatingDialog
           isOpen={showReportDialog}
@@ -340,12 +462,14 @@ const OrderCard = ({
           accountID={user.id}
           mode="rating"
         />
-        
+
         {/* Cancel Order Dialog */}
         {showCancelDialog && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Xác nhận hủy đơn hàng</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Xác nhận hủy đơn hàng
+              </h3>
               <textarea
                 className="w-full p-2 border rounded-lg mb-4 h-32"
                 placeholder="Nhập lý do hủy đơn hàng..."
