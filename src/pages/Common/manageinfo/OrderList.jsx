@@ -1,7 +1,9 @@
-import { message } from "antd";
+import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { getCategoryById } from "../../../api/categoryApi";
 import { createExtend } from "../../../api/extendApi";
+import { getProductById } from "../../../api/productApi"; // Add this import
 import { getSupplierById } from "../../../api/supplierApi";
 import { formatDateTime, formatPrice } from "../../../utils/util";
 
@@ -18,15 +20,76 @@ const OrderList = ({
 }) => {
   const [categoryMap, setCategoryMap] = useState({});
   const [localSupplierMap, setLocalSupplierMap] = useState({});
+  const [isExtendModalVisible, setIsExtendModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [form] = Form.useForm();
+  const [productPrices, setProductPrices] = useState({
+    pricePerHour: 0,
+    pricePerDay: 0,
+    pricePerWeek: 0,
+    pricePerMonth: 0,
+  });
 
-  const handleExtend = async (order) => {
-    console.log("handleExtend called with order:", order);
-    const extendData = { orderId: order.orderID };
-    const result = await createExtend(extendData);
-    if (result) {
-      message.success("Gia hạn thành công.");
-    } else {
-      message.error("Không thể gia hạn.");
+  const durationOptions = {
+    0: { min: 2, max: 8 }, // Hour
+    1: { min: 1, max: 3 }, // Day
+    2: { min: 1, max: 2 }, // Week
+    3: { min: 1, max: 1 }, // Month
+  };
+
+  const handleExtendClick = async (order) => {
+    setSelectedOrder(order);
+    setIsExtendModalVisible(true);
+
+    // Get product ID from order details
+    const productId = order.orderDetails[0]?.product?.productID;
+    if (productId) {
+      try {
+        const response = await getProductById(productId);
+        if (response.isSuccess) {
+          const product = response.result;
+          setProductPrices({
+            pricePerHour: product.pricePerHour,
+            pricePerDay: product.pricePerDay,
+            pricePerWeek: product.pricePerWeek,
+            pricePerMonth: product.pricePerMonth,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      }
+    }
+
+    form.setFieldsValue({
+      orderID: order.orderID,
+      rentalExtendStartDate: moment(order.rentalEndDate),
+      durationUnit: 0,
+      durationValue: durationOptions[0].min,
+    });
+  };
+
+  const handleExtend = async (values) => {
+    try {
+      const extendData = {
+        orderID: values.orderID,
+        durationUnit: values.durationUnit,
+        durationValue: values.durationValue,
+        extendReturnDate: values.extendReturnDate.toISOString(),
+        rentalExtendStartDate: values.rentalExtendStartDate.toISOString(),
+        rentalExtendEndDate: values.rentalExtendEndDate.toISOString(),
+        totalAmount: values.totalAmount,
+      };
+
+      const result = await createExtend(extendData);
+      if (result.isSuccess) {
+        message.success("Gia hạn thành công");
+        setIsExtendModalVisible(false);
+        form.resetFields();
+      } else {
+        message.error(result.message || "Không thể gia hạn");
+      }
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi gia hạn");
     }
   };
 
@@ -162,7 +225,205 @@ const OrderList = ({
   };
 
   // Sort orders by latest order date
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+  );
+
+  const calculateProductPriceRent = (values) => {
+    const { durationUnit, durationValue } = values;
+    if (!durationOptions[durationUnit]) {
+      message.error("Đơn vị thời gian không hợp lệ");
+      return 0;
+    }
+
+    if (!durationValue || durationValue <= 0) {
+      message.error("Thời lượng phải lớn hơn 0");
+      return 0;
+    }
+
+    const { min, max } = durationOptions[durationUnit];
+    if (durationValue < min || durationValue > max) {
+      message.error(
+        `Thời lượng không hợp lệ. Vui lòng chọn từ ${min} đến ${max}.`
+      );
+      return 0;
+    }
+
+    let price = 0;
+    switch (durationUnit) {
+      case 0:
+        price = durationValue * productPrices.pricePerHour;
+        break;
+      case 1:
+        price = durationValue * productPrices.pricePerDay;
+        break;
+      case 2:
+        price = durationValue * productPrices.pricePerWeek;
+        break;
+      case 3:
+        price = durationValue * productPrices.pricePerMonth;
+        break;
+      default:
+        price = 0;
+    }
+    return price;
+  };
+
+  const calculateRentalEndDate = (startDate, durationValue, durationUnit) => {
+    if (!startDate) return null;
+
+    // Convert to moment if it's not already
+    const start = moment(startDate);
+    let endDate;
+
+    switch (durationUnit) {
+      case 0: // Hours
+        endDate = start.clone().add(durationValue, "hours");
+        break;
+      case 1: // Days
+        endDate = start.clone().add(durationValue, "days");
+        break;
+      case 2: // Weeks
+        endDate = start.clone().add(durationValue, "weeks");
+        break;
+      case 3: // Months
+        endDate = start.clone().add(durationValue, "months");
+        break;
+      default:
+        return null;
+    }
+    return endDate;
+  };
+
+  const calculateExtendReturnDate = (endDate) => {
+    if (!endDate) return null;
+    return moment(endDate).clone().add(1, "hours");
+  };
+
+  const handleFormValuesChange = (_, allValues) => {
+    const { rentalExtendStartDate, durationUnit, durationValue } = allValues;
+    if (rentalExtendStartDate && durationUnit !== undefined && durationValue) {
+      const endDate = calculateRentalEndDate(
+        rentalExtendStartDate,
+        durationValue,
+        durationUnit
+      );
+      const price = calculateProductPriceRent(allValues);
+
+      if (endDate) {
+        // Calculate return date (1 hour after end date)
+        const returnDate = calculateExtendReturnDate(endDate);
+
+        // Calculate total amount
+        const totalAmount = calculateProductPriceRent(allValues);
+
+        // Update form values
+        form.setFieldsValue({
+          rentalExtendEndDate: endDate,
+          extendReturnDate: returnDate,
+          totalAmount: totalAmount,
+        });
+      }
+    }
+  };
+
+  const ExtendModal = () => (
+    <Modal
+      title="Gia hạn đơn hàng"
+      open={isExtendModalVisible}
+      onCancel={() => setIsExtendModalVisible(false)}
+      footer={null}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleExtend}
+        onValuesChange={handleFormValuesChange}
+      >
+        <Form.Item name="orderID" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="durationUnit"
+          label="Đơn vị thời gian"
+          rules={[
+            { required: true, message: "Vui lòng chọn đơn vị thời gian" },
+          ]}
+        >
+          <Select>
+            <Select.Option value={0}>
+              Giờ - Chọn thời gian tối thiểu {durationOptions[0].min} tối đa{" "}
+              {durationOptions[0].max}
+            </Select.Option>
+            <Select.Option value={1}>
+              Ngày- Chọn thời gian tối thiểu {durationOptions[1].min} tối đa{" "}
+              {durationOptions[1].max}
+            </Select.Option>
+            <Select.Option value={2}>
+              Tuần- Chọn thời gian tối thiểu {durationOptions[2].min} tối đa{" "}
+              {durationOptions[2].max}
+            </Select.Option>
+            <Select.Option value={3}>
+              Tháng- Chọn thời gian tối thiểu {durationOptions[3].min}- tối đa{" "}
+              {durationOptions[3].max}
+            </Select.Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="durationValue"
+          label="Thời gian gia hạn"
+          rules={[
+            { required: true, message: "Vui lòng nhập thời gian gia hạn" },
+          ]}
+        >
+          <Input type="number" min={1} />
+        </Form.Item>
+
+        <Form.Item
+          name="rentalExtendStartDate"
+          label="Ngày bắt đầu gia hạn"
+          rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu" }]}
+        >
+          <DatePicker showTime />
+        </Form.Item>
+
+        <Form.Item
+          name="rentalExtendEndDate"
+          label="Ngày kết thúc gia hạn"
+          rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc" }]}
+        >
+          <DatePicker showTime />
+        </Form.Item>
+
+        <Form.Item
+          name="extendReturnDate"
+          label="Ngày trả đồ"
+          rules={[{ required: true, message: "Vui lòng chọn ngày trả đồ" }]}
+        >
+          <DatePicker showTime disabled />
+        </Form.Item>
+
+        <Form.Item
+          name="totalAmount"
+          label="Tổng tiền"
+          rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
+        >
+          <Input type="number" min={0} />
+        </Form.Item>
+
+        <Form.Item className="text-right">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Xác nhận gia hạn
+          </button>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
 
   return (
     <div className="lg:col-span-5 bg-gray-50 shadow-lg rounded-lg md:p-6">
@@ -335,14 +596,15 @@ const OrderList = ({
                     Thanh toán
                   </button>
                 )}
-                {order.orderStatus === 2 && (
-                  <button
-                    onClick={() => handleExtend(order)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Gia hạn
-                  </button>
-                )}
+                {order.orderStatus === 3 ||
+                  (order.orderStatus === 12 && (
+                    <button
+                      onClick={() => handleExtendClick(order)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Gia hạn
+                    </button>
+                  ))}
                 {order.orderStatus === 1 && (
                   <button
                     onClick={() => handleUpdateOrderStatus(order.orderID)}
@@ -366,6 +628,7 @@ const OrderList = ({
           ))}
         </div>
       )}
+      <ExtendModal />
     </div>
   );
 };
