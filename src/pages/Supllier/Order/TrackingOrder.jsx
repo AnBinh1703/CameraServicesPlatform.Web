@@ -4,7 +4,7 @@ import {
   CheckOutlined,
   SmileOutlined,
 } from "@ant-design/icons";
-import { message, Modal, Table } from "antd";
+import { message, Modal, Table, Input } from "antd";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { getAllExtendsByOrderId, getExtendById } from "../../../api/extendApi";
@@ -36,6 +36,7 @@ const TrackingOrder = ({ order, onUpdate }) => {
   const [beforeImageUrl, setBeforeImageUrl] = useState(null);
   const [afterImageUrl, setAfterImageUrl] = useState(null);
   const [extendsData, setExtendsData] = useState([]);
+  const [cancelMessage, setCancelMessage] = useState("");
 
   useEffect(() => {
     const fetchImages = async (orderId) => {
@@ -133,9 +134,9 @@ const TrackingOrder = ({ order, onUpdate }) => {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (orderId, message) => {
     try {
-      const response = await cancelOrder(orderId);
+      const response = await cancelOrder(orderId, message);
       if (response?.isSuccess) {
         message.success("Đơn hàng đã được hủy!");
         onUpdate(orderId, 6);
@@ -246,6 +247,33 @@ const TrackingOrder = ({ order, onUpdate }) => {
   };
 
   const showConfirm = (action, orderId) => {
+    if (action === "cancel") {
+      Modal.confirm({
+        title: "Bạn có chắc chắn muốn hủy đơn hàng này?",
+        content: (
+          <div>
+            <p>Vui lòng nhập lý do hủy đơn:</p>
+            <Input.TextArea 
+              value={cancelMessage}
+              onChange={(e) => setCancelMessage(e.target.value)}
+              placeholder="Nhập lý do hủy đơn hàng"
+              rows={4}
+            />
+          </div>
+        ),
+        onOk() {
+          handleCancelOrder(orderId, cancelMessage);
+          setCancelMessage(""); // Reset message after submission
+        },
+        onCancel() {
+          setCancelMessage(""); // Reset message if canceled
+        },
+        okText: "Xác nhận",
+        cancelText: "Hủy bỏ"
+      });
+      return;
+    }
+
     Modal.confirm({
       title: "Bạn có chắc chắn?",
       content: `Bạn có muốn ${action} đơn hàng này không?`,
@@ -297,7 +325,18 @@ const TrackingOrder = ({ order, onUpdate }) => {
       borderColor: "border-green-300",
       textColor: "text-green-700",
     },
-
+    {
+      title: "Yêu cầu hủy đơn",
+      description:
+        "Sản phẩm không đủ đáp ứng yêu cầu dể giao dến tay khách hàng ",
+      status: 0,
+      icon: <CheckCircleOutlined />,
+      action: "cancel",
+      color: "yellow",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-300",
+      textColor: "text-yellow-700",
+    },
     {
       title: "Xác nhận hủy đơn",
       description: "Chấp nhận yêu cầu hủy từ khách hàng",

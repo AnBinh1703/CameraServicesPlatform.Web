@@ -60,7 +60,9 @@ const ActionsComponent = ({
           Phê duyệt
         </Button>
       )}
-      {(order.orderStatus === 0 || order.orderStatus === 5) && (
+      {(order.orderStatus === 0 ||
+        order.orderStatus === 8 ||
+        order.orderStatus === 5) && (
         <Button
           type="danger"
           onClick={() => showConfirm("cancel", order.orderID)}
@@ -68,9 +70,20 @@ const ActionsComponent = ({
           icon={<CloseOutlined />}
           style={{ marginRight: 8, marginBottom: 8 }}
         >
-          Hủy
+          Yêu cầu hủy đơn
         </Button>
       )}
+      {/* {(order.orderStatus === 0 || order.orderStatus === 5) && (
+        <Button
+          type="danger"
+          onClick={() => showConfirm("cancel", order.orderID)}
+          className="ml-2"
+          icon={<CloseOutlined />}
+          style={{ marginRight: 8, marginBottom: 8 }}
+        >
+          Chấp nhận hủy đơn
+        </Button>
+      )} */}
       {order.orderStatus === 6 && (
         <Button
           type="primary"
