@@ -1,10 +1,10 @@
 import {
   DollarOutlined,
+  DownOutlined,
   FileDoneOutlined,
   ReloadOutlined,
   ShoppingCartOutlined,
   UpOutlined,
-  DownOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,7 +17,6 @@ import {
   Table,
   Tabs,
   Typography,
-  Collapse,
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
@@ -341,11 +340,13 @@ const ManageOrder = () => {
         <Row gutter={[8, 8]}>
           {summaryItems.map((item) => (
             <Col xs={24} sm={12} md={6} lg={3} key={item.title}>
-              <Card className="summary-card" bodyStyle={{ padding: '8px' }}>
+              <Card className="summary-card" bodyStyle={{ padding: "8px" }}>
                 <div className="flex items-center space-x-2">
                   <div className="icon-container-sm">{item.icon}</div>
                   <div className="flex flex-col">
-                    <Text className="text-xs text-gray-500 mb-1">{item.title}</Text>
+                    <Text className="text-xs text-gray-500 mb-1">
+                      {item.title}
+                    </Text>
                     <Text className="text-sm font-semibold">{item.value}</Text>
                   </div>
                 </div>
@@ -388,32 +389,7 @@ const ManageOrder = () => {
           </Col>
           <Col xs={24} lg={12}></Col>
         </Row>
-        <Card
-          title={
-            <div className="flex justify-between items-center">
-              <span>Thống Kê Đơn Hàng</span>
-              <Button
-                type="text"
-                onClick={() => toggleCollapse("orderStats")}
-                icon={
-                  collapseStates.orderStats ? <UpOutlined /> : <DownOutlined />
-                }
-              />
-            </div>
-          }
-          className="custom-card"
-          bordered={false}
-        >
-          {collapseStates.orderStats && (
-            <Table
-              dataSource={[data.orderStatistics]}
-              columns={orderStatisticsColumns}
-              pagination={false}
-              rowKey="key"
-              className="custom-table"
-            />
-          )}
-        </Card>
+
         <Card
           title="Danh Sách Đơn Hàng"
           className="custom-card"

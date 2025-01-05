@@ -1,4 +1,12 @@
-import { Card, Col, List, Progress, Row, Table, Typography } from "antd";
+import {
+  BarChartOutlined,
+  DollarOutlined,
+  RiseOutlined,
+  ShoppingCartOutlined,
+  StarOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+import { Card, Col, List, Progress, Row, Statistic, Typography } from "antd";
 import React, { useEffect, useState } from "react";
 import {
   getAllMonthOrderCostStatistics,
@@ -13,6 +21,43 @@ import {
 } from "../../api/dashboardApi";
 
 const { Title, Text } = Typography;
+
+// Update color scheme and styling constants
+const colors = {
+  primary: "#1890ff",
+  success: "#52c41a",
+  warning: "#faad14",
+  error: "#f5222d",
+  purple: "#722ed1",
+  cyan: "#13c2c2",
+  gradient: {
+    blue: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
+    green: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+    gold: "linear-gradient(135deg, #faad14 0%, #d48806 100%)",
+    purple: "linear-gradient(135deg, #722ed1 0%, #531dab 100%)",
+  },
+};
+
+const cardStyle = {
+  borderRadius: "16px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+  height: "100%",
+  border: "none",
+  overflow: "hidden",
+};
+
+const statCardStyle = {
+  ...cardStyle,
+  background: "#fff",
+  padding: "24px",
+};
+
+const iconStyle = {
+  fontSize: "24px",
+  padding: "16px",
+  borderRadius: "50%",
+  marginBottom: "16px",
+};
 
 const orderStatusMap = {
   0: { text: "Chờ xử lý", color: "blue", icon: "fa-hourglass-start" },
@@ -35,221 +80,487 @@ const orderStatusMap = {
 };
 
 const Dashboard = () => {
-  const [bestSellingCategories, setBestSellingCategories] = useState([]);
-  const [systemRatingStatistics, setSystemRatingStatistics] = useState({});
-  const [systemPaymentStatistics, setSystemPaymentStatistics] = useState({});
-  const [systemTransactionStatistics, setSystemTransactionStatistics] =
-    useState({});
-  const [monthOrderPurchaseStatistics, setMonthOrderPurchaseStatistics] =
-    useState([]);
-  const [monthOrderRentStatistics, setMonthOrderRentStatistics] = useState([]);
-  const [allMonthOrderCostStatistics, setAllMonthOrderCostStatistics] =
-    useState([]);
-  const [orderStatusStatistics, setOrderStatusStatistics] = useState([]);
-  const [systemTotalMoneyStatistics, setSystemTotalMoneyStatistics] =
-    useState(0);
+  const [loading, setLoading] = useState(true);
+  const [statistics, setStatistics] = useState({
+    ratings: null,
+    payments: null,
+    bestSellers: [],
+    transactions: null,
+    orderStatus: [],
+    totalMoney: 0,
+    monthlyPurchases: [],
+    monthlyRents: [],
+    monthlyOrders: [],
+  });
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const bestSellingCategoriesData = await getBestSellingCategories(
-  //         "2023-01-01",
-  //         "2023-12-31"
-  //       );
-  //       setBestSellingCategories(bestSellingCategoriesData);
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const now = new Date();
+        const startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+        const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-  //       const systemRatingStatisticsData = await getSystemRatingStatistics();
-  //       setSystemRatingStatistics(systemRatingStatisticsData);
+        const [
+          ratings,
+          payments,
+          bestSellers,
+          transactions,
+          orderStatus,
+          totalMoney,
+          monthlyPurchases,
+          monthlyRents,
+          monthlyOrders,
+        ] = await Promise.all([
+          getSystemRatingStatistics(),
+          getSystemPaymentStatistics(startDate, endDate),
+          getBestSellingCategories(startDate, endDate),
+          getSystemTransactionStatistics(startDate, endDate),
+          getOrderStatusStatistics(),
+          getSystemTotalMoneyStatistics(),
+          getMonthOrderPurchaseStatistics(startDate, endDate),
+          getMonthOrderRentStatistics(startDate, endDate),
+          getAllMonthOrderCostStatistics(startDate, endDate),
+        ]);
 
-  //       const systemPaymentStatisticsData = await getSystemPaymentStatistics(
-  //         "2023-01-01",
-  //         "2023-12-31"
-  //       );
-  //       setSystemPaymentStatistics(systemPaymentStatisticsData);
+        setStatistics({
+          ratings,
+          payments,
+          bestSellers,
+          transactions,
+          orderStatus,
+          totalMoney,
+          monthlyPurchases,
+          monthlyRents,
+          monthlyOrders,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //       const systemTransactionStatisticsData =
-  //         await getSystemTransactionStatistics("2023-01-01", "2023-12-31");
-  //       setSystemTransactionStatistics(systemTransactionStatisticsData);
+    fetchDashboardData();
+  }, []);
 
-  //       const monthOrderPurchaseStatisticsData =
-  //         await getMonthOrderPurchaseStatistics("2023-01-01", "2023-12-31");
-  //       setMonthOrderPurchaseStatistics(monthOrderPurchaseStatisticsData);
-
-  //       const monthOrderRentStatisticsData = await getMonthOrderRentStatistics(
-  //         "2023-01-01",
-  //         "2023-12-31"
-  //       );
-  //       setMonthOrderRentStatistics(monthOrderRentStatisticsData);
-
-  //       const allMonthOrderCostStatisticsData =
-  //         await getAllMonthOrderCostStatistics("2023-01-01", "2023-12-31");
-  //       setAllMonthOrderCostStatistics(allMonthOrderCostStatisticsData);
-
-  //       const orderStatusStatisticsData = await getOrderStatusStatistics();
-  //       setOrderStatusStatistics(orderStatusStatisticsData);
-
-  //       const systemTotalMoneyStatisticsData =
-  //         await getSystemTotalMoneyStatistics();
-  //       setSystemTotalMoneyStatistics(systemTotalMoneyStatisticsData);
-  //     } catch (error) {
-  //       console.error("Error fetching dashboard data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-  // const renderRatingDistribution = () => {
-  //   if (!systemRatingStatistics.ratingDistribution) return null;
-  //   return systemRatingStatistics.ratingDistribution.map((item) => (
-  //     <div key={item.ratingValue} className="mb-2">
-  //       <Text>{`Rating ${item.ratingValue}: ${item.count}`}</Text>
-  //       <Progress
-  //         percent={(item.count / systemRatingStatistics.totalRatings) * 100}
-  //       />
-  //     </div>
-  //   ));
-  // };
-
-  // const renderTopRatedProducts = () => {
-  //   if (!systemRatingStatistics.topRatedProducts) return null;
-  //   return (
-  //     <List
-  //       dataSource={systemRatingStatistics.topRatedProducts}
-  //       renderItem={(product) => (
-  //         <List.Item>
-  //           <Text>{`Product ID: ${product.productID}, Average Rating: ${product.averageRating}, Total Ratings: ${product.totalRatings}`}</Text>
-  //         </List.Item>
-  //       )}
-  //     />
-  //   );
-  // };
-
-  const orderStatusColumns = [
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const { text, color, icon } = orderStatusMap[status] || {};
-        return (
-          <span style={{ color }}>
-            <i className={`fas ${icon} mr-2`}></i>
-            {text}
-          </span>
-        );
-      },
-    },
-    {
-      title: "Count",
-      dataIndex: "count",
-      key: "count",
-    },
-  ];
-
-  return (
-    <div className="p-4">
-      <Title level={1} className="text-center mb-8">
-        Dashboard
-      </Title>
+  const renderRatingStatistics = () => (
+    <Card
+      style={statCardStyle}
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div
+            style={{
+              background: colors.gradient.gold,
+              padding: "12px",
+              borderRadius: "12px",
+              color: "white",
+            }}
+          >
+            <StarOutlined style={{ fontSize: "20px" }} />
+          </div>
+          <span>Rating Statistics</span>
+        </div>
+      }
+    >
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="Best Selling Categories">
-            <List
-              dataSource={bestSellingCategories}
-              renderItem={(category) => (
-                <List.Item>
-                  <Text>{category}</Text>
-                </List.Item>
-              )}
-            />
-          </Card>
+        <Col span={12}>
+          <Statistic
+            title="Total Ratings"
+            value={statistics.ratings?.totalRatings}
+            prefix={<TeamOutlined style={{ color: colors.primary }} />}
+          />
         </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="System Rating Statistics">
-            <div>
-              <Text>Total Ratings: {systemRatingStatistics.totalRatings}</Text>
-              <br />
-              <Text>
-                Average Rating: {systemRatingStatistics.averageRating}
-              </Text>
-              {renderRatingDistribution()}
-              <Title level={4}>Top Rated Products</Title>
-              {renderTopRatedProducts()}
-            </div>
-          </Card>
+        <Col span={12}>
+          <Statistic
+            title="Average Rating"
+            value={statistics.ratings?.averageRating}
+            precision={1}
+            prefix={<StarOutlined style={{ color: colors.warning }} />}
+            suffix="/ 5"
+          />
         </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="System Payment Statistics">
-            <Text>Total Revenue: {systemPaymentStatistics.totalRevenue}</Text>
-            <br />
-            <Text>Payment Count: {systemPaymentStatistics.paymentCount}</Text>
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="System Transaction Statistics">
-            <Text>
-              Total Revenue: {systemTransactionStatistics.totalRevenue}
-            </Text>
-            <br />
-            <Text>
-              Transaction Count: {systemTransactionStatistics.transactionCount}
-            </Text>
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="Month Order Purchase Statistics">
-            <List
-              dataSource={monthOrderPurchaseStatistics}
-              renderItem={(item) => (
-                <List.Item>
-                  <Text>{JSON.stringify(item)}</Text>
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="Month Order Rent Statistics">
-            <List
-              dataSource={monthOrderRentStatistics}
-              renderItem={(item) => (
-                <List.Item>
-                  <Text>{JSON.stringify(item)}</Text>
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="All Month Order Cost Statistics">
-            <List
-              dataSource={allMonthOrderCostStatistics}
-              renderItem={(item) => (
-                <List.Item>
-                  <Text>{JSON.stringify(item)}</Text>
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="Order Status Statistics">
-            <Table
-              dataSource={orderStatusStatistics}
-              columns={orderStatusColumns}
-              pagination={false}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12} lg={8}>
-          <Card title="System Total Money Statistics">
-            <Text>Total Money: {systemTotalMoneyStatistics}</Text>
-          </Card>
+        <Col span={24}>
+          <List
+            dataSource={statistics.ratings?.ratingDistribution}
+            renderItem={(item) => (
+              <List.Item>
+                <Progress
+                  percent={
+                    (item.count / statistics.ratings?.totalRatings) * 100
+                  }
+                  format={() => `${item.count} (${item.ratingValue}★)`}
+                  strokeColor={colors.gradient.gold}
+                  strokeWidth={12}
+                  style={{ width: "100%" }}
+                />
+              </List.Item>
+            )}
+          />
         </Col>
       </Row>
-    </div>
+    </Card>
+  );
+  const renderTopRatedProducts = () => (
+    <Card title="Top Rated Products" loading={loading} style={cardStyle}>
+      <List
+        dataSource={statistics.ratings?.topRatedProducts}
+        renderItem={(item) => (
+          <List.Item>
+            <Row style={{ width: "100%" }}>
+              <Col span={12}>Product ID: {item.productID}</Col>
+              <Col span={12}>
+                <Progress
+                  percent={(item.averageRating / 5) * 100}
+                  format={() => `${item.averageRating}★ (${item.totalRatings})`}
+                />
+              </Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+  const renderTransactionStatistics = () => (
+    <Card style={statCardStyle} bodyStyle={{ padding: 0 }}>
+      <Row gutter={[24, 24]}>
+        <Col span={8}>
+          <div
+            style={{
+              background: colors.gradient.blue,
+              padding: "24px",
+              borderRadius: "12px",
+              height: "100%",
+              color: "white",
+            }}
+          >
+            <DollarOutlined
+              style={{ fontSize: "32px", marginBottom: "16px" }}
+            />
+            <Statistic
+              title={
+                <Text style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Total Revenue
+                </Text>
+              }
+              value={statistics.transactions?.totalRevenue}
+              precision={0}
+              suffix="VND"
+              valueStyle={{ color: "white", fontSize: "24px" }}
+            />
+          </div>
+        </Col>
+        <Col span={8}>
+          <div
+            style={{
+              background: colors.gradient.green,
+              padding: "24px",
+              borderRadius: "12px",
+              height: "100%",
+              color: "white",
+            }}
+          >
+            <ShoppingCartOutlined
+              style={{ fontSize: "32px", marginBottom: "16px" }}
+            />
+            <Statistic
+              title={
+                <Text style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Total Transactions
+                </Text>
+              }
+              value={statistics.transactions?.transactionCount}
+              valueStyle={{ color: "white", fontSize: "24px" }}
+            />
+          </div>
+        </Col>
+      </Row>
+    </Card>
+  );
+
+  const renderOrderStatusStatistics = () => (
+    <Card title="Order Status Distribution" loading={loading} style={cardStyle}>
+      <List
+        dataSource={statistics.orderStatus}
+        renderItem={(item) => (
+          <List.Item>
+            <Row style={{ width: "100%" }}>
+              <Col span={12}>{orderStatusMap[item.status]?.text}</Col>
+              <Col span={12}>
+                <Progress
+                  percent={
+                    (item.count /
+                      statistics.orderStatus.reduce(
+                        (acc, curr) => acc + curr.count,
+                        0
+                      )) *
+                    100
+                  }
+                  format={() => item.count}
+                />
+              </Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+
+  const renderBestSellingCategories = () => (
+    <Card
+      title={
+        <span>
+          <RiseOutlined style={{ color: colors.purple, marginRight: "8px" }} />
+          Best Selling Categories
+        </span>
+      }
+      loading={loading}
+      style={cardStyle}
+    >
+      <List
+        dataSource={statistics.bestSellers}
+        renderItem={(item, index) => (
+          <List.Item>
+            <Row style={{ width: "100%", alignItems: "center" }}>
+              <Col span={2}>
+                <div
+                  style={{
+                    background: colors.primary + "15",
+                    borderRadius: "50%",
+                    width: "32px",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {index + 1}
+                </div>
+              </Col>
+              <Col span={14}>
+                <Text strong>{item.categoryName}</Text>
+              </Col>
+              <Col span={8}>
+                <Text type="secondary">{item.totalSold} sold</Text>
+              </Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+
+  const renderPaymentStatistics = () => (
+    <Card title="Payment Statistics" loading={loading} style={cardStyle}>
+      <Row gutter={[16, 16]}>
+        <Col span={8}>
+          <Statistic
+            title="Total Revenue"
+            value={statistics.payments?.totalRevenue}
+            suffix="VND"
+          />
+        </Col>
+        <Col span={8}>
+          <Statistic
+            title="Payment Count"
+            value={statistics.payments?.paymentCount}
+          />
+        </Col>
+        <Col span={24}>
+          <List
+            dataSource={statistics.payments?.revenueByMethod}
+            renderItem={(item) => (
+              <List.Item>
+                <Row style={{ width: "100%" }}>
+                  <Col span={12}>Payment Method {item.paymentMethod}</Col>
+                  <Col span={12}>{item.totalRevenue.toLocaleString()} VND</Col>
+                </Row>
+              </List.Item>
+            )}
+          />
+        </Col>
+      </Row>
+    </Card>
+  );
+
+  const renderMonthlyPurchases = () => (
+    <Card
+      title="Monthly Purchase Statistics"
+      loading={loading}
+      style={cardStyle}
+    >
+      <List
+        dataSource={statistics.monthlyPurchases}
+        renderItem={(item) => (
+          <List.Item>
+            <Row style={{ width: "100%" }}>
+              <Col span={12}>
+                {new Date(item.month).toLocaleDateString("vi-VN", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Col>
+              <Col span={12}>{item.totalCost.toLocaleString()} VND</Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+
+  const renderMonthlyRents = () => (
+    <Card title="Monthly Rent Statistics" loading={loading} style={cardStyle}>
+      <List
+        dataSource={statistics.monthlyRents}
+        renderItem={(item) => (
+          <List.Item>
+            <Row style={{ width: "100%" }}>
+              <Col span={12}>
+                {new Date(item.month).toLocaleDateString("vi-VN", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Col>
+              <Col span={12}>{item.totalCost.toLocaleString()} VND</Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+
+  const renderMonthlyOrders = () => (
+    <Card title="Monthly Order Statistics" loading={loading} style={cardStyle}>
+      <List
+        dataSource={statistics.monthlyOrders}
+        renderItem={(item) => (
+          <List.Item>
+            <Row style={{ width: "100%" }}>
+              <Col span={12}>
+                {new Date(item.month).toLocaleDateString("vi-VN", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Col>
+              <Col span={12}>{item.totalCost.toLocaleString()} VND</Col>
+            </Row>
+          </List.Item>
+        )}
+      />
+    </Card>
+  );
+
+  const dashboardContainerStyle = `
+    .dashboard-container {
+      padding: 24px;
+      background: #f0f2f5;
+    }
+
+    .dashboard-card {
+      transition: all 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .ant-statistic-title {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: rgba(0,0,0,0.65);
+    }
+
+    .ant-statistic-content {
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .ant-list-item {
+      padding: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .ant-list-item:hover {
+      background-color: rgba(0,0,0,0.02);
+    }
+
+    .ant-progress-text {
+      font-weight: 600;
+    }
+  `;
+
+  return (
+    <>
+      <style>{dashboardContainerStyle}</style>
+      <div className="dashboard-container">
+        <Row gutter={[24, 24]} style={{ marginBottom: "24px" }}>
+          <Col span={24}>
+            <Title
+              level={2}
+              style={{
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  background: colors.gradient.blue,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  color: "white",
+                }}
+              >
+                <BarChartOutlined />
+              </div>
+              Dashboard Overview
+            </Title>
+          </Col>
+        </Row>
+        <Row gutter={[24, 24]}>
+          <Col span={24}>{renderTransactionStatistics()}</Col>
+          <Col span={12}>{renderRatingStatistics()}</Col>
+          <Col span={12}>{renderOrderStatusStatistics()}</Col>
+          <Col span={12}>{renderPaymentStatistics()}</Col>
+          <Col span={12}>{renderTopRatedProducts()}</Col>
+          <Col span={8}>{renderMonthlyPurchases()}</Col>
+          <Col span={8}>{renderMonthlyRents()}</Col>
+          <Col span={8}>{renderMonthlyOrders()}</Col>
+          <Col span={24}>{renderBestSellingCategories()}</Col>
+        </Row>
+      </div>
+    </>
   );
 };
 
 export default Dashboard;
+
+// Add this CSS to your styles file
+const styles = `
+.dashboard-container .ant-card {
+  transition: all 0.3s ease;
+}
+
+.dashboard-container .ant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.dashboard-container .ant-progress-text {
+  font-weight: bold;
+}
+
+.dashboard-container .ant-statistic-title {
+  color: rgba(0,0,0,0.65);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.dashboard-container .ant-statistic-content {
+  font-size: 24px;
+  font-weight: bold;
+}
+`;

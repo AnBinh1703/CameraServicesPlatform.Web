@@ -1,17 +1,6 @@
 import api from "../api/config";
 
-// Get best selling categories
-export const getBestSellingCategories = async (startDate, endDate) => {
-  try {
-    const response = await api.get("/dashboard/best-selling-categories", {
-      params: { startDate, endDate },
-    });
-    return response.data; // Array of categories
-  } catch (error) {
-    console.error("Error fetching best selling categories:", error);
-    throw error; // Rethrow to handle it in the component
-  }
-};
+
 // Get system rating statistics
 export const getSystemRatingStatistics = async () => {
   try {
@@ -21,8 +10,7 @@ export const getSystemRatingStatistics = async () => {
     console.error("Error fetching system rating statistics:", error);
     throw error;
   }
-};
-// Get system payment statistics
+};// Get system payment statistics
 export const getSystemPaymentStatistics = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/system-payment-statistics", {
@@ -32,6 +20,17 @@ export const getSystemPaymentStatistics = async (startDate, endDate) => {
   } catch (error) {
     console.error("Error fetching system payment statistics:", error);
     throw error;
+  }
+};// Get best selling categories
+export const getBestSellingCategories = async (startDate, endDate) => {
+  try {
+    const response = await api.get("/dashboard/best-selling-categories", {
+      params: { startDate, endDate },
+    });
+    return response.data; // Array of categories
+  } catch (error) {
+    console.error("Error fetching best selling categories:", error);
+    throw error; // Rethrow to handle it in the component
   }
 };
 // Get system transaction statistics
@@ -46,7 +45,6 @@ export const getSystemTransactionStatistics = async (startDate, endDate) => {
     throw error;
   }
 };
-
 // Get month order purchase statistics
 export const getMonthOrderPurchaseStatistics = async (startDate, endDate) => {
   try {
@@ -94,6 +92,7 @@ export const getAllMonthOrderCostStatistics = async (startDate, endDate) => {
     throw error;
   }
 };
+
 // Get order status statistics
 export const getOrderStatusStatistics = async () => {
   try {
@@ -118,8 +117,46 @@ export const getSystemTotalMoneyStatistics = async () => {
   }
 };
 
+// Get order status statistics 
+export const getMonthOrderCostStatistics = async (startDate, endDate) => {
+  try {
+    const response = await api.get(
+      "/dashboard/get-month-order-cost-statistics",
+      {
+        params: { startDate, endDate },
+      }
+    );
+    return response.data; // Array of month cost statistics
+  } catch (error) {
+    console.error("Error fetching month order cost statistics:", error);
+    throw error;
+  }
+};
 
 
+//----------------------------------
+// Get month order cost statistics by supplier
+export const getMonthOrderCostStatisticsBySupplier = async (
+  supplierId,
+  startDate,
+  endDate
+) => {
+  try {
+    const response = await api.get(
+      `/dashboard/get-month-order-cost-statistics-by-supplier-id/${supplierId}`,
+      {
+        params: { startDate, endDate },
+      }
+    );
+    return response.data; // Array of month cost statistics
+  } catch (error) {
+    console.error(
+      `Error fetching month order cost statistics for supplier ${supplierId}:`,
+      error
+    );
+    throw error;
+  }
+};
 // Get best selling categories by supplier
 export const getBestSellingCategoriesBySupplier = async (
   supplierId,
@@ -153,29 +190,6 @@ export const getSupplierProductStatistics = async (supplierId) => {
   } catch (error) {
     console.error(
       `Error fetching product statistics for supplier ${supplierId}:`,
-      error
-    );
-    throw error;
-  }
-};
-
-// Get month order cost statistics
-export const getMonthOrderCostStatistics = async (
-  supplierId,
-  startDate,
-  endDate
-) => {
-  try {
-    const response = await api.get(
-      `/dashboard/get-month-order-cost-statistics-by-supplier-id/${supplierId}`,
-      {
-        params: { startDate, endDate },
-      }
-    );
-    return response.data; // Array of month cost statistics
-  } catch (error) {
-    console.error(
-      `Error fetching month order cost statistics for supplier ${supplierId}:`,
       error
     );
     throw error;
@@ -306,8 +320,6 @@ export const getSupplierPaymentStatistics = async (
   }
 };
 
-
-
 // Get supplier transaction statistics
 export const getSupplierTransactionStatistics = async (
   supplierId,
@@ -331,7 +343,6 @@ export const getSupplierTransactionStatistics = async (
   }
 };
 
-
 // Get order status statistics by supplier
 export const getOrderStatusStatisticsBySupplier = async (supplierId) => {
   try {
@@ -347,5 +358,3 @@ export const getOrderStatusStatisticsBySupplier = async (supplierId) => {
     throw error;
   }
 };
-
-

@@ -35,7 +35,7 @@ import OrderDetail from "../pages/CommonManager/OrderDetail";
 import RegisterSupplier from "../pages/CommonManager/RegisterSupplier";
 import ManageCategory from "../pages/Staff/Category/ManageCategory";
 import ManageCombo from "../pages/Staff/Combo/ManageCombo";
-import Dashboard from "../pages/Staff/DashboardStaff";
+import DashboardStaff from "../pages/Staff/DashboardStaff";
 import ManageProduct from "../pages/Staff/Product/ManageProduct";
 import ManageTransactionSystem from "../pages/Staff/Transaction/ManageTransactionSystem";
 import ManageVoucher from "../pages/Staff/Voucher/ManageVoucher";
@@ -172,7 +172,7 @@ function Routers() {
       element: <ManagementLayOut />,
       children: [
         { index: true, element: <Navigate to="dashboard" replace /> },
-        { path: "dashboard", element: <Dashboard /> },
+        { path: "dashboard", element: <DashboardStaff /> },
         { path: "manage-category", element: <ManageCategory /> },
         { path: "manage-product", element: <ManageProduct /> },
         { path: "manage-voucher", element: <ManageVoucher /> },
