@@ -528,7 +528,7 @@ const RegisterSupplier = () => {
         footer={null}
         onCancel={handleCancel}
       >
-        <img alt="Preview" style={{ width: "100%" }} src={previewImage} />
+        <img alt="Xem trước" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

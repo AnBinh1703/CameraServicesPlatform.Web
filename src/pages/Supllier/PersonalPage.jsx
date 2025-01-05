@@ -1,20 +1,19 @@
+import { Button, Form, message } from "antd";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { message, Button, Form } from "antd";
-import { useState, useEffect } from "react";
-import moment from "moment";
-import SupplierInfo from "./Information/SupplierInfo";
-import UpdateSupplierModal from "./Information/UpdateSupplierModal";
-import ComboRegistrationModal from "./Combo/ComboRegistrationModal";
 import { getSupplierIdByAccountId } from "../../api/accountApi";
 import { createComboOfSupplier, getAllCombos } from "../../api/comboApi";
 import { getSupplierById, updateSupplier } from "../../api/supplierApi";
+import ComboRegistrationModal from "./Combo/ComboRegistrationModal";
+import SupplierInfo from "./Information/SupplierInfo";
+import UpdateSupplierModal from "./Information/UpdateSupplierModal";
 
 const PersonalPage = () => {
   const { user } = useSelector((state) => state.user || {});
   const [supplierId, setSupplierId] = useState(null);
   const [supplierInfo, setSupplierInfo] = useState(null);
-  const [combos, setCombos] = useState([]);
-  const [selectedComboId, setSelectedComboId] = useState(null);
+  const [servicePlans, setServicePlans] = useState([]);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [fileList, setFileList] = useState([]);
@@ -93,20 +92,20 @@ const PersonalPage = () => {
   }, [supplierId]);
 
   useEffect(() => {
-    const fetchCombos = async () => {
+    const fetchServicePlans = async () => {
       try {
         const response = await getAllCombos();
         if (response?.isSuccess) {
-          setCombos(response.result);
+          setServicePlans(response.result);
         } else {
-          message.error("Không thể lấy danh sách combo.");
+          message.error("Không thể lấy danh sách gói dịch vụ.");
         }
       } catch (error) {
-        message.error("Lỗi khi lấy danh sách combo.");
+        message.error("Lỗi khi lấy danh sách gói dịch vụ.");
       }
     };
 
-    fetchCombos();
+    fetchServicePlans();
   }, []);
 
   const handleCreateCombo = async () => {
@@ -114,22 +113,22 @@ const PersonalPage = () => {
 
     const comboData = {
       supplierID: supplierId,
-      comboId: selectedComboId,
+      comboId: selectedPlanId, // Changed from selectedComboId to selectedPlanId
     };
 
     try {
       const response = await createComboOfSupplier(comboData);
       if (response?.isSuccess) {
-        message.success("Tạo combo thành công.");
+        message.success("Tạo gói dịch vụ thành công.");
         form.resetFields();
         if (response.result) {
           window.location.href = response.result;
         }
       } else {
-        message.error("Tạo combo thất bại.");
+        message.error("Tạo gói dịch vụ thất bại.");
       }
     } catch (error) {
-      message.error("Lỗi khi tạo combo.");
+      message.error("Lỗi khi tạo gói dịch vụ.");
     } finally {
       setConfirmLoading(false);
       setIsComboModalVisible(false);
@@ -137,7 +136,7 @@ const PersonalPage = () => {
   };
 
   const handleCardClick = (comboId) => {
-    setSelectedComboId(comboId);
+    setSelectedPlanId(comboId); // Changed from setSelectedComboId
     form.setFieldsValue({ comboId });
   };
 
@@ -195,7 +194,7 @@ const PersonalPage = () => {
   };
 
   const handleChoosePlan = (comboId) => {
-    handleCardClick(comboId);
+    setSelectedPlanId(comboId); // Changed from handleCardClick(comboId)
     next();
   };
 
@@ -211,8 +210,8 @@ const PersonalPage = () => {
         handleComboModalCancel={handleComboModalCancel}
         currentStep={currentStep}
         steps={steps}
-        combos={combos}
-        selectedComboId={selectedComboId}
+        servicePlans={servicePlans}
+        selectedPlanId={selectedPlanId}
         handleCardClick={handleCardClick}
         handleChoosePlan={handleChoosePlan}
         form={form}

@@ -6,7 +6,7 @@ import { getProductById } from "../../../api/productApi";
 import { getSupplierById } from "../../../api/supplierApi";
 
 const DetailProduct = ({ product, loading, onClose }) => {
-  const [productDetails, setProductDetails] = useState(product);
+  const [productDetails, setProductDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(loading);
   const [error, setError] = useState(null);
   const [categoryName, setCategoryName] = useState("");
@@ -14,63 +14,46 @@ const DetailProduct = ({ product, loading, onClose }) => {
   const [contractTemplates, setContractTemplates] = useState([]);
 
   useEffect(() => {
-    if (product?.supplierID) {
-      const fetchSupplierName = async () => {
-        try {
-          const supplier = await getSupplierById(product.supplierID);
-          if (supplier && supplier.result && supplier.result.items.length > 0) {
-            setSupplierName(supplier.result.items[0].supplierName);
-          } else {
-            console.error("Supplier not found");
-          }
-        } catch (error) {
-          console.error("Error fetching supplier name:", error);
-        }
-      };
-
-      fetchSupplierName();
-    }
-  }, [product?.supplierID]);
-
-  useEffect(() => {
-    if (product?.categoryID) {
-      const fetchCategoryName = async () => {
-        try {
-          const category = await getCategoryById(product.categoryID);
-          if (category && category.result) {
-            setCategoryName(category.result.categoryName);
-          } else {
-            console.error("Category not found");
-          }
-        } catch (error) {
-          console.error("Error fetching category name:", error);
-        }
-      };
-
-      fetchCategoryName();
-    }
-  }, [product?.categoryID]);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductDetails = async () => {
+      if (!product?.productID) return;
+      
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const fetchedProduct = await getProductById(product?.id);
-        console.log("Fetched Product:", fetchedProduct);
-        setProductDetails(fetchedProduct);
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-        setError("Failed to load product details. Please try again later.");
-        message.error(err.message);
+        const response = await getProductById(product.productID);
+        console.log('Product Details Response:', response);
+        
+        // Handle both response formats
+        const productData = response?.result || response;
+        
+        if (productData) {
+          setProductDetails(productData);
+          
+          // Fetch category name if needed
+          if (productData.categoryID) {
+            const categoryResponse = await getCategoryById(productData.categoryID);
+            if (categoryResponse?.result) {
+              setCategoryName(categoryResponse.result.categoryName);
+            }
+          }
+          
+          // Fetch supplier name if needed
+          if (productData.supplierID) {
+            const supplierResponse = await getSupplierById(productData.supplierID);
+            if (supplierResponse?.result?.items?.[0]) {
+              setSupplierName(supplierResponse.result.items[0].supplierName);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+        message.error('Failed to load product details');
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (!product) {
-      fetchProduct();
-    }
-  }, [product]);
+    fetchProductDetails();
+  }, [product]); // Depend on product prop changes
 
   useEffect(() => {
     const fetchContractTemplates = async () => {
@@ -106,8 +89,8 @@ const DetailProduct = ({ product, loading, onClose }) => {
     return <div>{error}</div>;
   }
 
-  if (!productDetails) {
-    return <div>Đang tải thông tin sản phẩm...</div>; // Temporary loading message
+  if (!productDetails && !isLoading) {
+    return <div>No product details available</div>;
   }
 
   const {
@@ -135,7 +118,7 @@ const DetailProduct = ({ product, loading, onClose }) => {
     originalPrice,
     countRent,
     category,
-  } = productDetails;
+  } = productDetails || {};
 
   const renderImages = () => {
     if (listImage && listImage.length > 0) {

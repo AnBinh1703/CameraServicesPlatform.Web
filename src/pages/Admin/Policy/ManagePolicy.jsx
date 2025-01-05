@@ -36,10 +36,10 @@ const ManagePolicy = () => {
         setPolicies(response.result || []);
         setFilteredPolicies(response.result || []); // Initialize filtered policies
       } else {
-        message.error("Error fetching policies.");
+        message.error("Lỗi khi tải danh sách chính sách.");
       }
     } catch (error) {
-      message.error("Error fetching policies.");
+      message.error("Lỗi khi tải danh sách chính sách.");
       console.error(error);
     }
   };
@@ -47,10 +47,10 @@ const ManagePolicy = () => {
   const handleDeletePolicy = async (policyID) => {
     try {
       await deletePolicyById(policyID);
-      message.success("Policy deleted successfully!");
+      message.success("Đã xóa chính sách thành công!");
       fetchPolicies(); // Refresh policies after deletion
     } catch (error) {
-      message.error("Error deleting policy.");
+      message.error("Lỗi khi xóa chính sách.");
       console.error(error);
     }
   };
@@ -59,21 +59,21 @@ const ManagePolicy = () => {
     try {
       const response = await updatePolicyById(policyID, updatedPolicyData);
       if (response && response.isSuccess) {
-        message.success("Policy updated successfully!");
+        message.success("Cập nhật chính sách thành công!");
         fetchPolicies(); // Refresh policies after updating
         setIsUpdating(false); // Close the modal after updating
       } else {
-        message.error("Error updating policy.");
+        message.error("Lỗi khi cập nhật chính sách.");
       }
     } catch (error) {
-      message.error("Error updating policy.");
+      message.error("Lỗi khi cập nhật chính sách.");
       console.error(error);
     }
   };
 
   const handleViewDetail = async (policyID) => {
     if (!policyID) {
-      message.error("Invalid policy ID.");
+      message.error("ID chính sách không hợp lệ.");
       return;
     }
 
@@ -128,17 +128,17 @@ const ManagePolicy = () => {
 
   const columns = [
     {
-      title: "Mã Chính Sách",
+      title: "MÃ CHÍNH SÁCH",
       dataIndex: "policyID",
       key: "policyID",
     },
     {
-      title: "Loại Chính Sách",
+      title: "LOẠI CHÍNH SÁCH",
       dataIndex: "policyType",
       key: "policyType",
     },
     {
-      title: "Nội Dung",
+      title: "NỘI DUNG",
       dataIndex: "policyContent",
       key: "policyContent",
       render: (text) => (
@@ -155,24 +155,24 @@ const ManagePolicy = () => {
       ),
     },
     {
-      title: "Đối Tượng Áp Dụng",
+      title: "ĐỐI TƯỢNG ÁP DỤNG",
       dataIndex: "applicableObject",
       key: "applicableObject",
     },
     {
-      title: "Ngày Hiệu Lực",
+      title: "NGÀY HIỆU LỰC",
       dataIndex: "effectiveDate",
       key: "effectiveDate",
       render: (date) => moment(date).format('DD/MM/YYYY'),
     },
     {
-      title: "Giá Trị",
+      title: "GIÁ TRỊ",
       dataIndex: "value",
       key: "value",
       render: (value) => moment(value).format('DD/MM/YYYY'),
     },
     {
-      title: "Thao Tác",
+      title: "THAO TÁC",
       key: "actions",
       render: (_, record) => (
         <div style={{ display: 'flex', gap: '8px' }}>

@@ -49,7 +49,7 @@ const Policy = () => {
           setError("Không thể lấy chính sách.");
         }
       } catch (error) {
-        console.error("Error fetching policies:", error);
+        console.error("Lỗi khi lấy chính sách:", error);
         setError("Đã xảy ra lỗi khi lấy chính sách.");
       }
       setLoading(false);

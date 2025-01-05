@@ -14,8 +14,8 @@ const ComboRegistrationModal = ({
   handleComboModalCancel,
   currentStep,
   steps,
-  combos,
-  selectedComboId,
+  servicePlans,
+  selectedPlanId,
   handleCardClick,
   handleChoosePlan,
   form,
@@ -41,22 +41,25 @@ const ComboRegistrationModal = ({
       <div className="steps-content">
         {currentStep === 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {combos.map((combo) => (
+            {servicePlans.map((plan) => (
               <div
-                key={combo.comboId}
+                key={plan.comboId}
                 className={`p-6 rounded-lg shadow-lg transition-all duration-300 ${
-                  selectedComboId === combo.comboId
+                  selectedPlanId === plan.comboId
                     ? "border-2 border-blue-500 transform scale-105"
                     : "border border-gray-200 hover:border-blue-300"
                 }`}
-                onClick={() => handleCardClick(combo.comboId)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCardClick(plan.comboId);
+                }}
               >
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  {combo.comboName}
+                  {plan.comboName}
                 </h3>
                 <div className="text-center mb-6">
                   <div className="text-4xl font-bold text-blue-600">
-                    {formatCurrency(combo.comboPrice)}
+                    {formatCurrency(plan.comboPrice)}
                   </div>
                   <div className="text-gray-500">/tháng</div>
                 </div>
@@ -64,20 +67,21 @@ const ComboRegistrationModal = ({
                   <li className="flex items-center">
                     <span className="text-blue-500 mr-2">✓</span>
                     <span>
-                      Thời hạn: {durationMap[combo.durationCombo]} tháng
+                      Thời hạn: {durationMap[plan.durationCombo]} tháng
                     </span>
                   </li>
                 </ul>
                 <button
                   type="button"
                   className={`w-full py-2 px-4 rounded-lg transition-colors ${
-                    selectedComboId === combo.comboId
+                    selectedPlanId === plan.comboId
                       ? "bg-blue-600 text-white"
                       : "bg-blue-100 text-blue-600 hover:bg-blue-200"
                   }`}
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    handleChoosePlan(combo.comboId);
+                    handleChoosePlan(plan.comboId);
                   }}
                 >
                   Chọn Gói
@@ -104,12 +108,23 @@ const ComboRegistrationModal = ({
                   required: true,
                   message: "Vui lòng chọn thời gian bắt đầu!",
                 },
+                {
+                  validator: (_, value) => {
+                    if (value && value.isBefore(moment(), 'second')) {
+                      return Promise.reject('Thời gian bắt đầu không thể ở quá khứ!');
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
               <DatePicker
                 showTime
                 style={{ width: "100%" }}
                 placeholder="Chọn thời gian"
+                disabledDate={(current) => {
+                  return current && current < moment().startOf('day');
+                }}
               />
             </Form.Item>
             <Form.Item>
@@ -136,7 +151,7 @@ const ComboRegistrationModal = ({
 
                 <span className="font-medium">
                   {
-                    combos.find((combo) => combo.comboId === selectedComboId)
+                    servicePlans.find((plan) => plan.comboId === selectedPlanId)
                       ?.comboName
                   }
                 </span>
@@ -145,7 +160,7 @@ const ComboRegistrationModal = ({
                 <span className="text-gray-600">Giá gói:</span>
                 <span className="font-medium text-blue-600">
                   {formatCurrency(
-                    combos.find((combo) => combo.comboId === selectedComboId)
+                    servicePlans.find((plan) => plan.comboId === selectedPlanId)
                       ?.comboPrice
                   )}
                 </span>

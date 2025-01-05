@@ -135,11 +135,21 @@ const ProductListBySupplier = () => {
   const handleView = async (productID) => {
     setLoading(true);
     try {
-      const fetchedProduct = await getProductById(productID);
-      setSelectedProduct(fetchedProduct);
-      setIsModalVisible(true); // Show the modal after fetching the product
+      const response = await getProductById(productID);
+      console.log('Product View Response:', response);
+      
+      // Handle both response formats
+      const productData = response?.result || response;
+      
+      if (!productData) {
+        throw new Error('No product data found');
+      }
+
+      setSelectedProduct(productData); // Set the full product data
+      setIsModalVisible(true);
     } catch (error) {
-      message.error("Không thể lấy chi tiết sản phẩm.");
+      console.error('Error fetching product details:', error);
+      message.error(`Không thể lấy chi tiết sản phẩm: ${error.message}`);
     } finally {
       setLoading(false);
     }

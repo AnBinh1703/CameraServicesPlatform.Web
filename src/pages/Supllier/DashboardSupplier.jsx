@@ -10,6 +10,7 @@ import {
   Row,
   Spin,
   Typography,
+  Image, // Add this import
 } from "antd";
 import dayjs from "dayjs";
 import moment from "moment";
@@ -86,6 +87,18 @@ const DashboardSupplier = () => {
   const [endDate, setEndDate] = useState(() => dayjs());
   const [totalCombos, setTotalCombos] = useState(0); // New state for total combos
   const [totalDuration, setTotalDuration] = useState(0); // New state for total duration
+  const [logoPreview, setLogoPreview] = useState(null);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     const fetchSupplierId = async () => {
@@ -457,7 +470,22 @@ const DashboardSupplier = () => {
             <Input />
           </Form.Item>
           <Form.Item name="supplierLogo" label="Logo Nhà Cung Cấp">
-            <Input type="file" />
+            <div>
+              {(logoPreview || supplierDetails?.supplierLogo) && (
+                <div className="mb-2">
+                  <Image
+                    src={logoPreview || supplierDetails?.supplierLogo}
+                    alt="Logo Preview"
+                    style={{ maxWidth: '200px', maxHeight: '200px' }}
+                  />
+                </div>
+              )}
+              <Input 
+                type="file" 
+                onChange={handleLogoChange}
+                accept="image/*"
+              />
+            </div>
           </Form.Item>
           <Button type="primary" htmlType="submit">
             Cập Nhật

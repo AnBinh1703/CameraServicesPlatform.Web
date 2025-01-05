@@ -153,7 +153,6 @@ const Category = () => {
                       <Text
                         type="secondary"
                         style={{ 
-                          display: "block", 
                           marginBottom: "8px",
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',

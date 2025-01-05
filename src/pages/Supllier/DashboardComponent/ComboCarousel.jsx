@@ -1,13 +1,25 @@
-import { AppstoreOutlined } from "@ant-design/icons";
-import { Button, Card, Descriptions, Modal, Table, Typography, Form, message } from "antd";
-import React, { useState, useEffect } from "react";
+import { AppstoreOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  Modal,
+  Table,
+  Typography,
+  message,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { getComboById, createComboOfSupplier, getAllCombos } from "../../../api/comboApi";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
+import {
+  createComboOfSupplier,
+  getAllCombos,
+  getComboById,
+} from "../../../api/comboApi";
 import ComboRegistrationModal from "../Combo/ComboRegistrationModal";
 
 const formatter = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
   currency: "VND",
 });
 
@@ -35,57 +47,62 @@ const durationMap = {
   3: 5,
 };
 
-const ComboCarousel = ({ 
-  combos: initialCombos, 
-  totalCombos, 
-  totalDuration
+const ComboCarousel = ({
+  combos,
+  totalCombos,
+  totalDuration,
+  onComboCreated,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [comboDetails, setComboDetails] = useState(null);
   const [isComboModalVisible, setIsComboModalVisible] = useState(false);
-  const [selectedComboId, setSelectedComboId] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [form] = Form.useForm();
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [servicePlans, setServicePlans] = useState([]);
   const { user } = useSelector((state) => state.user || {});
   const [supplierId, setSupplierId] = useState(null);
-  const [combos, setCombos] = useState(initialCombos || []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (user?.accountId) {
+    const fetchServicePlans = async () => {
+      try {
+        const response = await getAllCombos();
+        if (response.isSuccess) {
+          setServicePlans(response.result);
+        }
+      } catch (error) {
+        console.error("Failed to fetch service plans:", error);
+        message.error("Không thể tải danh sách gói dịch vụ");
+      }
+    };
+
+    fetchServicePlans();
+  }, []);
+
+  useEffect(() => {
+    const fetchSupplierId = async () => {
+      if (user?.id) {
         try {
-          const supplierResponse = await getSupplierIdByAccountId(user.accountId);
-          if (supplierResponse?.isSuccess) {
-            setSupplierId(supplierResponse.result);
-          }
-          
-          const comboResponse = await getAllCombos();
-          if (comboResponse?.isSuccess) {
-            setCombos(comboResponse.result);
+          const response = await getSupplierIdByAccountId(user.id);
+          if (response?.isSuccess) {
+            setSupplierId(response.result);
+          } else {
+            message.error("Lấy mã nhà cung cấp không thành công.");
           }
         } catch (error) {
-          console.error("Error fetching data:", error);
-          message.error("Không thể tải dữ liệu.");
+          message.error("Lỗi khi lấy mã nhà cung cấp.");
         }
       }
     };
-    fetchData();
-  }, [user]);
+
+    fetchSupplierId();
+  }, [user?.id]);
 
   const steps = [
-    {
-      title: "Chọn Gói",
-      content: "Chọn gói dịch vụ",
-    },
-    {
-      title: "Chọn thời gian",
-      content: "Chọn thời gian bắt đầu",
-    },
-    {
-      title: "Xác nhận",
-      content: "Xác nhận thông tin",
-    },
+    { title: "Chọn Gói" },
+    { title: "Chọn Thời Gian" },
+    { title: "Xác Nhận" },
   ];
 
   const showComboModal = () => {
@@ -95,15 +112,16 @@ const ComboCarousel = ({
   const handleComboModalCancel = () => {
     setIsComboModalVisible(false);
     setCurrentStep(0);
+    setSelectedPlanId(null);
+    form.resetFields();
   };
 
-  const handleCardClick = (comboId) => {
-    setSelectedComboId(comboId);
-    form.setFieldsValue({ comboId });
+  const handleCardClick = (planId) => {
+    setSelectedPlanId(planId);
   };
 
-  const handleChoosePlan = (comboId) => {
-    handleCardClick(comboId);
+  const handleChoosePlan = (planId) => {
+    setSelectedPlanId(planId);
     next();
   };
 
@@ -113,37 +131,6 @@ const ComboCarousel = ({
 
   const prev = () => {
     setCurrentStep(currentStep - 1);
-  };
-
-  const handleCreateCombo = async () => {
-    setConfirmLoading(true);
-    try {
-      const comboData = {
-        supplierID: supplierId,
-        comboId: selectedComboId,
-      };
-      
-      const response = await createComboOfSupplier(comboData);
-      if (response?.isSuccess) {
-        message.success("Tạo combo thành công.");
-        form.resetFields();
-        if (response.result) {
-          window.location.href = response.result;
-        }
-      } else {
-        message.error("Tạo combo thất bại.");
-      }
-    } catch (error) {
-      console.error("Error creating combo:", error);
-      message.error("Lỗi khi tạo combo.");
-    } finally {
-      setConfirmLoading(false);
-      setIsComboModalVisible(false);
-    }
-  };
-
-  const formatCurrency = (amount) => {
-    return formatter.format(amount);
   };
 
   const viewDetails = async (id) => {
@@ -167,9 +154,43 @@ const ComboCarousel = ({
     setComboDetails(null);
   };
 
+  const handleCreateCombo = async () => {
+    if (!supplierId) {
+      message.error("Không tìm thấy thông tin nhà cung cấp");
+      return;
+    }
+
+    if (!selectedPlanId) {
+      message.error("Vui lòng chọn gói dịch vụ");
+      return;
+    }
+
+    try {
+      const response = await createComboOfSupplier({
+        supplierId: supplierId,
+        comboId: selectedPlanId,
+      });
+
+      if (response?.isSuccess) {
+        message.success("Tạo gói dịch vụ thành công.");
+        form.resetFields();
+        if (response.result) {
+          window.location.href = response.result;
+        }
+      } else {
+        message.error(response?.message || "Đăng ký gói dịch vụ thất bại");
+      }
+    } catch (error) {
+      console.error("Failed to create combo:", error);
+      message.error("Đăng ký gói dịch vụ thất bại");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   // Sort combos by startTime (latest first)
-  const sortedCombos = [...combos].sort((a, b) => 
-    new Date(b.startTime) - new Date(a.startTime)
+  const sortedCombos = [...combos].sort(
+    (a, b) => new Date(b.startTime) - new Date(a.startTime)
   );
 
   const columns = [
@@ -198,16 +219,17 @@ const ComboCarousel = ({
         const remainingTime = calculateRemainingTime(text);
         const isExpired = remainingTime <= 0;
         return (
-          <span style={{ 
-            color: isExpired ? '#ff4d4f' : '#52c41a',
-            fontWeight: 'bold'
-          }}>
-            {isExpired 
+          <span
+            style={{
+              color: isExpired ? "#ff4d4f" : "#52c41a",
+              fontWeight: "bold",
+            }}
+          >
+            {isExpired
               ? `${formatDateTime(text)} (Đã hết hạn)`
               : `${formatDateTime(text)} (Còn lại: ${Math.ceil(
                   remainingTime / (1000 * 60 * 60 * 24)
-                )} ngày)`
-            }
+                )} ngày)`}
           </span>
         );
       },
@@ -224,70 +246,67 @@ const ComboCarousel = ({
   ];
 
   return (
-    <>
-      <Card
-        title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>
-              <AppstoreOutlined /> Gói Combo Đăng Kí
-            </span>
-            <Button type="primary" onClick={showComboModal}>
-              Đăng Ký Gói Dịch Vụ
-            </Button>
-          </div>
-        }
-      >
-        {sortedCombos.length > 0 ? (
-          <>
-            <Table
-              dataSource={sortedCombos}
-              columns={columns}
-              rowKey="comboOfSupplierId"
-              pagination={false}
-              rowClassName={(record) => 
-                calculateRemainingTime(record.endTime) <= 0 ? 'text-gray-400' : ''
-              }
-            />
-            <Modal
-              title="Chi tiết Combo"
-              visible={isModalVisible}
-              onOk={handleOk}
-              onCancel={handleCancel}
-            >
-              {comboDetails && (
-                <Descriptions bordered column={1} size="small">
-                  <Descriptions.Item label="Tên Combo">
-                    {comboDetails.comboName}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Giá Combo">
-                    {formatter.format(comboDetails.comboPrice)}
-                  </Descriptions.Item>
+    <Card
+      title={
+        <span>
+          <AppstoreOutlined /> Gói Combo Đăng Kí
+        </span>
+      }
+    >
+      <Button type="primary" onClick={showComboModal} className="my-4">
+        <PlusOutlined /> Đăng Ký Gói Dịch Vụ
+      </Button>
 
-                  <Descriptions.Item label="Thời lượng Combo">
-                    {durationMap[comboDetails.durationCombo]} Tháng
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày tạo">
-                    {formatDateTime(comboDetails.createdAt)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày cập nhật">
-                    {formatDateTime(comboDetails.updatedAt)}
-                  </Descriptions.Item>
-                </Descriptions>
-              )}
-            </Modal>
-          </>
-        ) : (
-          <Typography.Text>Không có Combo nào.</Typography.Text>
-        )}
-      </Card>
+      {sortedCombos.length > 0 ? (
+        <>
+          <Table
+            dataSource={sortedCombos}
+            columns={columns}
+            rowKey="comboOfSupplierId"
+            pagination={false}
+            rowClassName={(record) =>
+              calculateRemainingTime(record.endTime) <= 0 ? "text-gray-400" : ""
+            }
+          />
+          <Modal
+            title="Chi tiết Combo"
+            visible={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            {comboDetails && (
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Tên Combo">
+                  {comboDetails.comboName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Giá Combo">
+                  {formatter.format(comboDetails.comboPrice)}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Thời lượng Combo">
+                  {durationMap[comboDetails.durationCombo]} Tháng
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày tạo">
+                  {formatDateTime(comboDetails.createdAt)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày cập nhật">
+                  {formatDateTime(comboDetails.updatedAt)}
+                </Descriptions.Item>
+              </Descriptions>
+            )}
+          </Modal>
+        </>
+      ) : (
+        <Typography.Text>Không có Combo nào.</Typography.Text>
+      )}
 
       <ComboRegistrationModal
         isComboModalVisible={isComboModalVisible}
         handleComboModalCancel={handleComboModalCancel}
         currentStep={currentStep}
         steps={steps}
-        combos={combos}
-        selectedComboId={selectedComboId}
+        servicePlans={servicePlans}
+        selectedPlanId={selectedPlanId}
         handleCardClick={handleCardClick}
         handleChoosePlan={handleChoosePlan}
         form={form}
@@ -295,9 +314,9 @@ const ComboCarousel = ({
         prev={prev}
         handleCreateCombo={handleCreateCombo}
         confirmLoading={confirmLoading}
-        formatCurrency={formatCurrency}
+        formatCurrency={formatter.format}
       />
-    </>
+    </Card>
   );
 };
 

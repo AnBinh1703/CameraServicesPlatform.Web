@@ -23,34 +23,34 @@ import ForgotPasswordModal from "./Account/ForgotPasswordModal";
 import OtpModal from "./Account/OtpModal";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().email("Email không hợp lệ").required("Email là bắt buộc"),
   password: Yup.string()
-    .required("Password is required")
-    .min(6, "Password must be at least 6 characters")
-    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .required("Mật khẩu là bắt buộc")
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .matches(/[A-Z]/, "Mật khẩu phải chứa ít nhất một chữ hoa")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)'
+      'Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*(),.?":{}|<>)'
     ),
 });
 const SignUpSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().email("Email không hợp lệ").required("Email là bắt buộc"),
   password: Yup.string()
-    .required("Password is required")
-    .min(6, "Password must be at least 6 characters")
-    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .required("Mật khẩu là bắt buộc")
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .matches(/[A-Z]/, "Mật khẩu phải chứa ít nhất một chữ hoa")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)'
+      'Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*(),.?":{}|<>)'
     ),
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
+  firstName: Yup.string().required("Tên là bắt buộc"),
+  lastName: Yup.string().required("Họ là bắt buộc"),
   repassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Confirm password is required"),
+    .oneOf([Yup.ref("password"), null], "Mật khẩu không khớp")
+    .required("Xác nhận mật khẩu là bắt buộc"),
   phoneNumber: Yup.number()
-    .min(10, "Must be more than 10 characters")
-    .required("Phone number is requried"),
+    .min(10, "Phải nhiều hơn 10 ký tự")
+    .required("Số điện thoại là bắt buộc"),
 });
 
 const LoginPage = () => {
@@ -347,26 +347,26 @@ const LoginPage = () => {
                         setEmail(values.email);
                         setIsModalVisible(true);
                         message.success(
-                          "Registration successful! Please verify email."
+                          "Đăng ký thành công! Vui lòng xác thực email."
                         );
                       } else {
                         console.error(
-                          "Registration failed:",
-                          result?.message || "Unknown error"
+                          "Đăng ký thất bại:",
+                          result?.message || "Lỗi không xác định"
                         );
-                        message.error("Registration failed. Please try again.");
+                        message.error("Đăng ký thất bại. Vui lòng thử lại.");
                       }
                     } catch (error) {
                       console.error("Error signing up:", error);
                       if (error.response) {
                         message.error(
-                          `Registration failed: ${
-                            error.response.data.message || "Unknown error"
+                          `Đăng ký thất bại: ${
+                            error.response.data.message || "Lỗi không xác định"
                           }`
                         );
                       } else {
                         message.error(
-                          "An error occurred. Please try again later."
+                          "Đã xảy ra lỗi. Vui lòng thử lại sau."
                         );
                       }
                     } finally {

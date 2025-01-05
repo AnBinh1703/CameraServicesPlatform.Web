@@ -28,6 +28,7 @@ import CreateOrderRent from "../pages/Common/Order/CreateOrderRent/CreateOrderRe
 import OrderHistory from "../pages/Common/OrderHistory";
 import PersonalReview from "../pages/Common/PersonalReview";
 import ManageCreateReportForm from "../pages/Common/Report/ManageCreateReportForm";
+import Responsibilities from "../pages/Common/Responsibilities";
 import VerifyPayment from "../pages/Common/VerifyPayment";
 import Wishlist from "../pages/Common/Wishlish/Wishlist";
 import OrderDetail from "../pages/CommonManager/OrderDetail";
@@ -158,6 +159,10 @@ function Routers() {
         {
           path: "manage-product-report-by-supplier",
           element: <ManageReportProductOfSupplier />,
+        },
+        {
+          path: "responsibilities-rights",
+          element: <Responsibilities />,
         },
       ],
     },
