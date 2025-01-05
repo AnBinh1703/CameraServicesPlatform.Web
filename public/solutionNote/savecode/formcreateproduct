@@ -1,340 +1,507 @@
-import { AppstoreOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Descriptions,
-  Form,
-  Modal,
-  Table,
-  Typography,
-  message,
-} from "antd";
+import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import moment from "moment"; // Add this import
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getSupplierIdByAccountId } from "../../../api/accountApi";
-import {
-  createComboOfSupplier,
-  getAllCombos,
-  getComboById,
-} from "../../../api/comboApi";
-import ComboRegistrationModal from "../Combo/ComboRegistrationModal";
+import { getCategoryById } from "../../../api/categoryApi";
+import { createExtend } from "../../../api/extendApi";
+import { getProductById } from "../../../api/productApi";
+import { getSupplierById } from "../../../api/supplierApi";
 
-const formatter = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-});
-
-const formatDateTime = (dateTime) => {
-  const date = new Date(dateTime);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-};
-
-const calculateRemainingTime = (endTime) => {
-  const now = new Date();
-  const end = new Date(endTime);
-  const remainingTime = end - now;
-  return remainingTime > 0 ? remainingTime : 0;
-};
-
-const durationMap = {
-  0: 1,
-  1: 2,
-  2: 3,
-  3: 5,
-};
-
-const getDurationText = (duration) => {
-  const months = Number(duration) || 0;
-  return `${months} Tháng`;
-};
-
-const ComboCarousel = ({ combos, totalCombos, totalDuration }) => {
-  
-  const [supplierId, setSupplierId] = useState(null);
-  const { user } = useSelector((state) => state.user || {});
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [comboDetails, setComboDetails] = useState(null);
-  const [selectedComboId, setSelectedComboId] = useState(null);
-  const [form] = Form.useForm();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isComboModalVisible, setIsComboModalVisible] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
-  useEffect(() => {
-    const fetchSupplierId = async () => {
-      if (user.id) {
-        try {
-          const response = await getSupplierIdByAccountId(user.id);
-          console.log("Supplier ID response:", response);
-          if (response?.isSuccess && response.result) {
-            setSupplierId(response.result);
-            console.log("Successfully set supplier ID:", response.result);
-          } else {
-            console.error("Invalid supplier ID response:", response);
-            message.error("Lấy mã nhà cung cấp không thành công.");
-          }
-        } catch (error) {
-          console.error("Error fetching supplier ID:", error);
-          message.error("Lỗi khi lấy mã nhà cung cấp.");
-        }
-      } else {
-        console.error("No user ID available");
-        message.error("Không tìm thấy ID người dùng.");
-      }
-    };
-
-    fetchSupplierId();
-  }, [user.id]);
-
-    const viewDetails = async (id) => {
-      try {
-        const combo = await getComboById(id);
-        setComboDetails(combo.result);
-        console.log("Combo details:", combo.result); // Log combo details to verify
-        setIsModalVisible(true);
-      } catch (error) {
-        console.error("Failed to fetch combo details:", error);
-        setComboDetails(null);
-      }
-    };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleOk = () => {
-    setIsModalVisible(false);
-    setComboDetails(null);
-  };
-
-  // Sort combos by startTime (latest first)
-  const sortedCombos = [...combos].sort(
-    (a, b) => new Date(b.startTime) - new Date(a.startTime)
+const OrderList = ({
+  orders,
+  supplierMap: initialSupplierMap,
+  MMMap,
+  deliveryStatusMap,
+  handleClick,
+  handlePaymentAgain,
+  updateOrderStatusPlaced,
+  openUploadPopup,
+}) => {
+  const [categoryMap, setCategoryMap] = useState({});
+  const [localSupplierMap, setLocalSupplierMap] = useState(
+    initialSupplierMap || {}
   );
+  const [isExtendModalVisible, setIsExtendModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [form] = Form.useForm();
+  const [productPrices, setProductPrices] = useState({
+    pricePerHour: 0,
+    pricePerDay: 0,
+    pricePerWeek: 0,
+    pricePerMonth: 0,
+  });
 
-  const columns = [
-    {
-      title: "Tên Combo",
-      dataIndex: "comboName",
-      key: "comboName",
-    },
-    {
-      title: "Giá Combo",
-      dataIndex: "comboPrice",
-      key: "comboPrice",
-      render: (text) => formatter.format(text),
-    },
-    {
-      title: "Bắt đầu",
-      dataIndex: "startTime",
-      key: "startTime",
-    },
-    {
-      title: "Kết Thúc",
-      dataIndex: "endTime",
-      key: "endTime",
-      render: (text) => {
-        const remainingTime = calculateRemainingTime(text);
-        const isExpired = remainingTime <= 0;
-        return (
-          <span
-            style={{
-              color: isExpired ? "#ff4d4f" : "#52c41a",
-              fontWeight: "bold",
-            }}
-          >
-            {isExpired
-              ? `${formatDateTime(text)} (Đã hết hạn)`
-              : `${formatDateTime(text)} (Còn lại: ${Math.ceil(
-                  remainingTime / (1000 * 60 * 60 * 24)
-                )} ngày)`}
-          </span>
-        );
-      },
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (text, record) => (
-        <Button onClick={() => viewDetails(record.comboId)}>
-          Xem chi tiết
-        </Button>
-      ),
-    },
-  ];
-  const next = () => {
-    setCurrentStep(currentStep + 1);
+  const durationOptions = {
+    0: { min: 2, max: 8 }, // Hour
+    1: { min: 1, max: 3 }, // Day
+    2: { min: 1, max: 2 }, // Week
+    3: { min: 1, max: 1 }, // Month
   };
 
-  const prev = () => {
-    setCurrentStep(currentStep - 1);
-  };
+  const handleExtendClick = async (order) => {
+    setSelectedOrder(order);
+    setIsExtendModalVisible(true);
 
-  const showComboModal = () => {
-    setIsComboModalVisible(true);
-  };
-
-  const handleComboModalCancel = () => {
-    setIsComboModalVisible(false);
-  };
-
-  const handleChoosePlan = (comboId) => {
-    handleCardClick(comboId);
-    next();
-  };
-  const handleCardClick = (comboId) => {
-    setSelectedComboId(comboId);
-    form.setFieldsValue({ comboId });
-  };
-  const handleCreateCombo = async () => {
-    if (!supplierId) {
-      console.error("No supplier ID available");
-      message.error("Không tìm thấy mã nhà cung cấp.");
-      return;
+    // Get product ID directly from order details
+    const productId = order.orderDetails?.productID;
+    if (productId) {
+      try {
+        const product = await getProductById(productId);
+        setProductPrices({
+          pricePerHour: product.pricePerHour,
+          pricePerDay: product.pricePerDay,
+          pricePerWeek: product.pricePerWeek,
+          pricePerMonth: product.pricePerMonth,
+        });
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+        message.error("Không thể lấy thông tin sản phẩm");
+      }
     }
-    console.log("Creating combo with supplier ID:", supplierId);
 
-    setConfirmLoading(true);
+    form.setFieldsValue({
+      orderID: order.orderID,
+      rentalExtendStartDate: moment(order.rentalEndDate),
+      durationUnit: 0,
+      durationValue: durationOptions[0].min,
+    });
+  };
 
-    const comboData = {
-      supplierID: supplierId,
-      comboId: selectedComboId,
-    };
-
+  const handleExtend = async (values) => {
     try {
-      const response = await createComboOfSupplier(comboData);
-      if (response?.isSuccess) {
-        message.success("Tạo combo thành công.");
+      const extendData = {
+        orderID: values.orderID,
+        durationUnit: values.durationUnit,
+        durationValue: values.durationValue,
+        extendReturnDate: values.extendReturnDate.toISOString(),
+        rentalExtendStartDate: values.rentalExtendStartDate.toISOString(),
+        rentalExtendEndDate: values.rentalExtendEndDate.toISOString(),
+        totalAmount: values.totalAmount,
+      };
+
+      const result = await createExtend(extendData);
+      if (result.isSuccess) {
+        message.success("Gia hạn thành công");
+        setIsExtendModalVisible(false);
         form.resetFields();
-        if (response.result) {
-          window.location.href = response.result;
-        }
       } else {
-        message.error("Tạo combo thất bại.");
+        message.error(result.message || "Không thể gia hạn");
       }
     } catch (error) {
-      message.error("Lỗi khi tạo combo.");
-    } finally {
-      setConfirmLoading(false);
-      setIsComboModalVisible(false);
+      message.error("Đã xảy ra lỗi khi gia hạn");
     }
   };
-  useEffect(() => {
-    const fetchCombos = async () => {
-      try {
-        const response = await getAllCombos();
-        if (response?.isSuccess) {
-          setCombos(response.result);
-        } else {
-          message.error("Không thể lấy danh sách combo.");
-        }
-      } catch (error) {
-        message.error("Lỗi khi lấy danh sách combo.");
-      }
-    };
 
-    fetchCombos();
-  }, []);
-  const steps = [
-    {
-      title: "Chọn Gói",
-      content: "Chọn gói dịch vụ",
-    },
-    {
-      title: "Chọn thời gian",
-      content: "Chọn thời gian bắt đầu",
-    },
-    {
-      title: "Xác nhận",
-      content: "Xác nhận thông tin",
-    },
-  ];
-  return (
-    <Card
-      title={
-        <div className="flex items-center justify-between">
-          <span>
-            <AppstoreOutlined /> Gói Combo Đăng Kí
-          </span>
-          <Button type="primary" onClick={showComboModal}>
-            Đăng ký Combo mới
-          </Button>
-        </div>
+  const getDisplayValue = (map, key) => {
+    console.log("getDisplayValue called with map and key:", map, key);
+    if (!map || !map[key]) return "Không xác định";
+    return typeof map[key] === "object" ? map[key].text : map[key];
+  };
+
+  const getSupplierInfo = (supplierId) => {
+    if (!supplierId) {
+      return "Không xác định";
+    }
+
+    const supplier = localSupplierMap[supplierId];
+    if (!supplier) {
+      return "Không xác định";
+    }
+
+    return supplier.supplierName || "Không xác định";
+  };
+
+  const handleUpdateOrderStatus = async (orderId) => {
+    console.log("handleUpdateOrderStatus called with orderId:", orderId);
+    try {
+      const result = await updateOrderStatusPlaced(orderId);
+      if (result.isSuccess) {
+        message.success("Cập nhật trạng thái đơn hàng thành công");
+      } else {
+        message.error("Không thể cập nhật trạng thái đơn hàng");
       }
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng");
+    }
+  };
+
+  const fetchCategoryAndSupplierNames = async (orderDetails) => {
+    console.log("Starting fetchCategoryAndSupplierNames with:", orderDetails);
+
+    const uniqueCategoryIDs = [
+      ...new Set(orderDetails.map((detail) => detail.product?.categoryID)),
+    ].filter((id) => id);
+    const uniqueSupplierIDs = [
+      ...new Set(orderDetails.map((detail) => detail.product?.supplierID)),
+    ].filter((id) => id);
+
+    console.log("Unique category IDs:", uniqueCategoryIDs);
+    console.log("Unique supplier IDs:", uniqueSupplierIDs);
+
+    try {
+      const categoryPromises = uniqueCategoryIDs.map((id) =>
+        getCategoryById(id)
+      );
+      const supplierPromises = uniqueSupplierIDs.map((id) =>
+        getSupplierById(id)
+      );
+
+      const [categories, suppliers] = await Promise.all([
+        Promise.all(categoryPromises),
+        Promise.all(supplierPromises),
+      ]);
+
+      console.log("API responses - categories:", categories);
+      console.log("API responses - suppliers:", suppliers);
+
+      const newCategoryMap = {};
+      categories.forEach((res, index) => {
+        const id = uniqueCategoryIDs[index];
+        newCategoryMap[id] = res.isSuccess
+          ? res.result?.categoryName || "Không xác định"
+          : "Không xác định";
+      });
+
+      const supplierDict = {};
+      suppliers.forEach((response, index) => {
+        const id = uniqueSupplierIDs[index];
+        console.log(`Processing supplier ID ${id}:`, response);
+
+        if (response && response.isSuccess) {
+          supplierDict[id] = response.result;
+          console.log(`Added supplier ${id} to dict:`, response.result);
+        } else {
+          supplierDict[id] = {
+            supplierName: "Không xác định",
+            supplierAddress: "Không xác định",
+          };
+          console.log(`Added default supplier for ${id}`);
+        }
+      });
+
+      console.log("Final supplier dictionary:", supplierDict);
+      setCategoryMap(newCategoryMap);
+      setLocalSupplierMap(supplierDict);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("Lỗi khi tải thông tin");
+    }
+  };
+
+  useEffect(() => {
+    console.log("Orders changed:", orders);
+    if (orders.length > 0) {
+      const allOrderDetails = orders.flatMap(
+        (order) => order.orderDetails || []
+      );
+      console.log("Processed order details:", allOrderDetails);
+      fetchCategoryAndSupplierNames(allOrderDetails);
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    if (initialSupplierMap) {
+      setLocalSupplierMap(initialSupplierMap);
+    }
+  }, [initialSupplierMap]);
+
+  const getProductInfo = (orderDetails) => {
+    console.log("getProductInfo called with orderDetails:", orderDetails);
+    if (!orderDetails || orderDetails.length === 0) return null;
+    return orderDetails.map((detail, index) => (
+      <div key={index} className="border-b border-gray-100 last:border-0 py-2">
+        <p className="font-medium">{detail.product?.productName}</p>
+        <div className="text-sm text-gray-600 mt-1">
+          <p>Serial Number: {detail.product?.serialNumber}</p>
+          <p>Danh mục: {categoryMap[detail.product?.categoryID]}</p>
+          <p>Số lượng: {detail.quantity}</p>
+          <p>Đơn giá: {formatPrice(detail.unitPrice)}</p>
+        </div>
+      </div>
+    ));
+  };
+
+  // Sort orders by latest order date
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+  );
+
+  const calculateProductPriceRent = (values) => {
+    const { durationUnit, durationValue } = values;
+    if (!durationOptions[durationUnit]) {
+      message.error("Đơn vị thời gian không hợp lệ");
+      return 0;
+    }
+
+    if (!durationValue || durationValue <= 0) {
+      message.error("Thời lượng phải lớn hơn 0");
+      return 0;
+    }
+
+    const { min, max } = durationOptions[durationUnit];
+    if (durationValue < min || durationValue > max) {
+      message.error(
+        `Thời lượng không hợp lệ. Vui lòng chọn từ ${min} đến ${max}.`
+      );
+      return 0;
+    }
+
+    let price = 0;
+    switch (durationUnit) {
+      case 0:
+        price = durationValue * productPrices.pricePerHour;
+        break;
+      case 1:
+        price = durationValue * productPrices.pricePerDay;
+        break;
+      case 2:
+        price = durationValue * productPrices.pricePerWeek;
+        break;
+      case 3:
+        price = durationValue * productPrices.pricePerMonth;
+        break;
+      default:
+        price = 0;
+    }
+    return price;
+  };
+
+  const calculateRentalEndDate = (startDate, durationValue, durationUnit) => {
+    if (!startDate) return null;
+
+    const start = moment(startDate);
+    if (!isWithinBusinessHours(start, true)) {
+      message.error("Thời gian bắt đầu phải trong khoảng 8:00 - 17:00");
+      return null;
+    }
+
+    let endDate;
+    switch (durationUnit) {
+      case 0: // Hours
+        endDate = start.clone().add(durationValue, "hours");
+        if (!isWithinBusinessHours(endDate, false)) {
+          message.error("Thời gian kết thúc phải trong khoảng 8:00 - 20:00");
+          return null;
+        }
+        break;
+      case 1: // Days
+        endDate = start.clone().add(durationValue, "days").hours(17);
+        break;
+      case 2: // Weeks
+        endDate = start.clone().add(durationValue, "weeks").hours(17);
+        break;
+      case 3: // Months
+        endDate = start.clone().add(durationValue, "months").hours(17);
+        break;
+      default:
+        return null;
+    }
+    return endDate;
+  };
+
+  const calculateExtendReturnDate = (endDate) => {
+    if (!endDate) return null;
+    return moment(endDate).clone().add(1, "hours");
+  };
+
+  const handleFormValuesChange = (changedValues, allValues) => {
+    const { rentalExtendStartDate, durationUnit, durationValue } = allValues;
+
+    if (rentalExtendStartDate && durationUnit !== undefined && durationValue) {
+      const startDate = moment(rentalExtendStartDate);
+
+      // Set start time to 8:00 if not already set
+      if (startDate.hours() < 8) {
+        startDate.hours(8).minutes(0).seconds(0);
+        form.setFieldsValue({ rentalExtendStartDate: startDate });
+      }
+
+      const endDate = calculateRentalEndDate(
+        startDate,
+        durationValue,
+        durationUnit
+      );
+
+      if (endDate) {
+        // Calculate return date (1 hour after end date)
+        const returnDate = moment(endDate).add(1, "hours");
+
+        // Calculate total amount
+        const totalAmount = calculateProductPriceRent({
+          durationUnit,
+          durationValue,
+        });
+
+        form.setFieldsValue({
+          rentalExtendEndDate: endDate,
+          extendReturnDate: returnDate,
+          totalAmount: totalAmount,
+        });
+      }
+    }
+  };
+
+  const ExtendModal = () => (
+    <Modal
+      title="Gia hạn đơn hàng"
+      open={isExtendModalVisible}
+      onCancel={() => setIsExtendModalVisible(false)}
+      footer={null}
     >
-      <ComboRegistrationModal
-        isComboModalVisible={isComboModalVisible}
-        handleComboModalCancel={handleComboModalCancel}
-        currentStep={currentStep}
-        steps={steps}
-        combos={combos}
-        selectedComboId={selectedComboId}
-        handleCardClick={handleCardClick}
-        handleChoosePlan={handleChoosePlan}
+      <Form
         form={form}
-        next={next}
-        prev={prev}
-        handleCreateCombo={handleCreateCombo}
-        confirmLoading={confirmLoading}
-        formatCurrency={formatCurrency}
-      />
-      {sortedCombos.length > 0 ? (
-        <>
-          <Table
-            dataSource={sortedCombos}
-            columns={columns}
-            rowKey="comboOfSupplierId"
-            pagination={false}
-            rowClassName={(record) =>
-              calculateRemainingTime(record.endTime) <= 0 ? "text-gray-400" : ""
-            }
+        layout="vertical"
+        onFinish={handleExtend}
+        onValuesChange={handleFormValuesChange}
+      >
+        <Form.Item name="orderID" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="durationUnit"
+          label="Đơn vị thời gian"
+          rules={[
+            { required: true, message: "Vui lòng chọn đơn vị thời gian" },
+          ]}
+        >
+          <Select>
+            <Select.Option value={0}>
+              Giờ - Chọn thời gian tối thiểu {durationOptions[0].min} tối đa{" "}
+              {durationOptions[0].max}
+            </Select.Option>
+            <Select.Option value={1}>
+              Ngày- Chọn thời gian tối thiểu {durationOptions[1].min} tối đa{" "}
+              {durationOptions[1].max}
+            </Select.Option>
+            <Select.Option value={2}>
+              Tuần- Chọn thời gian tối thiểu {durationOptions[2].min} tối đa{" "}
+              {durationOptions[2].max}
+            </Select.Option>
+            <Select.Option value={3}>
+              Tháng- Chọn thời gian tối thiểu {durationOptions[3].min}- tối đa{" "}
+              {durationOptions[3].max}
+            </Select.Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="durationValue"
+          label="Thời gian gia hạn"
+          rules={[
+            { required: true, message: "Vui lòng nhập thời gian gia hạn" },
+          ]}
+        >
+          <Input type="number" min={1} />
+        </Form.Item>
+
+        <Form.Item
+          name="rentalExtendStartDate"
+          label="Ngày bắt đầu gia hạn"
+          rules={[
+            { required: true, message: "Vui lòng chọn ngày bắt đầu" },
+            {
+              validator: (_, value) => {
+                if (value && !isWithinBusinessHours(moment(value), true)) {
+                  return Promise.reject(
+                    "Thời gian bắt đầu phải trong khoảng 8:00 - 17:00"
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <DatePicker
+            showTime={{
+              format: "HH:mm",
+              hourStep: 1,
+              minuteStep: 15,
+              disabledHours: () => [
+                ...Array.from({ length: 8 }, (_, i) => i), // Hours before 8:00
+                ...Array.from({ length: 7 }, (_, i) => i + 17), // Hours after 17:00
+              ],
+            }}
+            format="YYYY-MM-DD HH:mm"
           />
-          <Modal
-            title="Chi tiết Combo"
-            visible={isModalVisible}
-            onOk={handleOk}
-            onCancel={handleCancel}
+        </Form.Item>
+
+        <Form.Item
+          name="rentalExtendEndDate"
+          label="Ngày kết thúc gia hạn"
+          rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc" }]}
+        >
+          <DatePicker showTime />
+        </Form.Item>
+
+        <Form.Item
+          name="extendReturnDate"
+          label="Ngày trả đồ"
+          rules={[{ required: true, message: "Vui lòng chọn ngày trả đồ" }]}
+        >
+          <DatePicker showTime disabled />
+        </Form.Item>
+
+        <Form.Item
+          name="totalAmount"
+          label="Tổng tiền"
+          rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
+        >
+          <Input type="number" min={0} />
+        </Form.Item>
+
+        <Form.Item className="text-right">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
-            {comboDetails && (
-              <Descriptions bordered column={1} size="small">
-                <Descriptions.Item label="Tên Combo">
-                  {comboDetails.comboName}
-                </Descriptions.Item>
-                <Descriptions.Item label="Giá Combo">
-                  {formatter.format(comboDetails.comboPrice)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Thời lượng Combo">
-                  {getDurationText(comboDetails.durationCombo)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  {comboDetails.isDisable ? "Vô hiệu hóa" : "Đang hoạt động"}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày tạo">
-                  {formatDateTime(comboDetails.createdAt)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày cập nhật">
-                  {formatDateTime(comboDetails.updatedAt)}
-                </Descriptions.Item>
-              </Descriptions>
-            )}
-          </Modal>
-        </>
+            Xác nhận gia hạn
+          </button>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+
+  return (
+    <div className="lg:col-span-5 bg-gray-50 shadow-lg rounded-lg md:p-6">
+      <h2 className="text-2xl font-bold text-teal-600 mb-8 text-center">
+        <span className="border-b-2 border-teal-400 pb-2">
+          Đơn hàng của bạn
+        </span>
+      </h2>
+
+      {sortedOrders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <svg
+            className="w-16 h-16 text-gray-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          <p className="text-gray-500 text-lg">Chưa có đơn hàng nào</p>
+        </div>
       ) : (
-        <Typography.Text>Không có Combo nào.</Typography.Text>
+        <div className="grid grid-cols-1 gap-6">
+          {sortedOrders.map((order) => renderOrder(order))}
+        </div>
       )}
-    </Card>
+      <ExtendModal />
+    </div>
   );
 };
 
-export default ComboCarousel;
+const formatDateTime = (date) => moment(date).format("DD/MM/YYYY HH:mm");
+
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
+
+export default OrderList;

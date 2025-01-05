@@ -1,25 +1,27 @@
-import { DatePicker, Form, Input, message, Modal, Select } from "antd";
-import moment from "moment";
+import { Form, message } from "antd";
+import moment from "moment"; // Add this import
 import React, { useEffect, useState } from "react";
 import { getCategoryById } from "../../../api/categoryApi";
 import { createExtend } from "../../../api/extendApi";
-import { getProductById } from "../../../api/productApi"; // Add this import
+import { getProductById } from "../../../api/productApi";
 import { getSupplierById } from "../../../api/supplierApi";
-import { formatDateTime, formatPrice } from "../../../utils/util";
+import ExtendModal from "./components/ExtendModal";
+import OrderCard from "./components/OrderCard";
 
 const OrderList = ({
   orders,
   supplierMap: initialSupplierMap,
   orderStatusMap,
   deliveryStatusMap,
-  orderTypeMap,
   handleClick,
   handlePaymentAgain,
   updateOrderStatusPlaced,
   openUploadPopup,
 }) => {
   const [categoryMap, setCategoryMap] = useState({});
-  const [localSupplierMap, setLocalSupplierMap] = useState({});
+  const [localSupplierMap, setLocalSupplierMap] = useState(
+    initialSupplierMap || {}
+  );
   const [isExtendModalVisible, setIsExtendModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [form] = Form.useForm();
@@ -41,37 +43,36 @@ const OrderList = ({
     setSelectedOrder(order);
     setIsExtendModalVisible(true);
 
-    // Get product ID from order details
-    const productId = order.orderDetails[0]?.product?.productID;
+    const productId = order.orderDetails?.[0]?.productID; // Access first product ID from details array
     if (productId) {
       try {
-        const response = await getProductById(productId);
-        if (response.isSuccess) {
-          const product = response.result;
-          setProductPrices({
-            pricePerHour: product.pricePerHour,
-            pricePerDay: product.pricePerDay,
-            pricePerWeek: product.pricePerWeek,
-            pricePerMonth: product.pricePerMonth,
-          });
-        }
+        const product = await getProductById(productId);
+        setProductPrices({
+          pricePerHour: product.pricePerHour,
+          pricePerDay: product.pricePerDay,
+          pricePerWeek: product.pricePerWeek,
+          pricePerMonth: product.pricePerMonth,
+        });
+
+        // Set form values including orderID
+        form.setFieldsValue({
+          orderID: order.orderID,
+          rentalExtendStartDate: moment(order.rentalEndDate),
+          durationUnit: 0,
+          durationValue: durationOptions[0].min,
+        });
       } catch (error) {
         console.error("Error fetching product details:", error);
+        message.error("Không thể lấy thông tin sản phẩm");
       }
     }
-
-    form.setFieldsValue({
-      orderID: order.orderID,
-      rentalExtendStartDate: moment(order.rentalEndDate),
-      durationUnit: 0,
-      durationValue: durationOptions[0].min,
-    });
   };
 
   const handleExtend = async (values) => {
     try {
+      // Ensure orderID is included in the request
       const extendData = {
-        orderID: values.orderID,
+        orderID: selectedOrder?.orderID, // Get from selected order
         durationUnit: values.durationUnit,
         durationValue: values.durationValue,
         extendReturnDate: values.extendReturnDate.toISOString(),
@@ -85,39 +86,32 @@ const OrderList = ({
         message.success("Gia hạn thành công");
         setIsExtendModalVisible(false);
         form.resetFields();
+        setSelectedOrder(null); // Clear selected order
       } else {
         message.error(result.message || "Không thể gia hạn");
       }
     } catch (error) {
+      console.error("Extend error:", error);
       message.error("Đã xảy ra lỗi khi gia hạn");
     }
   };
 
   const getDisplayValue = (map, key) => {
-    console.log("getDisplayValue called with map and key:", map, key);
     if (!map || !map[key]) return "Không xác định";
     return typeof map[key] === "object" ? map[key].text : map[key];
   };
 
   const getSupplierInfo = (supplierId) => {
-    console.log("getSupplierInfo called with ID:", supplierId);
-    console.log("localSupplierMap state:", localSupplierMap);
-
     if (!supplierId) {
-      console.log("No supplierId provided");
       return "Không xác định";
     }
 
     const supplier = localSupplierMap[supplierId];
-    console.log("Found supplier:", supplier);
-
-    if (supplier) {
-      console.log("Returning supplier name:", supplier.supplierName);
-      return supplier.supplierName || "Không xác định";
+    if (!supplier) {
+      return "Không xác định";
     }
 
-    console.log("No supplier found, returning default");
-    return "Không xác định";
+    return supplier.supplierName || "Không xác định";
   };
 
   const handleUpdateOrderStatus = async (orderId) => {
@@ -208,6 +202,12 @@ const OrderList = ({
     }
   }, [orders]);
 
+  useEffect(() => {
+    if (initialSupplierMap) {
+      setLocalSupplierMap(initialSupplierMap);
+    }
+  }, [initialSupplierMap]);
+
   const getProductInfo = (orderDetails) => {
     console.log("getProductInfo called with orderDetails:", orderDetails);
     if (!orderDetails || orderDetails.length === 0) return null;
@@ -272,22 +272,29 @@ const OrderList = ({
   const calculateRentalEndDate = (startDate, durationValue, durationUnit) => {
     if (!startDate) return null;
 
-    // Convert to moment if it's not already
     const start = moment(startDate);
-    let endDate;
+    if (!isWithinBusinessHours(start, true)) {
+      message.error("Thời gian bắt đầu phải trong khoảng 8:00 - 17:00");
+      return null;
+    }
 
+    let endDate;
     switch (durationUnit) {
       case 0: // Hours
         endDate = start.clone().add(durationValue, "hours");
+        if (!isWithinBusinessHours(endDate, false)) {
+          message.error("Thời gian kết thúc phải trong khoảng 8:00 - 20:00");
+          return null;
+        }
         break;
       case 1: // Days
-        endDate = start.clone().add(durationValue, "days");
+        endDate = start.clone().add(durationValue, "days").hours(17);
         break;
       case 2: // Weeks
-        endDate = start.clone().add(durationValue, "weeks");
+        endDate = start.clone().add(durationValue, "weeks").hours(17);
         break;
       case 3: // Months
-        endDate = start.clone().add(durationValue, "months");
+        endDate = start.clone().add(durationValue, "months").hours(17);
         break;
       default:
         return null;
@@ -300,24 +307,34 @@ const OrderList = ({
     return moment(endDate).clone().add(1, "hours");
   };
 
-  const handleFormValuesChange = (_, allValues) => {
+  const handleFormValuesChange = (changedValues, allValues) => {
     const { rentalExtendStartDate, durationUnit, durationValue } = allValues;
+
     if (rentalExtendStartDate && durationUnit !== undefined && durationValue) {
+      const startDate = moment(rentalExtendStartDate);
+
+      // Set start time to 8:00 if not already set
+      if (startDate.hours() < 8) {
+        startDate.hours(8).minutes(0).seconds(0);
+        form.setFieldsValue({ rentalExtendStartDate: startDate });
+      }
+
       const endDate = calculateRentalEndDate(
-        rentalExtendStartDate,
+        startDate,
         durationValue,
         durationUnit
       );
-      const price = calculateProductPriceRent(allValues);
 
       if (endDate) {
         // Calculate return date (1 hour after end date)
-        const returnDate = calculateExtendReturnDate(endDate);
+        const returnDate = moment(endDate).add(1, "hours");
 
         // Calculate total amount
-        const totalAmount = calculateProductPriceRent(allValues);
+        const totalAmount = calculateProductPriceRent({
+          durationUnit,
+          durationValue,
+        });
 
-        // Update form values
         form.setFieldsValue({
           rentalExtendEndDate: endDate,
           extendReturnDate: returnDate,
@@ -327,103 +344,42 @@ const OrderList = ({
     }
   };
 
-  const ExtendModal = () => (
-    <Modal
-      title="Gia hạn đơn hàng"
-      open={isExtendModalVisible}
-      onCancel={() => setIsExtendModalVisible(false)}
-      footer={null}
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleExtend}
-        onValuesChange={handleFormValuesChange}
-      >
-        <Form.Item name="orderID" hidden>
-          <Input />
-        </Form.Item>
+  const isWithinBusinessHours = (time, isStartDate = true) => {
+    const hours = time.hours();
+    if (isStartDate) {
+      return hours >= 8 && hours <= 17;
+    }
+    return hours >= 8 && hours <= 20;
+  };
 
-        <Form.Item
-          name="durationUnit"
-          label="Đơn vị thời gian"
-          rules={[
-            { required: true, message: "Vui lòng chọn đơn vị thời gian" },
-          ]}
-        >
-          <Select>
-            <Select.Option value={0}>
-              Giờ - Chọn thời gian tối thiểu {durationOptions[0].min} tối đa{" "}
-              {durationOptions[0].max}
-            </Select.Option>
-            <Select.Option value={1}>
-              Ngày- Chọn thời gian tối thiểu {durationOptions[1].min} tối đa{" "}
-              {durationOptions[1].max}
-            </Select.Option>
-            <Select.Option value={2}>
-              Tuần- Chọn thời gian tối thiểu {durationOptions[2].min} tối đa{" "}
-              {durationOptions[2].max}
-            </Select.Option>
-            <Select.Option value={3}>
-              Tháng- Chọn thời gian tối thiểu {durationOptions[3].min}- tối đa{" "}
-              {durationOptions[3].max}
-            </Select.Option>
-          </Select>
-        </Form.Item>
+  const validateTimeConstraints = (startDate, endDate, durationUnit) => {
+    if (!startDate || !endDate) return false;
 
-        <Form.Item
-          name="durationValue"
-          label="Thời gian gia hạn"
-          rules={[
-            { required: true, message: "Vui lòng nhập thời gian gia hạn" },
-          ]}
-        >
-          <Input type="number" min={1} />
-        </Form.Item>
+    // Check if start date is within business hours (8:00-17:00)
+    if (!isWithinBusinessHours(moment(startDate), true)) {
+      message.error("Thời gian bắt đầu phải trong khoảng 8:00 - 17:00");
+      return false;
+    }
 
-        <Form.Item
-          name="rentalExtendStartDate"
-          label="Ngày bắt đầu gia hạn"
-          rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu" }]}
-        >
-          <DatePicker showTime />
-        </Form.Item>
+    // Check if end date is within extended business hours (8:00-20:00)
+    if (!isWithinBusinessHours(moment(endDate), false)) {
+      message.error("Thời gian kết thúc phải trong khoảng 8:00 - 20:00");
+      return false;
+    }
 
-        <Form.Item
-          name="rentalExtendEndDate"
-          label="Ngày kết thúc gia hạn"
-          rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc" }]}
-        >
-          <DatePicker showTime />
-        </Form.Item>
+    // Special validation for hourly rentals
+    if (durationUnit === 0) {
+      const endHour = moment(endDate).hours();
+      if (endHour > 20) {
+        message.error(
+          "Với thuê theo giờ, thời gian kết thúc không được quá 20:00"
+        );
+        return false;
+      }
+    }
 
-        <Form.Item
-          name="extendReturnDate"
-          label="Ngày trả đồ"
-          rules={[{ required: true, message: "Vui lòng chọn ngày trả đồ" }]}
-        >
-          <DatePicker showTime disabled />
-        </Form.Item>
-
-        <Form.Item
-          name="totalAmount"
-          label="Tổng tiền"
-          rules={[{ required: true, message: "Vui lòng nhập tổng tiền" }]}
-        >
-          <Input type="number" min={0} />
-        </Form.Item>
-
-        <Form.Item className="text-right">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Xác nhận gia hạn
-          </button>
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
+    return true;
+  };
 
   return (
     <div className="lg:col-span-5 bg-gray-50 shadow-lg rounded-lg md:p-6">
@@ -435,202 +391,54 @@ const OrderList = ({
 
       {sortedOrders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <svg
-            className="w-16 h-16 text-gray-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <p className="text-gray-500 text-lg">Chưa có đơn hàng nào</p>
+          {/* ... Empty state content ... */}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {sortedOrders.map((order) => (
-            <div
+            <OrderCard
               key={order.orderID}
-              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all duration-200"
-            >
-              {/* Header Section - Add subtitle */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Đơn hàng #{order.orderID}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {formatDateTime(order.orderDate)}
-                  </p>
-                </div>
-                <div
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    order.orderStatus === 0
-                      ? "bg-yellow-100 text-yellow-800"
-                      : order.orderStatus === 1
-                      ? "bg-blue-100 text-blue-800"
-                      : order.orderStatus === 2
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {getDisplayValue(orderStatusMap, order.orderStatus)}
-                </div>
-              </div>
-
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Delivery Status - Add this section */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">
-                      Phương thức giao hàng
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {getDisplayValue(deliveryStatusMap, order.deliveryStatus)}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {order.shippingAddress || "Nhận tại cửa hàng"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Supplier & Order Info */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">
-                      Thông tin nhà cung cấp
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {getSupplierInfo(order.supplierID)}
-                    </p>
-                    {localSupplierMap[order.supplierID]?.supplierAddress && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        Địa chỉ:{" "}
-                        {localSupplierMap[order.supplierID].supplierAddress}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Product Info - New Section */}
-                <div className="space-y-4 md:col-span-3">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">
-                      Thông tin sản phẩm
-                    </h4>
-                    <div className="divide-y divide-gray-100">
-                      {getProductInfo(order.orderDetails)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rental Details */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">
-                      Thời gian thuê
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {`${order.durationValue} ${
-                        order.durationUnit === 0
-                          ? "giờ"
-                          : order.durationUnit === 1
-                          ? "ngày"
-                          : order.durationUnit === 2
-                          ? "tuần"
-                          : "tháng"
-                      }`}
-                    </p>
-                    <div className="mt-2 text-sm">
-                      <p>Bắt đầu: {formatDateTime(order.rentalStartDate)}</p>
-                      <p>Kết thúc: {formatDateTime(order.rentalEndDate)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Info */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700 mb-2">
-                      Thông tin thanh toán
-                    </h4>
-                    <div className="space-y-2 text-sm">
-                      <p>
-                        Tiền đặt cọc:{" "}
-                        <span className="font-medium">
-                          {formatPrice(order.deposit)}
-                        </span>
-                      </p>
-                      <p>
-                        Tiền bảo lưu:{" "}
-                        <span className="font-medium">
-                          {formatPrice(order.reservationMoney)}
-                        </span>
-                      </p>
-                      <p className="text-teal-600 font-medium">
-                        Tổng tiền: {formatPrice(order.totalAmount)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  onClick={() => handleClick(order)}
-                  className="px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition-colors"
-                >
-                  Chi tiết
-                </button>
-                {order.orderStatus === 0 && (
-                  <button
-                    onClick={() => handlePaymentAgain(order)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Thanh toán
-                  </button>
-                )}
-                {order.orderStatus === 3 ||
-                  (order.orderStatus === 12 && (
-                    <button
-                      onClick={() => handleExtendClick(order)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Gia hạn
-                    </button>
-                  ))}
-                {order.orderStatus === 1 && (
-                  <button
-                    onClick={() => handleUpdateOrderStatus(order.orderID)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    Xác nhận đặt hàng
-                  </button>
-                )}
-                {order.orderStatus === 2 && (
-                  <>
-                    <button
-                      onClick={() => openUploadPopup(order.orderID, "after")}
-                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                    >
-                      Hình ảnh sau
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+              order={order}
+              orderStatusMap={orderStatusMap}
+              deliveryStatusMap={deliveryStatusMap}
+              localSupplierMap={localSupplierMap}
+              categoryMap={categoryMap}
+              onDetailClick={handleClick}
+              onPaymentAgain={handlePaymentAgain}
+              onExtendClick={handleExtendClick}
+              onUpdateOrderStatus={handleUpdateOrderStatus}
+              onOpenUploadPopup={openUploadPopup}
+              getDisplayValue={getDisplayValue}
+              getSupplierInfo={getSupplierInfo}
+              getProductInfo={getProductInfo}
+            />
           ))}
         </div>
       )}
-      <ExtendModal />
+
+      <ExtendModal
+        isVisible={isExtendModalVisible}
+        onCancel={() => {
+          setIsExtendModalVisible(false);
+          setSelectedOrder(null); // Clear selected order on cancel
+          form.resetFields(); // Reset form
+        }}
+        onExtend={handleExtend}
+        form={form}
+        productPrices={productPrices}
+        durationOptions={durationOptions}
+        selectedOrder={selectedOrder} // Pass selected order to modal
+      />
     </div>
   );
 };
+
+const formatDateTime = (date) => moment(date).format("DD/MM/YYYY HH:mm");
+
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
 
 export default OrderList;

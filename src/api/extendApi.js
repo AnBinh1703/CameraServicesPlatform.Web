@@ -41,3 +41,8 @@ export const getAllExtendsByOrderId = async (
     return null;
   }
 };
+
+export const formatExtendDuration = (durationUnit, durationValue) => {
+  const units = ["giờ", "ngày", "tuần", "tháng"];
+  return `${durationValue} ${units[durationUnit] || "giờ"}`;
+};
