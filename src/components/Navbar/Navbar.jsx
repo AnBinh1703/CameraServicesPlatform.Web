@@ -94,16 +94,6 @@ const NavBar = () => {
           <img src={logo} alt="Logo" className="h-12" />
         </NavLink>
 
-        <div className="relative hidden md:flex items-center">
-          <input
-            type="text"
-            placeholder="Nhập sản phẩm bạn đang tìm kiếm"
-            className="border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-80"
-          />
-          <button className="bg-red-500 text-white rounded-r-md px-6 py-2">
-            <i className="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </div>
         <Link
           to="/wishlist"
           className="hidden md:block  font-semibold no-underline text-primary  hover:text-gray-500"

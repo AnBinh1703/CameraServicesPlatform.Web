@@ -1,131 +1,137 @@
 import api from "../api/config";
 
-// Get system rating statistics
+// Date formatting utility
+const formatDateParam = (date) => {
+  if (!(date instanceof Date)) return date;
+  return date.toISOString();
+};
+
+// Error handling utility
+const handleApiError = (error, context) => {
+  console.error(`Error in ${context}:`, error);
+  if (error.response) {
+    // Server responded with error
+    console.error('Server error:', error.response.data);
+  }
+  throw error;
+};
+
+// API Methods with improved error handling and date formatting
 export const getSystemRatingStatistics = async () => {
   try {
     const response = await api.get("/dashboard/system-rating-statistics");
-    return response.data; // System rating statistics
+    return response.data || { totalRatings: 0, averageRating: 0, ratingDistribution: [] };
   } catch (error) {
-    console.error("Error fetching system rating statistics:", error);
-    throw error;
+    handleApiError(error, "getSystemRatingStatistics");
   }
 };
 
-// Get system payment statistics
 export const getSystemPaymentStatistics = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/system-payment-statistics", {
-      params: { startDate, endDate },
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
     });
-    return response.data; // System payment statistics
+    return response.data || { totalRevenue: 0, paymentCount: 0, revenueByMethod: [] };
   } catch (error) {
-    console.error("Error fetching system payment statistics:", error);
-    throw error;
+    handleApiError(error, "getSystemPaymentStatistics");
   }
 };
 
-// Get best selling categories
 export const getBestSellingCategories = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/best-selling-categories", {
-      params: { startDate, endDate },
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
     });
-    return response.data; // Array of categories
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching best selling categories:", error);
-    throw error; // Rethrow to handle it in the component
+    handleApiError(error, "getBestSellingCategories");
   }
 };
 
-// Get system transaction statistics
 export const getSystemTransactionStatistics = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/system-transaction-statistics", {
-      params: { startDate, endDate },
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
     });
-    return response.data; // System transaction statistics
+    return response.data || { totalRevenue: 0, transactionCount: 0 };
   } catch (error) {
-    console.error("Error fetching system transaction statistics:", error);
-    throw error;
+    handleApiError(error, "getSystemTransactionStatistics");
   }
 };
 
-// Get month order purchase statistics
 export const getMonthOrderPurchaseStatistics = async (startDate, endDate) => {
   try {
-    const response = await api.get(
-      "/dashboard/get-month-order-purchase-statistics",
-      {
-        params: { startDate, endDate },
-      }
-    );
-    return response.data; // Month order purchase statistics
+    const response = await api.get("/dashboard/get-month-order-purchase-statistics", {
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
+    });
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching month order purchase statistics:", error);
-    throw error;
+    handleApiError(error, "getMonthOrderPurchaseStatistics");
   }
 };
 
-// Get month order rent statistics
 export const getMonthOrderRentStatistics = async (startDate, endDate) => {
   try {
-    const response = await api.get(
-      "/dashboard/get-month-order-rent-statistics",
-      {
-        params: { startDate, endDate },
-      }
-    );
-    return response.data; // Month order rent statistics
+    const response = await api.get("/dashboard/get-month-order-rent-statistics", {
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
+    });
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching month order rent statistics:", error);
-    throw error;
+    handleApiError(error, "getMonthOrderRentStatistics");
   }
 };
 
-// Get all month order cost statistics
 export const getAllMonthOrderCostStatistics = async (startDate, endDate) => {
   try {
-    const response = await api.get(
-      "/dashboard/get-all-month-order-cost-statistics",
-      {
-        params: { startDate, endDate },
-      }
-    );
-    return response.data; // All month order cost statistics
+    const response = await api.get("/dashboard/get-all-month-order-cost-statistics", {
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
+    });
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching all month order cost statistics:", error);
-    throw error;
+    handleApiError(error, "getAllMonthOrderCostStatistics");
   }
 };
 
-// Get order status statistics
 export const getOrderStatusStatistics = async () => {
   try {
     const response = await api.get("/dashboard/get-order-status-statistics");
-    return response.data; // Order status statistics
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching order status statistics:", error);
-    throw error;
+    handleApiError(error, "getOrderStatusStatistics");
   }
 };
 
-
-// Get order status statistics 
 export const getMonthOrderCostStatistics = async (startDate, endDate) => {
   try {
-    const response = await api.get(
-      "/dashboard/get-month-order-cost-statistics",
-      {
-        params: { startDate, endDate },
-      }
-    );
-    return response.data; // Array of month cost statistics
+    const response = await api.get("/dashboard/get-month-order-cost-statistics", {
+      params: { 
+        startDate: formatDateParam(startDate), 
+        endDate: formatDateParam(endDate) 
+      },
+    });
+    return response.data || [];
   } catch (error) {
-    console.error("Error fetching month order cost statistics:", error);
-    throw error;
+    handleApiError(error, "getMonthOrderCostStatistics");
   }
 };
-//==========================
 
 // Get system total money statistics
 export const getSystemTotalMoneyStatistics = async () => {
@@ -235,5 +241,27 @@ export const getProductReportCount = async () => {
   } catch (error) {
     console.error("Error fetching product report count:", error);
     throw error;
+  }
+};
+
+export const getProductById = async (id, pageIndex = 1, pageSize = 10) => {
+  try {
+    const response = await api.get(`/product/get-product-by-id`, {
+      params: {
+        id,
+        pageIndex,
+        pageSize,
+      },
+    });
+
+    if (response.data && response.data.isSuccess) {
+      return response.data.result;
+    } else {
+      console.warn(`Product not found for ID: ${id}`);
+      return { name: `Product ${id}` }; // Fallback display
+    }
+  } catch (error) {
+    console.error(`Error fetching product ${id}:`, error);
+    return { name: `Product ${id}` }; // Fallback display on error
   }
 };

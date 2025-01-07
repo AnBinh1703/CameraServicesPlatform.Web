@@ -2,17 +2,16 @@ import { Button, Card, Form, Spin, Steps, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import "../../../../styles/custom-antd.css"; // Add this import
 
 import { getContractTemplateByProductId } from "../../../../api/contractTemplateApi";
 import { createOrderRentWithPayment } from "../../../../api/orderApi";
 import { getProductById } from "../../../../api/productApi";
 import { getSupplierById } from "../../../../api/supplierApi";
+import { getNewReservationMoney } from "../../../../api/systemAdminApi"; // Add this import
 import {
   getProductVouchersByProductId,
   getVoucherById,
 } from "../../../../api/voucherApi";
-import { getNewReservationMoney } from "../../../../api/systemAdminApi"; // Add this import
 
 import DeliveryMethod from "./DeliveryMethod";
 import OrderConfirmation from "./OrderConfirmation";
@@ -34,7 +33,7 @@ const CreateOrderRent = () => {
   const [rentalEndDate, setRentalEndDate] = useState(null);
   const [shippingAddress, setShippingAddress] = useState("");
   const [returnDate, setReturnDate] = useState(null);
-  const [reservationMoney, setReservationMoney] = useState();  
+  const [reservationMoney, setReservationMoney] = useState();
   const location = useLocation();
   const { productID, supplierID } = location.state || {};
   const [loadingProduct, setLoadingProduct] = useState(true);
