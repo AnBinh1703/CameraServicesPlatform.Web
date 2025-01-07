@@ -55,6 +55,7 @@ import {
   getSystemTransactionStatistics,
   getUserCount,
 } from "../../api/dasshboardmanageApi";
+import { getSupplierById } from "../../api/supplierApi";
 
 const { Title, Text } = Typography;
 
@@ -404,15 +405,21 @@ const DashboardStaff = () => {
                 setLoadingProducts(loading);
 
                 try {
-                  const product = await getProductById(item.productID);
+                  const response = await getProductById(item.productID);
+                  console.log("Product API Response:", response);
+
+                  // Update this line to access productName directly from result
+                  const productName = response?.productName;
+                  console.log("Found product name:", productName);
+
                   names[item.productID] =
-                    product?.name || `Product ${item.productID}`;
+                    productName || `Product ${item.productID}`;
                 } catch (err) {
-                  names[item.productID] = `Product ${item.productID}`;
                   console.error(
                     `Error loading product ${item.productID}:`,
                     err
                   );
+                  names[item.productID] = `Product ${item.productID}`;
                 }
 
                 loading[item.productID] = false;
@@ -420,6 +427,7 @@ const DashboardStaff = () => {
             })
           );
 
+          console.log("Final product names mapping:", names);
           setProductNames(names);
           setLoadingProducts(loading);
         }
@@ -465,124 +473,189 @@ const DashboardStaff = () => {
       </DashboardCard>
     );
   };
-  const renderTransactionStatistics = () => (
-    <Card style={statCardStyle}>
-      <Row gutter={[24, 24]}>
-        <Col span={8}>
-          <div
-            style={{
-              background: colors.gradient.blue,
-              padding: "24px",
-              borderRadius: "12px",
-              height: "100%",
-              color: "white",
-            }}
-          >
-            <DollarOutlined
-              style={{ fontSize: "32px", marginBottom: "16px" }}
-            />
-            <Statistic
-              title={
-                <Text style={{ color: "rgba(255,255,255,0.85)" }}>
-                  Tổng doanh thu
-                </Text>
-              }
-              value={statistics.transactions?.totalRevenue}
-              precision={0}
-              suffix="VND"
-              valueStyle={{ color: "white", fontSize: "24px" }}
-            />
-          </div>
-        </Col>
-        <Col span={8}>
-          <div
-            style={{
-              background: colors.gradient.green,
-              padding: "24px",
-              borderRadius: "12px",
-              height: "100%",
-              color: "white",
-            }}
-          >
-            <ShoppingCartOutlined
-              style={{ fontSize: "32px", marginBottom: "16px" }}
-            />
-            <Statistic
-              title={
-                <Text style={{ color: "rgba(255,255,255,0.85)" }}>
-                  Tổng giao dịch
-                </Text>
-              }
-              value={statistics.transactions?.transactionCount}
-              valueStyle={{ color: "white", fontSize: "24px" }}
-            />
-          </div>
-        </Col>
-        <Col span={24}>
-          <Title level={4}>Doanh thu theo loại giao dịch</Title>
-          <List
-            dataSource={statistics.transactions?.revenueByTransactionType}
-            renderItem={(item) => (
-              <List.Item>
-                <Row style={{ width: "100%" }}>
-                  <Col span={8}>
-                    {transactionTypeMap[item.transactionType].text}
-                  </Col>
-                  <Col span={8}>{item.transactionCount} transactions</Col>
-                  <Col span={8}>{item.totalRevenue.toLocaleString()} VND</Col>
-                </Row>
-              </List.Item>
-            )}
-          />
-        </Col>
-        <Col span={24}>
-          <Title level={4}>Doanh thu theo tháng</Title>
-          <List
-            dataSource={statistics.transactions?.monthlyRevenue}
-            renderItem={(item) => (
-              <List.Item>
-                <Row style={{ width: "100%" }}>
-                  <Col span={12}>{`${item.month}/${item.year}`}</Col>
-                  <Col span={12}>{item.totalRevenue.toLocaleString()} VND</Col>
-                </Row>
-              </List.Item>
-            )}
-          />
-        </Col>
-        <Col span={24}>
-          <Title level={4}>Doanh thu theo nhà cung cấp</Title>
-          <List
-            dataSource={statistics.transactions?.revenueBySupplier}
-            renderItem={(item) => (
-              <List.Item>
-                <Row style={{ width: "100%" }}>
-                  <Col span={8}>Nhà cung cấp: {item.supplierID}</Col>
-                  <Col span={8}>{item.transactionCount} giao dịch</Col>
-                  <Col span={8}>{item.totalRevenue.toLocaleString()} VND</Col>
-                </Row>
-              </List.Item>
-            )}
-          />
-        </Col>
-        <Col span={24}>
-          <Title level={4}>Trạng thái giao dịch</Title>
-          {statistics.transactions?.transactionStatusCounts.map((status) => (
-            <div key={status.status} style={{ marginBottom: "16px" }}>
-              <Text>{transactionStatusMap[status.status].text}</Text>
-              <Progress
-                percent={
-                  (status.count / statistics.transactions.transactionCount) *
-                  100
+  const renderTransactionStatistics = () => {
+    const [supplierNames, setSupplierNames] = useState({});
+    const [loadingSuppliers, setLoadingSuppliers] = useState({});
+
+    useEffect(() => {
+      const fetchSupplierNames = async () => {
+        const names = { ...supplierNames };
+        const loading = { ...loadingSuppliers };
+
+        if (statistics.transactions?.revenueBySupplier) {
+          await Promise.all(
+            statistics.transactions.revenueBySupplier.map(async (item) => {
+              if (!names[item.supplierID]) {
+                loading[item.supplierID] = true;
+                setLoadingSuppliers(loading);
+
+                try {
+                  const response = await getSupplierById(item.supplierID);
+                  console.log(
+                    "Raw API Response for supplier",
+                    item.supplierID,
+                    ":",
+                    response
+                  );
+
+                  // Access the supplier name from the correct path in the response
+                  const supplierName =
+                    response?.result?.items?.[0]?.supplierName;
+                  console.log("Found supplier name:", supplierName);
+
+                  names[item.supplierID] =
+                    supplierName || `Supplier ${item.supplierID}`;
+                } catch (err) {
+                  console.error(
+                    `Error loading supplier ${item.supplierID}:`,
+                    err
+                  );
+                  names[item.supplierID] = `Supplier ${item.supplierID}`;
                 }
-                strokeColor={transactionStatusMap[status.status].color}
-                format={() => status.count}
+
+                loading[item.supplierID] = false;
+              }
+            })
+          );
+
+          setSupplierNames(names);
+          setLoadingSuppliers(loading);
+        }
+      };
+
+      fetchSupplierNames();
+    }, [statistics.transactions?.revenueBySupplier]);
+
+    return (
+      <Card style={statCardStyle}>
+        <Row gutter={[24, 24]}>
+          <Col span={8}>
+            <div
+              style={{
+                background: colors.gradient.blue,
+                padding: "24px",
+                borderRadius: "12px",
+                height: "100%",
+                color: "white",
+              }}
+            >
+              <DollarOutlined
+                style={{ fontSize: "32px", marginBottom: "16px" }}
+              />
+              <Statistic
+                title={
+                  <Text style={{ color: "rgba(255,255,255,0.85)" }}>
+                    Tổng doanh thu
+                  </Text>
+                }
+                value={statistics.transactions?.totalRevenue}
+                precision={0}
+                suffix="VND"
+                valueStyle={{ color: "white", fontSize: "24px" }}
               />
             </div>
-          ))}
-        </Col>
-      </Row>
-    </Card>
-  );
+          </Col>
+          <Col span={8}>
+            <div
+              style={{
+                background: colors.gradient.green,
+                padding: "24px",
+                borderRadius: "12px",
+                height: "100%",
+                color: "white",
+              }}
+            >
+              <ShoppingCartOutlined
+                style={{ fontSize: "32px", marginBottom: "16px" }}
+              />
+              <Statistic
+                title={
+                  <Text style={{ color: "rgba(255,255,255,0.85)" }}>
+                    Tổng giao dịch
+                  </Text>
+                }
+                value={statistics.transactions?.transactionCount}
+                valueStyle={{ color: "white", fontSize: "24px" }}
+              />
+            </div>
+          </Col>
+          <Col span={24}>
+            <Title level={4}>Doanh thu theo loại giao dịch</Title>
+            <List
+              dataSource={statistics.transactions?.revenueByTransactionType}
+              renderItem={(item) => (
+                <List.Item>
+                  <Row style={{ width: "100%" }}>
+                    <Col span={8}>
+                      {transactionTypeMap[item.transactionType].text}
+                    </Col>
+                    <Col span={8}>{item.transactionCount} transactions</Col>
+                    <Col span={8}>{item.totalRevenue.toLocaleString()} VND</Col>
+                  </Row>
+                </List.Item>
+              )}
+            />
+          </Col>
+          <Col span={24}>
+            <Title level={4}>Doanh thu theo tháng</Title>
+            <List
+              dataSource={statistics.transactions?.monthlyRevenue}
+              renderItem={(item) => (
+                <List.Item>
+                  <Row style={{ width: "100%" }}>
+                    <Col span={12}>{`${item.month}/${item.year}`}</Col>
+                    <Col span={12}>
+                      {item.totalRevenue.toLocaleString()} VND
+                    </Col>
+                  </Row>
+                </List.Item>
+              )}
+            />
+          </Col>
+          <Col span={24}>
+            <Title level={4}>Doanh thu theo nhà cung cấp</Title>
+            <List
+              dataSource={statistics.transactions?.revenueBySupplier}
+              renderItem={(item) => (
+                <List.Item>
+                  <Row style={{ width: "100%" }}>
+                    <Col span={8}>
+                      {loadingSuppliers[item.supplierID] ? (
+                        <Text type="secondary">Loading...</Text>
+                      ) : (
+                        <Text>
+                          Nhà cung cấp:{" "}
+                          {supplierNames[item.supplierID] || item.supplierID}
+                        </Text>
+                      )}
+                    </Col>
+                    <Col span={8}>{item.transactionCount} giao dịch</Col>
+                    <Col span={8}>{item.totalRevenue.toLocaleString()} VND</Col>
+                  </Row>
+                </List.Item>
+              )}
+            />
+          </Col>
+          <Col span={24}>
+            <Title level={4}>Trạng thái giao dịch</Title>
+            {statistics.transactions?.transactionStatusCounts.map((status) => (
+              <div key={status.status} style={{ marginBottom: "16px" }}>
+                <Text>{transactionStatusMap[status.status].text}</Text>
+                <Progress
+                  percent={
+                    (status.count / statistics.transactions.transactionCount) *
+                    100
+                  }
+                  strokeColor={transactionStatusMap[status.status].color}
+                  format={() => status.count}
+                />
+              </div>
+            ))}
+          </Col>
+        </Row>
+      </Card>
+    );
+  };
   const renderReportStatistics = () => (
     <Card style={statCardStyle} bodyStyle={{ padding: 0 }}>
       <Row gutter={[24, 24]}>
