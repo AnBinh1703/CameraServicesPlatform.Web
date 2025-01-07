@@ -366,19 +366,19 @@ const OrderList = ({
         >
           <Select>
             <Select.Option value={0}>
-              Giờ - Chọn thời gian tối thiểu {durationOptions[0].min} tối đa{" "}
+              Giờ - Chọn thời gian tối thiểu {durationOptions[0].min} tối đa
               {durationOptions[0].max}
             </Select.Option>
             <Select.Option value={1}>
-              Ngày- Chọn thời gian tối thiểu {durationOptions[1].min} tối đa{" "}
+              Ngày- Chọn thời gian tối thiểu {durationOptions[1].min} tối đa
               {durationOptions[1].max}
             </Select.Option>
             <Select.Option value={2}>
-              Tuần- Chọn thời gian tối thiểu {durationOptions[2].min} tối đa{" "}
+              Tuần- Chọn thời gian tối thiểu {durationOptions[2].min} tối đa
               {durationOptions[2].max}
             </Select.Option>
             <Select.Option value={3}>
-              Tháng- Chọn thời gian tối thiểu {durationOptions[3].min}- tối đa{" "}
+              Tháng- Chọn thời gian tối thiểu {durationOptions[3].min}- tối đa
               {durationOptions[3].max}
             </Select.Option>
           </Select>

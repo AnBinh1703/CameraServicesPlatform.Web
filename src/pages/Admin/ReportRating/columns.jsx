@@ -8,9 +8,9 @@ const { Text } = Typography;
 export const userReportColumns = (
   getColumnSearchProps,
   handleViewDetails,
-
   handleUserReportApprove,
-  handleUserReportReject
+  handleUserReportReject,
+  userDetails
 ) => [
   {
     title: "Mã báo cáo",
@@ -22,12 +22,29 @@ export const userReportColumns = (
     title: "Người báo cáo",
     dataIndex: "accountId",
     key: "accountId",
-    render: (accountId) => (
-      <Space>
-        <UserOutlined />
-        <Text>{accountId || "N/A"}</Text>
-      </Space>
-    ),
+    render: (accountId) => {
+      const user = userDetails[accountId];
+      return (
+        <Space direction="vertical" size="small">
+          {user ? (
+            <>
+              <Space>
+                <UserOutlined />
+                <Text strong>{`${user.lastName} ${user.firstName}`}</Text>
+              </Space>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                {accountId}
+              </Text>
+            </>
+          ) : (
+            <Space>
+              <UserOutlined />
+              <Text>{accountId || "N/A"}</Text>
+            </Space>
+          )}
+        </Space>
+      );
+    },
     ...getColumnSearchProps("accountId"),
   },
   {
@@ -129,8 +146,10 @@ export const productReportColumns = (
     key: "productID",
     render: (productId) => (
       <Space direction="vertical" size="small">
+        <strong>
+          <span>Tên: {productDetails[productId]?.name || "N/A"}</span>
+        </strong>{" "}
         <span>Mã: {productId}</span>
-        <span>Tên: {productDetails[productId]?.name || "N/A"}</span>
       </Space>
     ),
     ...getColumnSearchProps("productID"),

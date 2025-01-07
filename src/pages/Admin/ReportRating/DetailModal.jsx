@@ -108,7 +108,7 @@ const DetailModal = ({
             {item.productReportID}
           </Descriptions.Item>
           <Descriptions.Item label="Sản phẩm">
-            {productDetails[item.productID]?.name || "N/A"} (ID:{" "}
+            {productDetails[item.productID]?.name || "N/A"} (ID:
             {item.productID})
           </Descriptions.Item>
           <Descriptions.Item label="Trạng thái">

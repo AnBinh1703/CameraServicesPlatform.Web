@@ -153,7 +153,7 @@ const ManageUser = () => {
               <ManageStaffList />
             ) : activeStaffTab === "create" ? (
               <CreateStaffForm />
-            ) : null}{" "}
+            ) : null}
             {/* Fixed the incomplete ternary operator */}
           </div>
         </div>

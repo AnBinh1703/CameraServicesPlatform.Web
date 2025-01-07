@@ -170,7 +170,7 @@ const ProductCardViewOfSupplier = () => {
                             <div className="flex items-center gap-2">
                               <DollarOutlined className="text-blue-500" />
                               <span>
-                                Giá Bán:{" "}
+                                Giá Bán:
                                 {new Intl.NumberFormat("vi-VN", {
                                   style: "currency",
                                   currency: "VND",
@@ -184,7 +184,7 @@ const ProductCardViewOfSupplier = () => {
                               <div className="flex items-center gap-2">
                                 <DollarOutlined className="text-red-500" />
                                 <span>
-                                  Đặt cọc:{" "}
+                                  Đặt cọc:
                                   {new Intl.NumberFormat("vi-VN", {
                                     style: "currency",
                                     currency: "VND",
@@ -198,7 +198,7 @@ const ProductCardViewOfSupplier = () => {
                               <div className="flex items-center gap-2">
                                 <ClockCircleOutlined className="text-purple-500" />
                                 <span>
-                                  Thuê/giờ:{" "}
+                                  Thuê/giờ:
                                   {new Intl.NumberFormat("vi-VN", {
                                     style: "currency",
                                     currency: "VND",
@@ -211,7 +211,7 @@ const ProductCardViewOfSupplier = () => {
                             <div className="flex items-center gap-2">
                               <ClockCircleOutlined className="text-green-500" />
                               <span>
-                                Thuê/ngày:{" "}
+                                Thuê/ngày:
                                 {new Intl.NumberFormat("vi-VN", {
                                   style: "currency",
                                   currency: "VND",
@@ -225,7 +225,7 @@ const ProductCardViewOfSupplier = () => {
                               <div className="flex items-center gap-2">
                                 <ClockCircleOutlined className="text-blue-500" />
                                 <span>
-                                  Thuê/tuần:{" "}
+                                  Thuê/tuần:
                                   {new Intl.NumberFormat("vi-VN", {
                                     style: "currency",
                                     currency: "VND",
@@ -239,7 +239,7 @@ const ProductCardViewOfSupplier = () => {
                               <div className="flex items-center gap-2">
                                 <ClockCircleOutlined className="text-yellow-500" />
                                 <span>
-                                  Thuê/tháng:{" "}
+                                  Thuê/tháng:
                                   {new Intl.NumberFormat("vi-VN", {
                                     style: "currency",
                                     currency: "VND",

@@ -1,18 +1,36 @@
 import { Table, message } from "antd";
-import { useState } from "react";
-import { userReportColumns } from "./columns";
+import { useEffect, useState } from "react";
+import { getUserById } from "../../../api/accountApi";
 import { getReportById } from "../../../api/reportApi";
-
-const UserReportsTable = ({ 
-  data = [], // Add default empty array
-  loading, 
-  pagination, 
-  onChange, 
+import { userReportColumns } from "./columns";
+const UserReportsTable = ({
+  data = [],
+  loading,
+  pagination,
+  onChange,
   getColumnSearchProps,
   onApprove,
-  onReject
+  onReject,
 }) => {
   const [selectedReport, setSelectedReport] = useState(null);
+  const [userDetails, setUserDetails] = useState({});
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userMap = {};
+      for (const report of data) {
+        if (report.accountId && !userDetails[report.accountId]) {
+          const userResponse = await getUserById(report.accountId);
+          if (userResponse?.result) {
+            userMap[report.accountId] = userResponse.result;
+          }
+        }
+      }
+      setUserDetails((prev) => ({ ...prev, ...userMap }));
+    };
+
+    fetchUserDetails();
+  }, [data]);
 
   const handleViewDetails = async (record) => {
     if (!record?.reportID) {
@@ -37,12 +55,13 @@ const UserReportsTable = ({
   const validData = Array.isArray(data) ? data : [];
 
   const columns = userReportColumns(
-    getColumnSearchProps, 
+    getColumnSearchProps,
     handleViewDetails,
     onApprove,
-    onReject
+    onReject,
+    userDetails // Pass userDetails to columns
   );
-  
+
   return (
     <Table
       columns={columns}
