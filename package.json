@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ant-design/charts": "^2.2.3",
-    "@ant-design/icons": "^5.5.1",
+    "@ant-design/icons": "^5.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.1",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@headlessui/react": "^2.0.4",

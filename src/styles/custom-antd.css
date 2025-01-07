@@ -12,11 +12,25 @@
     forced-color-adjust: none;
   }
   
-  .ant-card {
-    forced-color-adjust: none;
-  }
-  
   .ant-spin {
     forced-color-adjust: none;
   }
+
+  .ant-card {
+    forced-color-adjust: none;
+  }
+}
+
+/* Add these new styles */
+.ant-card .ant-card-body {
+  padding: 8px !important;
+  min-height: 50px !important;
+}
+
+.ant-statistic {
+  margin: 0 !important;
+}
+
+.ant-statistic-content {
+  font-size: 12px !important;
 }

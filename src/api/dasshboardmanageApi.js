@@ -109,18 +109,6 @@ export const getOrderStatusStatistics = async () => {
   }
 };
 
-// Get system total money statistics
-export const getSystemTotalMoneyStatistics = async () => {
-  try {
-    const response = await api.get(
-      "/dashboard/get-system-total-money-statistics"
-    );
-    return response.data; // System total money statistics
-  } catch (error) {
-    console.error("Error fetching system total money statistics:", error);
-    throw error;
-  }
-};
 
 // Get order status statistics 
 export const getMonthOrderCostStatistics = async (startDate, endDate) => {
@@ -138,6 +126,19 @@ export const getMonthOrderCostStatistics = async (startDate, endDate) => {
   }
 };
 //==========================
+
+// Get system total money statistics
+export const getSystemTotalMoneyStatistics = async () => {
+  try {
+    const response = await api.get(
+      "/dashboard/get-system-total-money-statistics"
+    );
+    return response.data; // System total money statistics
+  } catch (error) {
+    console.error("Error fetching system total money statistics:", error);
+    throw error;
+  }
+};
 // Get user count statistics
 export const getUserCount = async () => {
   try {
