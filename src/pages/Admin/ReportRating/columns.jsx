@@ -5,7 +5,13 @@ import { getProductReportById } from "../../../api/productReportApi";
 
 const { Text } = Typography;
 
-export const userReportColumns = (getColumnSearchProps, handleViewDetails) => [
+export const userReportColumns = (
+  getColumnSearchProps,
+  handleViewDetails,
+
+  handleUserReportApprove,
+  handleUserReportReject
+) => [
   {
     title: "Mã báo cáo",
     dataIndex: "reportID",
@@ -19,7 +25,7 @@ export const userReportColumns = (getColumnSearchProps, handleViewDetails) => [
     render: (accountId) => (
       <Space>
         <UserOutlined />
-        <Text>{accountId}</Text>
+        <Text>{accountId || "N/A"}</Text>
       </Space>
     ),
     ...getColumnSearchProps("accountId"),
@@ -41,7 +47,20 @@ export const userReportColumns = (getColumnSearchProps, handleViewDetails) => [
     title: "Nội dung",
     dataIndex: "reportDetails",
     key: "reportDetails",
+    render: (text) => text || "Không có nội dung",
     ...getColumnSearchProps("reportDetails"),
+  },
+  {
+    title: "Phản hồi",
+    dataIndex: "message",
+    key: "message",
+  },
+  {
+    title: "Ngày báo cáo",
+    dataIndex: "reportDate",
+    key: "reportDate",
+    render: (date) =>
+      moment(date).isValid() ? moment(date).format("DD/MM/YYYY HH:mm") : "N/A",
   },
   {
     title: "Trạng thái",
@@ -60,11 +79,33 @@ export const userReportColumns = (getColumnSearchProps, handleViewDetails) => [
     title: "Thao tác",
     key: "actions",
     render: (_, record) => (
-      <Button
-        type="link"
-        icon={<EyeOutlined />}
-        onClick={() => handleViewDetails(record)}
-      />
+      <Space>
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewDetails(record)}
+        />
+        {record.status === 0 && (
+          <>
+            <Button
+              type="primary"
+              style={{ background: "#52c41a" }}
+              size="small"
+              onClick={() => handleUserReportApprove(record)}
+            >
+              Duyệt
+            </Button>
+            <Button
+              danger
+              type="primary"
+              size="small"
+              onClick={() => handleUserReportReject(record)}
+            >
+              Từ chối
+            </Button>
+          </>
+        )}
+      </Space>
     ),
   },
 ];
@@ -114,6 +155,11 @@ export const productReportColumns = (
     ...getColumnSearchProps("reason"),
   },
   {
+    title: "Phản hồi",
+    dataIndex: "message",
+    key: "message",
+  },
+  {
     title: "Ngày bắt đầu",
     dataIndex: "startDate",
     key: "startDate",
@@ -144,13 +190,13 @@ export const productReportColumns = (
           <>
             <Button
               type="primary"
-              style={{ background: '#52c41a' }}
+              style={{ background: "#52c41a" }}
               size="small"
               onClick={() => handleApprove(record)}
             >
               Duyệt
             </Button>
-            <Button 
+            <Button
               danger
               type="primary"
               size="small"

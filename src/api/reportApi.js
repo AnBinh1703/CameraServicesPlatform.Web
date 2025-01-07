@@ -57,3 +57,31 @@ export const getAllReports = async (pageIndex = 1, pageSize = 100) => {
     return null;
   }
 };
+
+// Reject a report
+export const rejectReport = async (reportId, message) => {
+  try {
+    const res = await api.put("/report/reject-report-by-id", {
+      reportId,
+      message,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error rejecting report:", err);
+    return null;
+  }
+};
+
+// Approve a report
+export const approveReport = async (reportId, message) => {
+  try {
+    const res = await api.put("/report/approved-report-by-id", {
+      reportId,
+      message,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error approving report:", err);
+    return null;
+  }
+};

@@ -1,18 +1,22 @@
-import { Table } from "antd";
+import { Table, message } from "antd";
 import { useEffect, useState } from "react";
-import { ratingColumns } from "./columns";
 import { getUserById } from "../../../api/accountApi";
+import { getRatingById } from "../../../api/ratingApi";
+import { ratingColumns } from "./columns";
+import RatingDetailModal from "./RatingDetailModal";
 
-const RatingsTable = ({ 
-  data, 
-  loading, 
-  pagination, 
+const RatingsTable = ({
+  data,
+  loading,
+  pagination,
   onChange,
   productDetails,
   getColumnSearchProps,
-  handleViewDetails
+  handleViewDetails,
 }) => {
   const [userDetails, setUserDetails] = useState({});
+  const [selectedRating, setSelectedRating] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -25,23 +29,53 @@ const RatingsTable = ({
           }
         }
       }
-      setUserDetails(prev => ({ ...prev, ...userMap }));
+      setUserDetails((prev) => ({ ...prev, ...userMap }));
     };
 
     fetchUserDetails();
   }, [data]);
 
-  const columns = ratingColumns(getColumnSearchProps, productDetails, handleViewDetails, userDetails);
-  
+  const onViewDetails = async (record) => {
+    try {
+      const response = await getRatingById(record.ratingID);
+      if (response?.isSuccess && response?.result) {
+        setSelectedRating(response.result);
+        setModalVisible(true);
+      } else {
+        message.error("Không thể tải thông tin đánh giá");
+      }
+    } catch (error) {
+      console.error("Error in onViewDetails:", error);
+      message.error("Có lỗi xảy ra khi xem chi tiết");
+    }
+  };
+
+  const columns = ratingColumns(
+    getColumnSearchProps,
+    productDetails,
+    onViewDetails,
+    userDetails
+  );
+
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      pagination={pagination}
-      onChange={onChange}
-      loading={loading}
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="ratingID"
+        pagination={pagination}
+        onChange={onChange}
+        loading={loading}
+      />
+      <RatingDetailModal
+        visible={modalVisible}
+        rating={selectedRating}
+        onCancel={() => {
+          setModalVisible(false);
+          setSelectedRating(null);
+        }}
+      />
+    </>
   );
 };
 

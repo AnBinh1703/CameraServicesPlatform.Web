@@ -1,36 +1,32 @@
-import {
-  EyeOutlined,
-  ClockCircleOutlined,
-  SearchOutlined,
-  UserOutlined,
-  StarOutlined,
-  MessageOutlined,
-  IdcardOutlined,
-  ShoppingOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
-  Descriptions,
   Input,
   message,
   Modal,
   Space,
-  Table,
-  Typography,
   Tabs,
+  Typography,
 } from "antd";
-import moment from "moment";
 import { useEffect, useRef, useState } from "react";
-import { getAllProductReports } from "../../api/productReportApi";
-import { getAllReports } from "../../api/reportApi";
-import { getAllRatings } from "../../api/ratingApi";
 import { getProductById } from "../../api/productApi";
+import {
+  approveProductReport,
+  getAllProductReports,
+  getProductReportById,
+  rejectProductReport,
+} from "../../api/productReportApi";
+import { getAllRatings } from "../../api/ratingApi";
+import {
+  approveReport,
+  getAllReports,
+  rejectReport,
+} from "../../api/reportApi";
 import DetailModal from "./ReportRating/DetailModal";
 import ProductReportsTable from "./ReportRating/ProductReportsTable";
 import RatingsTable from "./ReportRating/RatingsTable";
 import UserReportsTable from "./ReportRating/UserReportsTable";
-import { getProductReportById, approveProductReport, rejectProductReport } from "../../api/productReportApi";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -50,8 +46,8 @@ const ManageReportRating = () => {
   const [productNames, setProductNames] = useState({});
   const [productDetails, setProductDetails] = useState({});
   const searchInput = useRef(null);
-  const [modalType, setModalType] = useState('view'); // 'view', 'approve', 'reject'
-  const [messageInput, setMessageInput] = useState('');
+  const [modalType, setModalType] = useState("view"); // 'view', 'approve', 'reject'
+  const [messageInput, setMessageInput] = useState("");
   const [isProcessModalVisible, setIsProcessModalVisible] = useState(false);
   const [processingType, setProcessingType] = useState(null); // 'approve' or 'reject'
   const [processingItem, setProcessingItem] = useState(null);
@@ -83,40 +79,86 @@ const ManageReportRating = () => {
     }
   };
 
-  const fetchData = async (type) => {
+  const fetchUserReports = async () => {
     setLoading(true);
     try {
-      let response;
-      if (type === "userReports") {
-        response = await getAllReports(pageIndex, pageSize);
-        if (response && response.result) {
-          setUserReports(response.result);
-          setTotalPages(Math.ceil(response.result.length / pageSize));
-        }
-      } else if (type === "productReports") {
-        response = await getAllProductReports(pageIndex, pageSize);
-        if (response && response.result) {
-          setProductReports(response.result);
-          setTotalPages(Math.ceil(response.result.length / pageSize));
-          await fetchProductNames(response.result);
-        }
-      } else if (type === "ratings") {
-        response = await getAllRatings(pageIndex, pageSize);
-        if (response && response.result) {
-          setRatings(response.result);
-          setTotalPages(Math.ceil(response.result.length / pageSize));
-          await fetchProductNames(response.result);
-        }
+      const response = await getAllReports(pageIndex, pageSize);
+      if (response?.isSuccess && response?.result?.items) {
+        setUserReports(response.result.items);
+        setTotalPages(
+          response.result.totalPages ||
+            Math.ceil(response.result.items.length / pageSize)
+        );
+      } else {
+        setUserReports([]);
+        setTotalPages(0);
       }
     } catch (error) {
-      message.error("Lỗi khi tải dữ liệu");
+      console.error("Error fetching user reports:", error);
+      message.error("Lỗi khi tải dữ liệu báo cáo người dùng");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchProductReports = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllProductReports(pageIndex, pageSize);
+      if (response?.isSuccess && response?.result) {
+        setProductReports(response.result);
+        setTotalPages(Math.ceil(response.result.length / pageSize));
+        await fetchProductNames(response.result);
+      } else {
+        setProductReports([]);
+        setTotalPages(0);
+      }
+    } catch (error) {
+      console.error("Error fetching product reports:", error);
+      message.error("Lỗi khi tải dữ liệu báo cáo sản phẩm");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRatings = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllRatings(pageIndex, pageSize);
+      if (response?.isSuccess && response?.result) {
+        setRatings(response.result);
+        setTotalPages(Math.ceil(response.result.length / pageSize));
+        await fetchProductNames(response.result);
+      } else {
+        setRatings([]);
+        setTotalPages(0);
+      }
+    } catch (error) {
+      console.error("Error fetching ratings:", error);
+      message.error("Lỗi khi tải dữ liệu đánh giá");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async (type) => {
+    switch (type) {
+      case "userReports":
+        await fetchUserReports();
+        break;
+      case "productReports":
+        await fetchProductReports();
+        break;
+      case "ratings":
+        await fetchRatings();
+        break;
+      default:
+        console.error("Unknown data type:", type);
+    }
+  };
+
   useEffect(() => {
-    fetchData("reports");
+    fetchData("userReports");
   }, [pageIndex, pageSize]);
 
   const handleTabChange = (key) => {
@@ -130,7 +172,7 @@ const ManageReportRating = () => {
       if (details?.result) {
         setSelectedItem(details.result);
         setIsModalVisible(true);
-        setModalType('view');
+        setModalType("view");
       }
     } catch (error) {
       message.error("Lỗi khi tải chi tiết báo cáo");
@@ -139,33 +181,83 @@ const ManageReportRating = () => {
 
   const handleApprove = (record) => {
     setProcessingItem(record);
-    setProcessingType('approve');
+    setProcessingType("approve");
     setIsProcessModalVisible(true);
   };
 
   const handleReject = (record) => {
     setProcessingItem(record);
-    setProcessingType('reject');
+    setProcessingType("reject");
+    setIsProcessModalVisible(true);
+  };
+
+  const handleUserReportApprove = (record) => {
+    setProcessingItem(record);
+    setProcessingType("userApprove");
+    setIsProcessModalVisible(true);
+  };
+
+  const handleUserReportReject = (record) => {
+    setProcessingItem(record);
+    setProcessingType("userReject");
     setIsProcessModalVisible(true);
   };
 
   const handleProcessSubmit = async () => {
     setProcessingLoading(true);
     try {
-      const result = processingType === 'approve' 
-        ? await approveProductReport(processingItem.productReportID, messageInput)
-        : await rejectProductReport(processingItem.productReportID, messageInput);
+      let result;
+
+      switch (processingType) {
+        case "userApprove":
+          result = await approveReport(processingItem.reportID, messageInput);
+          break;
+        case "userReject":
+          result = await rejectReport(processingItem.reportID, messageInput);
+          break;
+        case "approve":
+          result = await approveProductReport(
+            processingItem.productReportID,
+            messageInput
+          );
+          break;
+        case "reject":
+          result = await rejectProductReport(
+            processingItem.productReportID,
+            messageInput
+          );
+          break;
+      }
 
       if (result?.isSuccess) {
-        message.success(`Đã ${processingType === 'approve' ? 'phê duyệt' : 'từ chối'} báo cáo thành công`);
+        message.success(
+          `Đã ${
+            processingType.includes("approve") ? "phê duyệt" : "từ chối"
+          } báo cáo thành công`
+        );
         setIsProcessModalVisible(false);
-        setMessageInput('');
-        fetchData("productReports");
+        setMessageInput("");
+        // Refresh appropriate data based on type
+        if (processingType.startsWith("user")) {
+          fetchData("userReports");
+        } else {
+          fetchData("productReports");
+        }
       } else {
-        message.error(result?.messages?.[0] || `Lỗi khi ${processingType === 'approve' ? 'phê duyệt' : 'từ chối'} báo cáo`);
+        message.error(
+          result?.messages?.[0] ||
+            `Lỗi khi ${
+              processingType.includes("approve") ? "phê duyệt" : "từ chối"
+            } báo cáo`
+        );
       }
     } catch (error) {
-      message.error(`Lỗi khi ${processingType === 'approve' ? 'phê duyệt' : 'từ chối'} báo cáo`);
+      console.error("Process error:", error);
+      message.error(
+        `Lỗi khi ${
+          processingType.includes("approve") ? "phê duyệt" : "từ chối"
+        } báo cáo`
+      );
     } finally {
       setProcessingLoading(false);
     }
@@ -219,141 +311,6 @@ const ManageReportRating = () => {
         .includes(value.toLowerCase()) ?? false,
   });
 
-  const userReportColumns = [
-    {
-      title: "Người báo cáo",
-      dataIndex: "reportBy",
-      key: "reportBy",
-      ...getColumnSearchProps("reportBy"),
-    },
-    {
-      title: "Người bị báo cáo",
-      dataIndex: "reportedUser",
-      key: "reportedUser",
-      ...getColumnSearchProps("reportedUser"),
-    },
-    {
-      title: "Nội dung",
-      dataIndex: "content",
-      key: "content",
-      ...getColumnSearchProps("content"),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => moment(date).format("DD/MM/YYYY HH:mm"),
-      sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => handleViewDetails(record)}
-        />
-      ),
-    },
-  ];
-
-  const productReportColumns = [
-    {
-      title: "Sản phẩm",
-      dataIndex: "productId",
-      key: "productId",
-      render: (productId) => (
-        <Space direction="vertical" size="small">
-          <span>Mã: {productId}</span>
-          <span>Tên: {productDetails[productId]?.name || "N/A"}</span>
-        </Space>
-      ),
-      ...getColumnSearchProps("productId"),
-    },
-    {
-      title: "Người báo cáo",
-      dataIndex: "reportBy",
-      key: "reportBy",
-      ...getColumnSearchProps("reportBy"),
-    },
-    {
-      title: "Nội dung",
-      dataIndex: "content",
-      key: "content",
-      ...getColumnSearchProps("content"),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => moment(date).format("DD/MM/YYYY HH:mm"),
-      sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => handleViewDetails(record)}
-        />
-      ),
-    },
-  ];
-
-  const ratingColumns = [
-    {
-      title: "Mã đánh giá",
-      dataIndex: "ratingID",
-      key: "ratingID",
-      ...getColumnSearchProps("ratingID"),
-    },
-    {
-      title: "Mã sản phẩm",
-      dataIndex: "productID",
-      key: "productID",
-      render: (productID) => (
-        <Space direction="vertical" size="small">
-          <span>Mã: {productID}</span>
-          <span>Tên: {productDetails[productID]?.name || "N/A"}</span>
-        </Space>
-      ),
-      ...getColumnSearchProps("productID"),
-    },
-    {
-      title: "Điểm đánh giá",
-      dataIndex: "ratingValue",
-      key: "ratingValue",
-      render: (rating) => `${rating} sao`,
-    },
-    {
-      title: "Nội dung",
-      dataIndex: "reviewComment",
-      key: "reviewComment",
-      ...getColumnSearchProps("reviewComment"),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => moment(date).format("DD/MM/YYYY HH:mm"),
-      sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => handleViewDetails(record)}
-        />
-      ),
-    },
-  ];
-
   const handleTableChange = (pagination) => {
     setPageIndex(pagination.current);
     setPageSize(pagination.pageSize);
@@ -377,6 +334,9 @@ const ManageReportRating = () => {
             pagination={pagination}
             onChange={handleTableChange}
             getColumnSearchProps={getColumnSearchProps}
+            handleViewDetails={handleViewDetails}
+            onApprove={handleUserReportApprove}
+            onReject={handleUserReportReject}
           />
         </TabPane>
         <TabPane tab="Báo cáo sản phẩm" key="productReports">
@@ -405,20 +365,32 @@ const ManageReportRating = () => {
       </Tabs>
 
       <Modal
-        title={processingType === 'approve' ? 'Phê duyệt báo cáo' : 'Từ chối báo cáo'}
+        title={
+          processingType === "approve" || processingType === "userApprove"
+            ? "Phê duyệt báo cáo"
+            : "Từ chối báo cáo"
+        }
         visible={isProcessModalVisible}
         onCancel={() => {
           setIsProcessModalVisible(false);
-          setMessageInput('');
+          setMessageInput("");
         }}
         onOk={handleProcessSubmit}
-        okButtonProps={{ 
+        okButtonProps={{
           loading: processingLoading,
           disabled: !messageInput.trim(),
-          style: processingType === 'approve' ? { background: '#52c41a' } : {}
+          style: processingType === "approve" ? { background: "#52c41a" } : {},
         }}
-        okType={processingType === 'approve' ? 'primary' : 'danger'}
-        okText={processingType === 'approve' ? 'Duyệt' : 'Từ chối'}
+        okType={
+          processingType === "approve" || processingType === "userApprove"
+            ? "primary"
+            : "danger"
+        }
+        okText={
+          processingType === "approve" || processingType === "userApprove"
+            ? "Duyệt"
+            : "Từ chối"
+        }
       >
         <Input.TextArea
           placeholder="Nhập tin nhắn xử lý..."
