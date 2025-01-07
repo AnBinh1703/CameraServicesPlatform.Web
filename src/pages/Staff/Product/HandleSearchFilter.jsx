@@ -83,9 +83,7 @@ const HandleSearchFilter = ({ products = [], onFilter }) => {
             <Option value="3">
               <Badge status="default" text="Đã Bán" />
             </Option>
-            <Option value="4">
-              <Badge status="error" text="Không Khả Dụng" />
-            </Option>
+             
           </Select>
         </Col>
         <Col xs={24} sm={12} md={8} lg={8}>

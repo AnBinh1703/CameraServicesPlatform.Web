@@ -98,3 +98,29 @@ export const deleteProductReport = async (productReportId) => {
     return null;
   }
 };
+
+export const approveProductReport = async (productReportID, message) => {
+  try {
+    const res = await api.put(`/productReport/approved-product-report`, {
+      productReportID,
+      message,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi phê duyệt báo cáo sản phẩm:", err);
+    return null;
+  }
+};
+
+export const rejectProductReport = async (productReportID, message) => {
+  try {
+    const res = await api.put(`/productReport/reject-product-report`, {
+      productReportID,
+      message,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi từ chối báo cáo sản phẩm:", err);
+    return null;
+  }
+};

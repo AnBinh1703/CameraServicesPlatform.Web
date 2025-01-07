@@ -2,10 +2,12 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
+  CopyOutlined, // Add this import
   EyeOutlined,
   FileTextOutlined,
   HomeOutlined,
   IdcardOutlined,
+  MailOutlined,
   PhoneOutlined,
   SearchOutlined,
   UserOutlined,
@@ -25,6 +27,7 @@ import {
 } from "antd";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
+import { getUserById } from "../../../../api/accountApi"; // Add this line
 import { getAllSuppliers, getSupplierById } from "../../../../api/supplierApi";
 
 const { Title } = Typography;
@@ -41,6 +44,33 @@ const ManageSupplier = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
+  const [userEmail, setUserEmail] = useState(""); // Add this line
+  const [supplierEmails, setSupplierEmails] = useState({}); // Add this line
+
+  // Add this function to fetch emails for all suppliers
+  const fetchSupplierEmails = async (suppliers) => {
+    try {
+      const emailPromises = suppliers.map(async (supplier) => {
+        if (supplier.accountID) {
+          const userResponse = await getUserById(supplier.accountID);
+          return {
+            accountID: supplier.accountID,
+            email: userResponse?.result?.email || "N/A",
+          };
+        }
+        return { accountID: supplier.accountID, email: "N/A" };
+      });
+
+      const emails = await Promise.all(emailPromises);
+      const emailMap = {};
+      emails.forEach((item) => {
+        emailMap[item.accountID] = item.email;
+      });
+      setSupplierEmails(emailMap);
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+    }
+  };
 
   // Function to fetch suppliers based on pageIndex, pageSize, and search term
   const fetchSuppliers = async (pageIndex, pageSize, searchTerm = "") => {
@@ -48,8 +78,11 @@ const ManageSupplier = () => {
     try {
       const response = await getAllSuppliers(pageIndex, pageSize, searchTerm);
       if (response && response.result && response.isSuccess) {
-        setSuppliers(response.result.items);
+        const suppliers = response.result.items;
+        setSuppliers(suppliers);
         setTotalPages(response.result.totalPages);
+        // Fetch emails for all suppliers
+        await fetchSupplierEmails(suppliers);
       } else {
         message.error("Failed to fetch suppliers");
       }
@@ -69,21 +102,31 @@ const ManageSupplier = () => {
   const handleViewDetails = async (supplierId) => {
     try {
       const response = await getSupplierById(supplierId);
-      console.log("Supplier details response:", response.result);
+      console.log("Supplier response:", response);
       if (
         response &&
         response.result &&
         response.result.items &&
         response.result.items.length > 0
       ) {
-        // Access the first item in the items array
-        setSelectedSupplier(response.result.items[0]);
+        const supplier = response.result.items[0];
+        console.log("Supplier accountID:", supplier.accountID);
+        setSelectedSupplier(supplier);
+
+        if (supplier.accountID) {
+          const userResponse = await getUserById(supplier.accountID);
+          console.log("User response:", userResponse);
+          if (userResponse && userResponse.result) {
+            console.log("Found email:", userResponse.result?.email);
+            setUserEmail(userResponse.result?.email);
+          }
+        }
         setIsModalVisible(true);
       } else {
         message.error("Không thể tải thông tin nhà cung cấp");
       }
     } catch (error) {
-      console.error("Error fetching supplier details:", error);
+      console.error("Error in handleViewDetails:", error);
       message.error("Không thể tải thông tin nhà cung cấp");
     }
   };
@@ -151,8 +194,13 @@ const ManageSupplier = () => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
       }
-    },
-  });
+    }, // Add closing brace and comma here
+  }); // Add closing brace here
+
+  const handleCopyEmail = (email) => {
+    navigator.clipboard.writeText(email);
+    message.success("Đã sao chép email!");
+  };
 
   const columns = [
     {
@@ -179,6 +227,24 @@ const ManageSupplier = () => {
       dataIndex: "supplierAddress",
       key: "supplierAddress",
       ...getColumnSearchProps("supplierAddress"),
+    },
+    {
+      title: "Email",
+      dataIndex: "accountID",
+      key: "email",
+      render: (accountID) => (
+        <Space>
+          <span>{supplierEmails[accountID] || "N/A"}</span>
+          {supplierEmails[accountID] && (
+            <Button
+              type="link"
+              icon={<CopyOutlined />}
+              onClick={() => handleCopyEmail(supplierEmails[accountID])}
+            />
+          )}
+        </Space>
+      ),
+      ...getColumnSearchProps("email"),
     },
     {
       title: "Trạng thái",
@@ -305,6 +371,25 @@ const ManageSupplier = () => {
                 span={2}
               >
                 {selectedSupplier?.supplierAddress}
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                label={
+                  <>
+                    <MailOutlined /> Email
+                  </>
+                }
+              >
+                <Space>
+                  <span>{userEmail || "N/A"}</span>
+                  {userEmail && (
+                    <Button
+                      type="link"
+                      icon={<CopyOutlined />}
+                      onClick={() => handleCopyEmail(userEmail)}
+                    />
+                  )}
+                </Space>
               </Descriptions.Item>
 
               <Descriptions.Item

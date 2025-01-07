@@ -23,6 +23,7 @@ import ProductPageRent from "../pages/Common/Product/ProductPageRent";
 
 import ManageComboByAd from "../pages/Admin/Combo/ManageComboByAd";
 import DashboardAdmin from "../pages/Admin/DashboardAdmin";
+import ManageReportRating from "../pages/Admin/ManageReportRating";
 import Settings from "../pages/Admin/Settings";
 import CreateOrderRent from "../pages/Common/Order/CreateOrderRent/CreateOrderRent";
 import OrderHistory from "../pages/Common/OrderHistory";
@@ -108,6 +109,10 @@ function Routers() {
           element: <ManageUser />,
         },
         {
+          path: "report-rating",
+          element: <ManageReportRating />,
+        },
+        {
           path: "settings",
           element: <Settings />,
         },
@@ -180,6 +185,10 @@ function Routers() {
         {
           path: "manage-transaction-system",
           element: <ManageTransactionSystem />,
+        },
+        {
+          path: "report-rating",
+          element: <ManageReportRating />,
         },
       ],
     },

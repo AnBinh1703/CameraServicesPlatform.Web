@@ -1,0 +1,34 @@
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f8f9fa !important;
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: #f8f9fa !important;
+}
+
+.ant-tag {
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.ant-space-vertical {
+  width: 100%;
+}
+
+.ant-btn-link {
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.ant-btn-link:hover {
+  background-color: #f0f0f0;
+}

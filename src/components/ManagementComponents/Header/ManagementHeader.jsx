@@ -16,17 +16,6 @@ const ManagementHeader = () => {
           </span>
         </NavLink>
       </div>
-      <div className="navbar-end">
-        <button className="btn btn-ghost btn-circle text-white hover:bg-red-600">
-          <i className="fas fa-search"></i>
-        </button>
-        <button className="btn btn-ghost btn-circle text-white hover:bg-red-600">
-          <div className="indicator">
-            <i className="fas fa-bell"></i>
-            <span className="badge badge-xs badge-red-600 indicator-item"></span>
-          </div>
-        </button>
-      </div>
     </header>
   );
 };
