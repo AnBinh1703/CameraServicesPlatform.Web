@@ -25,6 +25,7 @@ import ManageComboByAd from "../pages/Admin/Combo/ManageComboByAd";
 import DashboardAdmin from "../pages/Admin/DashboardAdmin";
 import ManageReportRating from "../pages/Admin/ManageReportRating";
 import Settings from "../pages/Admin/Settings";
+import Transaction from "../pages/Admin/Transaction";
 import CreateOrderRent from "../pages/Common/Order/CreateOrderRent/CreateOrderRent";
 import OrderHistory from "../pages/Common/OrderHistory";
 import PersonalReview from "../pages/Common/PersonalReview";
@@ -102,7 +103,7 @@ function Routers() {
         </ProtectedRouteAdmin>
       ),
       children: [
-        { index: true, element: <DashboardAdmin /> },
+        { path: "dashboard", element: <DashboardAdmin /> },
 
         {
           path: "manage-user",
@@ -122,6 +123,7 @@ function Routers() {
         { path: "manage-combo", element: <ManageComboByAd /> },
 
         { path: "create-staff", element: <CreateStaffForm /> },
+        { path: "transaction-ad", element: <Transaction /> },
       ],
     },
     {

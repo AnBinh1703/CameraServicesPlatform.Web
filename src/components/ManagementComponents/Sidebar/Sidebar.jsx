@@ -104,6 +104,7 @@ const SideBar = () => {
       },
 
       { name: "CẤU HÌNH", link: "settings", icon: <RiSettings4Line /> },
+      { name: "GIAO DỊCH", link: "transaction-ad", icon: <RiSettings4Line /> },
     ],
   };
 
