@@ -4,17 +4,29 @@ import {
   Col,
   DatePicker,
   Form,
+  Image,
   Input,
   message,
   Modal,
   Row,
   Spin,
+  Statistic,
+  Table,
   Typography,
-  Image, // Add this import
 } from "antd";
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
+} from "chart.js";
 import dayjs from "dayjs";
 import moment from "moment";
 import React, { useEffect, useMemo, useState } from "react";
+import { Line, Pie } from "react-chartjs-2";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../api/accountApi";
 import { getComboById, getCombosBySupplierId } from "../../api/comboApi";
@@ -22,7 +34,7 @@ import {
   getBestSellingCategoriesBySupplier,
   getCalculateMonthlyRevenueBySupplier,
   getCalculateTotalRevenueBySupplier,
-  getMonthOrderCostStatistics,
+  getMonthOrderCostStatisticsBySupplier, // Add this import
   getOrderStatusStatisticsBySupplier,
   getSupplierOrderStatistics,
   getSupplierPaymentStatistics,
@@ -32,12 +44,20 @@ import {
 } from "../../api/dashboardApi";
 import { getSupplierById, updateSupplier } from "../../api/supplierApi";
 import ComboCarousel from "./DashboardComponent/ComboCarousel";
-import MonthlyRevenueChart from "./DashboardComponent/MonthlyRevenueChart";
 import OrderCostStatisticsTable from "./DashboardComponent/OrderCostStatisticsTable";
 import OrderStatisticsTable from "./DashboardComponent/OrderStatisticsTable";
 import ProductStatisticsTable from "./DashboardComponent/ProductStatisticsTable";
 import RevenueCard from "./DashboardComponent/RevenueCard";
 import SupplierInfoCard from "./DashboardComponent/SupplierInfoCard";
+
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -88,6 +108,18 @@ const DashboardSupplier = () => {
   const [totalCombos, setTotalCombos] = useState(0); // New state for total combos
   const [totalDuration, setTotalDuration] = useState(0); // New state for total duration
   const [logoPreview, setLogoPreview] = useState(null);
+  const [statistics, setStatistics] = useState({
+    bestSellingCategories: [],
+    productStats: [],
+    orderCosts: [],
+    orderStats: {},
+    totalRevenue: 0,
+    monthlyRevenue: [],
+    ratings: [],
+    payments: [],
+    transactions: [],
+    orderStatus: [],
+  });
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -163,7 +195,6 @@ const DashboardSupplier = () => {
             console.log("All combo details:", comboDetails);
             setCombos(comboDetails);
           } else {
-            message.error("Không thể lấy thông tin combo.");
           }
         } catch (error) {
           console.error("Error fetching combos:", error);
@@ -182,7 +213,7 @@ const DashboardSupplier = () => {
         try {
           const [startDate, endDate] = dateRange.map((date) =>
             date.format("MM-DD-YYYY")
-          ); // Format dates
+          );
 
           const bestSellingCategories =
             await getBestSellingCategoriesBySupplier(
@@ -193,11 +224,12 @@ const DashboardSupplier = () => {
           const productStatistics = await getSupplierProductStatistics(
             supplierId
           );
-          const orderCostStatistics = await getMonthOrderCostStatistics(
-            supplierId,
-            startDate,
-            endDate
-          );
+          const orderCostStatistics =
+            await getMonthOrderCostStatisticsBySupplier(
+              supplierId,
+              startDate,
+              endDate
+            );
           const orderStatistics = await getSupplierOrderStatistics(
             supplierId,
             startDate,
@@ -278,6 +310,62 @@ const DashboardSupplier = () => {
       setTotalDuration(0);
     }
   }, [combos]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!supplierId || !dateRange[0] || !dateRange[1]) return;
+
+      setLoading(true);
+      try {
+        const [startDate, endDate] = dateRange.map((date) =>
+          date.format("YYYY-MM-DD")
+        );
+
+        const [
+          bestSellingCategories,
+          productStats,
+          orderCosts,
+          orderStats,
+          totalRevenue,
+          monthlyRevenue,
+          ratings,
+          payments,
+          transactions,
+          orderStatus,
+        ] = await Promise.all([
+          getBestSellingCategoriesBySupplier(supplierId, startDate, endDate),
+          getSupplierProductStatistics(supplierId),
+          getMonthOrderCostStatisticsBySupplier(supplierId, startDate, endDate),
+          getSupplierOrderStatistics(supplierId, startDate, endDate),
+          getCalculateTotalRevenueBySupplier(supplierId),
+          getCalculateMonthlyRevenueBySupplier(supplierId, startDate, endDate),
+          getSupplierRatingStatistics(supplierId),
+          getSupplierPaymentStatistics(supplierId, startDate, endDate),
+          getSupplierTransactionStatistics(supplierId, startDate, endDate),
+          getOrderStatusStatisticsBySupplier(supplierId),
+        ]);
+
+        setStatistics({
+          bestSellingCategories: bestSellingCategories || [],
+          productStats: productStats || [],
+          orderCosts: orderCosts || [],
+          orderStats: orderStats || {},
+          totalRevenue: totalRevenue || 0,
+          monthlyRevenue: monthlyRevenue || [],
+          ratings: ratings || [],
+          payments: payments || [],
+          orderStatus: orderStatus || [],
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        message.error("Không thể tải dữ liệu bảng điều khiển");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [supplierId, dateRange]);
 
   const handleDateChange = (dates) => {
     if (dates) {
@@ -424,12 +512,12 @@ const DashboardSupplier = () => {
   );
 
   return (
-    <div className="container mx-auto p-4 bg-gray-50">
-      <Title level={1} className="text-center mb-8 text-blue-600">
+    <div className="container mx-auto p-2 bg-gray-50">
+      <Title level={3} className="text-center mb-4 text-blue-600">
         Bảng Điều Khiển Nhà Cung Cấp
       </Title>
       {supplierDetails && (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[8, 8]}>
           <Col xs={24} lg={12}>
             <SupplierInfoCard
               supplierDetails={supplierDetails}
@@ -437,11 +525,7 @@ const DashboardSupplier = () => {
             />
           </Col>
           <Col xs={24} lg={12}>
-            <ComboCarousel
-              combos={combos}
-              totalCombos={totalCombos}
-              totalDuration={totalDuration}
-            />
+            <RevenueCard totalRevenue={statistics.totalRevenue} />
           </Col>
         </Row>
       )}
@@ -450,7 +534,8 @@ const DashboardSupplier = () => {
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
-        bodyStyle={{ padding: "20px" }}
+        bodyStyle={{ padding: "12px" }}
+        width={400}
       >
         <Form
           layout="vertical"
@@ -476,15 +561,11 @@ const DashboardSupplier = () => {
                   <Image
                     src={logoPreview || supplierDetails?.supplierLogo}
                     alt="Logo Preview"
-                    style={{ maxWidth: '200px', maxHeight: '200px' }}
+                    style={{ maxWidth: "200px", maxHeight: "200px" }}
                   />
                 </div>
               )}
-              <Input 
-                type="file" 
-                onChange={handleLogoChange}
-                accept="image/*"
-              />
+              <Input type="file" onChange={handleLogoChange} accept="image/*" />
             </div>
           </Form.Item>
           <Button type="primary" htmlType="submit">
@@ -493,15 +574,14 @@ const DashboardSupplier = () => {
         </Form>
       </Modal>
 
-      <Card className="mb-4 shadow-md">
+      <Card className="mb-2 shadow-sm">
         <RangePicker
           onChange={handleDateChange}
           defaultValue={[startDate, endDate]}
-          className="rounded-md"
+          className="rounded-sm"
+          size="small"
           allowClear
           ranges={{
-            "Last 7 Days": [moment().subtract(7, "days"), moment()],
-            "Last 30 Days": [moment().subtract(30, "days"), moment()],
             "This Month": [moment().startOf("month"), moment().endOf("month")],
             "Last Month": [
               moment().subtract(1, "months").startOf("month"),
@@ -514,29 +594,149 @@ const DashboardSupplier = () => {
         <Spin className="flex justify-center items-center h-64" size="large" />
       ) : (
         <Row gutter={[16, 16]}>
-          <Col xs={24} lg={12}>
-            <RevenueCard totalRevenue={data.totalRevenue} />
+          <Col xs={24}>
+            <ComboCarousel
+              combos={combos}
+              totalCombos={totalCombos}
+              totalDuration={totalDuration}
+            />
           </Col>
           <Col xs={24} lg={12}>
             <OrderCostStatisticsTable
-              orderCostStatistics={data.orderCostStatistics}
+              orderCostStatistics={statistics.orderCosts}
             />
-          </Col>
-          <Col xs={24}>
-            <OrderStatisticsTable orderStatistics={data.orderStatistics} />
           </Col>
           <Col xs={24} lg={12}>
             <ProductStatisticsTable
-              productStatistics={data.productStatistics}
+              productStatistics={statistics.productStats}
             />
           </Col>
           <Col xs={24}>
-            <MonthlyRevenueChart monthlyRevenue={data.monthlyRevenue} />
+            <OrderStatisticsTable orderStatistics={statistics.orderStats} />
+          </Col>
+          <Col xs={24}>
+            <Card title="Thống kê trạng thái đơn hàng" className="shadow-md">
+              <Table
+                dataSource={[statistics.orderStatus].filter(Boolean)}
+                columns={[
+                  {
+                    title: "Chờ xử lý",
+                    dataIndex: "pendingOrders",
+                    key: "pendingOrders",
+                  },
+                  {
+                    title: "Hoàn thành",
+                    dataIndex: "completedOrders",
+                    key: "completedOrders",
+                  },
+                  {
+                    title: "Đã hủy",
+                    dataIndex: "canceledOrders",
+                    key: "canceledOrders",
+                  },
+                  {
+                    title: "Đang thanh toán",
+                    dataIndex: "paymentOrders",
+                    key: "paymentOrders",
+                  },
+                  {
+                    title: "Chờ hoàn tiền",
+                    dataIndex: "pendingRefundOrders",
+                    key: "pendingRefundOrders",
+                  },
+                ]}
+                pagination={false}
+              />
+            </Card>
+          </Col>{" "}
+          <Col xs={24} lg={12}>
+            <Card title="Thống kê thanh toán" className="shadow-md">
+              {statistics.payments && (
+                <>
+                  <Statistic
+                    title="Tổng doanh thu"
+                    value={statistics.payments.totalRevenue}
+                    precision={0}
+                    formatter={(value) => formatter.format(value)}
+                  />
+                  <Line
+                    data={{
+                      labels: statistics.payments.monthlyRevenue?.map(
+                        (m) => `${m.month}/${m.year}`
+                      ),
+                      datasets: [
+                        {
+                          label: "Doanh thu theo tháng",
+                          data: statistics.payments.monthlyRevenue?.map(
+                            (m) => m.totalRevenue
+                          ),
+                          borderColor: "#36a2eb",
+                          tension: 0.1,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                        },
+                      },
+                    }}
+                  />
+                </>
+              )}
+            </Card>
+          </Col>{" "}
+          <Col xs={24} lg={12}>
+            <Card title="Thống kê đánh giá" className="shadow-md">
+              {statistics.ratings && (
+                <>
+                  <Statistic
+                    title="Đánh giá trung bình"
+                    value={statistics.ratings.averageRating}
+                    precision={2}
+                    suffix="/5"
+                  />
+                  <Pie
+                    data={{
+                      labels: statistics.ratings.ratingDistribution?.map(
+                        (r) => `${r.ratingValue} sao`
+                      ),
+                      datasets: [
+                        {
+                          data: statistics.ratings.ratingDistribution?.map(
+                            (r) => r.count
+                          ),
+                          backgroundColor: [
+                            "#ff6384",
+                            "#36a2eb",
+                            "#ffce56",
+                            "#4bc0c0",
+                            "#9966ff",
+                          ],
+                        },
+                      ],
+                    }}
+                  />
+                </>
+              )}
+            </Card>
           </Col>
         </Row>
       )}
     </div>
   );
 };
+
+const getRatingChartData = (ratings) => ({
+  labels: ratings.ratingDistribution?.map((r) => `${r.ratingValue} sao`),
+  datasets: [
+    {
+      data: ratings.ratingDistribution?.map((r) => r.count),
+      backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff"],
+    },
+  ],
+});
 
 export default DashboardSupplier;

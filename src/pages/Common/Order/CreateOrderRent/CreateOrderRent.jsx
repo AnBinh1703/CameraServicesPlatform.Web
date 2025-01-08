@@ -1,109 +1,60 @@
-import { Button, Card, Form, Spin, Steps, message } from "antd";
+import { Button, Card, Form, message, Select, Spin, Steps } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
-
-import { getContractTemplateByProductId } from "../../../../api/contractTemplateApi";
-import { createOrderRentWithPayment } from "../../../../api/orderApi";
+import { useLocation, useNavigate } from "react-router-dom";
+import { createOrderRent } from "../../../../api/orderApi";
 import { getProductById } from "../../../../api/productApi";
 import { getSupplierById } from "../../../../api/supplierApi";
-import { getNewReservationMoney } from "../../../../api/systemAdminApi"; // Add this import
 import {
   getProductVouchersByProductId,
   getVoucherById,
 } from "../../../../api/voucherApi";
 
-import DeliveryMethod from "./DeliveryMethod";
-import OrderConfirmation from "./OrderConfirmation";
-import OrderReview from "./OrderReview";
+import DeliveryMethodRent from "./DeliveryMethodRent";
+import OrderConfirmationRent from "./OrderConfirmationRent";
+import OrderReviewRent from "./OrderReviewRent";
 import ProductDetailsInfoRent from "./ProductDetailsInfoRent";
-import VoucherSelection from "./VoucherSelection";
+import VoucherSelectionRent from "./VoucherSelectionRent";
 
+const { Option } = Select;
 const { Step } = Steps;
 
 const CreateOrderRent = () => {
   const [form] = Form.useForm();
-  const [product, setProduct] = useState(null);
-
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [durationUnit, setDurationUnit] = useState(null);
-  const [durationValue, setDurationValue] = useState(null);
-  const [productPriceRent, setProductPriceRent] = useState(0);
-  const [rentalStartDate, setRentalStartDate] = useState(null);
-  const [rentalEndDate, setRentalEndDate] = useState(null);
-  const [shippingAddress, setShippingAddress] = useState("");
-  const [returnDate, setReturnDate] = useState(null);
-  const [reservationMoney, setReservationMoney] = useState();
-  const location = useLocation();
-  const { productID, supplierID } = location.state || {};
-  const [loadingProduct, setLoadingProduct] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
-  const [deliveryMethod, setDeliveryMethod] = useState();
-  const [supplierInfo, setSupplierInfo] = useState(null);
-  const [contractTemplate, setContractTemplate] = useState([]);
-  const [showContractTerms, setShowContractTerms] = useState(false);
-  //vouchers
+  const [product, setProduct] = useState(null);
   const [vouchers, setVouchers] = useState([]);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [deliveryMethod, setDeliveryMethod] = useState(0);
+  const [supplierInfo, setSupplierInfo] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { productID, supplierID } = location.state || {};
+  const [loadingProduct, setLoadingProduct] = useState(true);
   const [loadingVouchers, setLoadingVouchers] = useState(true);
   const [selectedVoucherDetails, setSelectedVoucherDetails] = useState(null);
-
   const user = useSelector((state) => state.user.user || {});
   const accountId = user.id;
 
-  // Fetch product details and contract template
   useEffect(() => {
-    const fetchProductAndContractTemplate = async () => {
+    const fetchProduct = async () => {
+      setLoadingProduct(true);
       try {
-        if (productID) {
-          const productData = await getProductById(productID);
-          if (productData) {
-            setProduct(productData);
-            form.setFieldsValue({ supplierID });
-
-            // Fetch contract template
-            const contractTemplateData = await getContractTemplateByProductId(
-              productID
-            );
-            setContractTemplate(contractTemplateData);
-          } else {
-            message.error("Product not found or could not be retrieved.");
-          }
+        const productData = await getProductById(productID);
+        if (productData) {
+          setProduct(productData);
+        } else {
+          message.error("Không tìm thấy sản phẩm.");
         }
       } catch (error) {
-        message.error("Failed to fetch product details or contract template.");
+        message.error("Không thể lấy thông tin sản phẩm.");
       }
       setLoadingProduct(false);
     };
 
-    fetchProductAndContractTemplate();
+    fetchProduct();
   }, [productID]);
-
-  useEffect(() => {
-    const fetchSupplierInfo = async () => {
-      if (supplierID) {
-        try {
-          const supplierData = await getSupplierById(supplierID);
-          if (
-            supplierData &&
-            supplierData.result &&
-            supplierData.result.items.length > 0
-          ) {
-            setSupplierInfo(supplierData.result.items[0]);
-          } else {
-            message.error("Không thể lấy thông tin nhà cung cấp.");
-          }
-        } catch (error) {
-          console.error("Error fetching supplier:", error);
-          message.error("Không thể lấy thông tin nhà cung cấp.");
-        }
-      }
-    };
-
-    fetchSupplierInfo();
-  }, [supplierID]);
-
-  // Fetch vouchers by product ID
 
   useEffect(() => {
     const fetchVouchers = async () => {
@@ -116,6 +67,7 @@ const CreateOrderRent = () => {
         );
         if (voucherData) {
           setVouchers(voucherData);
+          console.log("voucherData", voucherData);
         } else {
           message.error("Không có voucher khả dụng.");
         }
@@ -128,97 +80,121 @@ const CreateOrderRent = () => {
     fetchVouchers();
   }, [productID]);
 
-  // Add new useEffect for reservation money
   useEffect(() => {
-    const fetchReservationMoney = async () => {
-      try {
-        const response = await getNewReservationMoney();
-        if (response.isSuccess && response.result) {
-          setReservationMoney(response.result.reservationMoney);
-        } else {
-          message.error("Failed to fetch reservation money.");
+    const fetchSupplierInfo = async () => {
+      if (deliveryMethod === 1 && supplierID) {
+        try {
+          const supplierData = await getSupplierById(supplierID);
+          if (
+            supplierData &&
+            supplierData.result &&
+            supplierData.result.items.length > 0
+          ) {
+            setSupplierInfo(supplierData.result.items[0]);
+          } else {
+            message.error("Không thể lấy thông tin nhà cung cấp.");
+          }
+        } catch (error) {
+          message.error("Không thể lấy thông tin nhà cung cấp.");
         }
-      } catch (error) {
-        console.error("Error fetching reservation money:", error);
-        message.error("Failed to fetch reservation money.");
       }
     };
 
-    fetchReservationMoney();
-  }, []);
+    fetchSupplierInfo();
+  }, [deliveryMethod, supplierID]);
 
-  // Handle voucher selection
   const handleVoucherSelect = async (e) => {
     const voucherID = e.target.value;
     setSelectedVoucher(voucherID);
-    try {
-      const voucherDetails = await getVoucherById(voucherID);
-      setSelectedVoucherDetails(voucherDetails);
-      calculateTotalAmount(voucherDetails);
-    } catch (error) {
-      console.error("Lỗi khi lấy chi tiết voucher:", error);
+    if (voucherID) {
+      try {
+        const voucherDetails = await getVoucherById(voucherID);
+        setSelectedVoucherDetails(voucherDetails);
+        console.log("voucherDetails", voucherDetails);
+        console.log(
+          "voucherDetails.discountAmount",
+          voucherDetails.discountAmount
+        );
+        calculateTotalAmount(voucherID);
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết voucher:", error);
+      }
+    } else {
+      setSelectedVoucherDetails(null);
+      calculateTotalAmount(null);
     }
   };
 
-  // Calculate total amount
-  const calculateTotalAmount = (voucherDetails) => {
-    if (!product) return;
-
-    let discountAmount = 0;
-    if (voucherDetails) {
-      discountAmount = voucherDetails.discountAmount;
-    }
-
-    const total =
-      productPriceRent - discountAmount + (product?.depositProduct || 0);
-    setTotalAmount(total);
-  };
-
-  const toggleContractTerms = () => {
-    setShowContractTerms(!showContractTerms);
-  };
-
-  const onFinish = async (values) => {
-    console.log("Success:", values);
-    console.log("Delivery Method:", deliveryMethod);
-    console.log("Product Price Rent:", productPriceRent);
-    console.log("Duration Unit:", durationUnit);
-    console.log("Duration Value:", durationValue);
-    console.log("Rental Start Date:", rentalStartDate);
-    console.log("Rental End Date:", rentalEndDate);
-    console.log("Return Date:", returnDate);
+  const calculateTotalAmount = async (voucherID) => {
     if (!product) {
-      message.error("Product information is incomplete.");
+      console.error("Sản phẩm không được xác định");
       return;
     }
 
+    let discount = 0;
+    if (voucherID) {
+      try {
+        const voucherDetails = await getVoucherById(voucherID);
+
+        if (voucherDetails) {
+          discount = Number(voucherDetails.discountAmount) || 0;
+        } else {
+          console.error("Không tìm thấy chi tiết voucher");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết voucher:", error);
+      }
+    }
+
+    const productPrice = Number(product.priceRent);
+    const total = productPrice - discount;
+
+    setTotalAmount(total);
+    console.log("discount", discount);
+    console.log("productPrice", productPrice);
+    console.log("total", total);
+  };
+
+  const onFinish = async (values) => {
     const orderData = {
       supplierID: supplierID || "",
       accountID: accountId || "",
       productID: product?.productID || "",
-      productPriceRent: productPriceRent,
+      productPriceRent: product.priceRent || 0,
       voucherID: selectedVoucher,
       orderDate: new Date().toISOString(),
       orderStatus: 0,
-      totalAmount: totalAmount,
-      orderType: 0,
-      shippingAddress: shippingAddress,
-      deposit: product?.depositProduct || 0,
-      rentalStartDate: rentalStartDate.toISOString(),
-      rentalEndDate: rentalEndDate.toISOString(),
-      durationUnit: durationUnit,
-      durationValue: durationValue,
-      returnDate: returnDate.toISOString(),
+      totalAmount: totalAmount || 0,
+      orderType: 1, // Assuming 1 represents rent
+      shippingAddress: values.shippingAddress || "",
+      deposit: values.deposit || 0,
+      rentalStartDate: values.rentalStartDate || "",
+      rentalEndDate: values.rentalEndDate || "",
+      durationUnit: values.durationUnit || 0,
+      durationValue: values.durationValue || 0,
+      returnDate: values.returnDate || "",
       deliveryMethod: deliveryMethod,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isExtend: false,
-      isPayment: true,
-      reservationMoney: reservationMoney,
+      isExtend: values.isExtend || false,
+      isPayment: values.isPayment || false,
+      reservationMoney: values.reservationMoney || 0,
+      orderDetailRequests: [
+        {
+          productID: product?.productID || "",
+          productPrice: product?.priceRent || 0,
+          orderQuantity: product?.orderQuantity, // Renamed from productQuality
+          discount: selectedVoucher
+            ? vouchers.find((voucher) => voucher.voucherID === selectedVoucher)
+                ?.discountAmount || 0
+            : 0,
+          productPriceTotal: totalAmount || 0,
+        },
+      ],
     };
 
     try {
-      const response = await createOrderRentWithPayment(orderData);
+      const response = await createOrderRent(orderData);
       if (response.isSuccess && response.result) {
         message.success(
           "Tạo đơn hàng thành công. Đang chuyển hướng đến thanh toán..."
@@ -239,81 +215,55 @@ const CreateOrderRent = () => {
     {
       title: "Chi tiết sản phẩm",
       content: (
-        <ProductDetailsInfoRent
-          product={product}
-          contractTemplate={contractTemplate}
-          durationUnit={durationUnit}
-          setDurationUnit={setDurationUnit}
-          durationValue={durationValue}
-          setDurationValue={setDurationValue}
-          productPriceRent={productPriceRent}
-          setProductPriceRent={setProductPriceRent}
+        <ProductDetailsInfoRent 
+          product={product} 
           loading={loadingProduct}
-          showContractTerms={showContractTerms}
-          toggleContractTerms={toggleContractTerms}
-          rentalStartDate={rentalStartDate}
-          setRentalStartDate={setRentalStartDate}
-          rentalEndDate={rentalEndDate}
-          setRentalEndDate={setRentalEndDate}
-          returnDate={returnDate}
-          setReturnDate={setReturnDate}
-          form={form} // Add form prop
+          form={form}
         />
       ),
     },
     {
       title: "Phương thức giao hàng",
       content: (
-        <DeliveryMethod
-          shippingAddress={shippingAddress}
-          setShippingAddress={setShippingAddress}
+        <DeliveryMethodRent
           deliveryMethod={deliveryMethod}
           setDeliveryMethod={setDeliveryMethod}
           supplierInfo={supplierInfo}
-          form={form} // Add form prop
+          form={form}
         />
       ),
     },
     {
       title: "Chọn Voucher",
       content: (
-        <VoucherSelection
+        <VoucherSelectionRent
           vouchers={vouchers}
           selectedVoucher={selectedVoucher}
           setSelectedVoucher={setSelectedVoucher}
           handleVoucherSelect={handleVoucherSelect}
           selectedVoucherDetails={selectedVoucherDetails}
-          form={form} // Add form prop
         />
       ),
     },
     {
       title: "Xem lại đơn hàng",
       content: (
-        <OrderReview
+        <OrderReviewRent
           product={product}
           form={form}
           deliveryMethod={deliveryMethod}
           supplierInfo={supplierInfo}
           selectedVoucherDetails={selectedVoucherDetails}
           totalAmount={totalAmount}
-          contractTemplate={contractTemplate}
-          depositProduct={product?.depositProduct}
-          productPriceRent={productPriceRent}
-          reservationMoney={reservationMoney}
         />
       ),
     },
     {
       title: "Xác nhận",
       content: (
-        <OrderConfirmation
-          totalAmount={totalAmount}
-          depositProduct={product?.depositProduct}
+        <OrderConfirmationRent
           selectedVoucherDetails={selectedVoucherDetails}
-          productPriceRent={productPriceRent}
-          reservationMoney={reservationMoney}
-          form={form} // Add form prop
+          totalAmount={totalAmount}
         />
       ),
     },

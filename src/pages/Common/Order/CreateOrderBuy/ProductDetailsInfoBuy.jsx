@@ -5,7 +5,7 @@ import {
   PictureOutlined,
   TagOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Descriptions, Row, Spin } from "antd";
+import { Card, Col, Descriptions, Row, Spin, Form, InputNumber } from "antd";
 import React from "react";
 
 const ProductDetailsInfoBuy = ({ product, loading }) => {
@@ -200,6 +200,13 @@ const ProductDetailsInfoBuy = ({ product, loading }) => {
           <p>Không tìm thấy thông tin sản phẩm.</p>
         </div>
       )}
+      <Form.Item
+        name="orderQuantity"
+        label="Số lượng đặt hàng"
+        rules={[{ required: true, message: "Vui lòng nhập số lượng đặt hàng" }]}
+      >
+        <InputNumber min={1} />
+      </Form.Item>
     </Card>
   );
 };

@@ -170,14 +170,14 @@ const CreateOrderBuy = () => {
           productName: product?.productName || "",
           productDescription: product?.productDescription || "",
           price: product.priceBuy || 0,
-          quality: product?.quality,
+          orderQuantity: product?.orderQuantity, // Renamed from quality
         },
       ],
       orderDetailRequests: [
         {
           productID: product?.productID || "",
           productPrice: product?.priceBuy || 0,
-          productQuality: product?.quality,
+          orderQuantity: product?.orderQuantity, // Renamed from productQuality
           discount: selectedVoucher
             ? vouchers.find((voucher) => voucher.vourcherID === selectedVoucher)
                 ?.discountAmount || 0

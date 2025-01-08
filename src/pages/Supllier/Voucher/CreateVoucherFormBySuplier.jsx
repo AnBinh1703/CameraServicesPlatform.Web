@@ -43,7 +43,7 @@ const CreateVoucherFormBySuplier = () => {
     try {
       const response = await createVoucher({
         supplierID: supplierId,
-        voucherCode: values.voucherCode,
+        vourcherCode: values.vourcherCode,
         discountAmount: values.discountAmount,
         description: values.description,
         validFrom: values.validFrom,
@@ -55,7 +55,6 @@ const CreateVoucherFormBySuplier = () => {
         message.error(response.messages.join(", "));
       }
     } catch (error) {
-      message.error("Lỗi khi tạo voucher.");
     } finally {
       setLoading(false);
     }
@@ -64,10 +63,14 @@ const CreateVoucherFormBySuplier = () => {
   return (
     <Row justify="center">
       <Col span={12}>
-        <Card title="Tạo Voucher" bordered={false} className="bg-gray-100 p-4 rounded-lg">
+        <Card
+          title="Tạo Voucher"
+          bordered={false}
+          className="bg-gray-100 p-4 rounded-lg"
+        >
           <Form onFinish={onFinish} layout="vertical">
             <Form.Item
-              name="voucherCode"
+              name="vourcherCode"
               label="Mã Voucher"
               rules={[{ required: true, message: "Vui lòng nhập mã voucher!" }]}
             >

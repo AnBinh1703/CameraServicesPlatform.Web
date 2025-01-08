@@ -18,75 +18,33 @@ export const getAllProduct = async (pageIndex, pageSize) => {
   }
 };
 
-export const createProductBuy = async (data) => {
-  const formData = new FormData();
-  formData.append("SerialNumber", data.SerialNumber);
-  formData.append("SupplierID", data.SupplierID);
-  formData.append("CategoryID", data.CategoryID);
-  formData.append("ProductName", data.ProductName);
-  formData.append("ProductDescription", data.ProductDescription);
-  formData.append("Quality", data.Quality);
-  formData.append("PriceRent", data.PriceRent);
-  formData.append("PriceBuy", data.PriceBuy);
-  formData.append("Brand", data.Brand);
-  formData.append("Status", data.Status);
-  formData.append("File", data.File);
-
-  // Append each specification to the formData
-  data.listProductSpecification.forEach((spec, index) => {
-    formData.append(`listProductSpecification[${index}]`, spec);
-  });
-
+// Create product for buy
+// Create product for buy
+export const createProductBuy = async (formData) => {
   try {
     const response = await api.post(`/product/create-product-buy`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   } catch (error) {
-    console.error(
-      "Error creating product for buy:",
-      error.response ? error.response.data : error.message
-    );
+    console.error("Error creating product for buy:", error);
     throw error;
   }
 };
-export const createProductRent = async (data) => {
-  const formData = new FormData();
-  formData.append("SerialNumber", data.SerialNumber);
-  formData.append("SupplierID", data.SupplierID);
-  formData.append("CategoryID", data.CategoryID);
-  formData.append("ProductName", data.ProductName);
-  formData.append("ProductDescription", data.ProductDescription);
-  formData.append("Quality", data.Quality);
-  formData.append("DepositProduct", data.DepositProduct);
-  formData.append("PricePerHour", data.PricePerHour);
-  formData.append("PricePerDay", data.PricePerDay);
-  formData.append("PricePerWeek", data.PricePerWeek);
-  formData.append("PricePerMonth", data.PricePerMonth);
-  formData.append("Brand", data.Brand);
-  formData.append("File", data.File);
 
-  data.listProductSpecification.forEach((spec, index) => {
-    formData.append(`listProductSpecification[${index}]`, spec);
-  });
-
+// Create product for rent
+export const createProductRent = async (formData) => {
   try {
     const response = await api.post(`/product/create-product-rent`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   } catch (error) {
-    console.error(
-      "Error creating product for rent:",
-      error.response ? error.response.data : error.message
-    );
+    console.error("Error creating product for rent:", error);
     throw error;
   }
 };
+
 export const getProductById = async (id, pageIndex = 1, pageSize = 10) => {
   try {
     const response = await api.get(`/product/get-product-by-id`, {
@@ -107,6 +65,7 @@ export const getProductById = async (id, pageIndex = 1, pageSize = 10) => {
     throw new Error(errorMessage);
   }
 };
+
 export const getProductBySupplierId = async (
   supplierId,
   pageIndex,
@@ -127,6 +86,7 @@ export const getProductBySupplierId = async (
     return null;
   }
 };
+
 export const getProductByName = async (
   filter,
   pageIndex = 1,
@@ -172,6 +132,7 @@ export const getProductByCategoryName = async (
     return null;
   }
 };
+
 export const getProductByCategoryId = async (filter, pageIndex, pageSize) => {
   try {
     const response = await api.get(
@@ -194,7 +155,7 @@ export const updateProduct = async (formData) => {
     const response = await api.put(`product/update-product`, formData, {
       headers: {
         accept: "text/plain",
-        "Content-Type": "multipart/form-data",
+        // Removed "Content-Type": "multipart/form-data" to allow Axios to set it automatically
       },
     });
 
@@ -209,6 +170,7 @@ export const updateProduct = async (formData) => {
     throw error;
   }
 };
+
 export const deleteProduct = async (productId) => {
   try {
     if (!productId) {

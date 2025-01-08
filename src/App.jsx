@@ -1,7 +1,7 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { persistor, store } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
@@ -20,6 +20,8 @@ import { registerables } from "chart.js";
 import Chart from "chart.js/auto";
 Chart.register(...registerables);
 
+import CreateOrderRent from "./pages/Common/Order/CreateOrderRent/CreateOrderRent";
+
 function App() {
   return (
     <>
@@ -29,6 +31,9 @@ function App() {
             <BrowserRouter>
               <AuthProvider>
                 <Routers />
+                <Routes>
+                  <Route path="/order/create-order-rent" element={<CreateOrderRent />} />
+                </Routes>
                 <ToastContainer
                   position="top-right"
                   autoClose={5000}

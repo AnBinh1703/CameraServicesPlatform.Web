@@ -69,6 +69,10 @@ const ProductDetailsInfoRent = ({
   setReturnDate,
   form, // Add form prop
 }) => {
+  if (loading) {
+    return <Spin />;
+  }
+
   const pricePerHour = product.pricePerHour;
   const pricePerDay = product.pricePerDay;
   const pricePerWeek = product.pricePerWeek;
@@ -617,6 +621,13 @@ const ProductDetailsInfoRent = ({
                     </Form.Item>
                   </Col>
                 </Row>
+                <Form.Item
+                  name="orderQuantity"
+                  label="Số lượng thuê"
+                  rules={[{ required: true, message: "Vui lòng nhập số lượng thuê" }]}
+                >
+                  <InputNumber min={1} />
+                </Form.Item>
               </Card>
 
               <div style={{ marginTop: "24px" }}>

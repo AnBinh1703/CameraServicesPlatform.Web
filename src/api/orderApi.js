@@ -120,13 +120,13 @@ export const createOrderBuy = async (orderData) => {
 
 export const createOrderRent = async (orderData) => {
   try {
-    const res = await api.post("/order/create-order-rent", orderData, {});
-    return res.data;
-  } catch (err) {
-    console.error("Error creating rental order:", err);
-    return null;
+    const response = await axios.post('http://14.225.220.108:2602/order/create-order-rent', orderData);
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 };
+
 export const updateOrderStatusShipped = async (orderId) => {
   try {
     const response = await api.put(

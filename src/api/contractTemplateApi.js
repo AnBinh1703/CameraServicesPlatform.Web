@@ -19,7 +19,10 @@ export const createContractTemplate = async (templateData) => {
   try {
     const response = await api.post(
       "/contractTemplate/create-contract-template",
-      templateData
+      templateData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
     );
     return response.data;
   } catch (error) {
@@ -91,6 +94,24 @@ export const getAllContractTemplates = async (pageIndex = 1, pageSize = 10) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching all contract templates:", error);
+    throw error;
+  }
+};
+
+export const getContractTemplateByAccountId = async (accountID) => {
+  try {
+    const response = await api.get(
+      "/contractTemplate/get-contract-template-by-account-id",
+      {
+        params: { accountID },
+      }
+    );
+    return {
+      items: response.data.result.items,
+      productID: response.data.result.productID, // Added productID
+    };
+  } catch (error) {
+    console.error("Error fetching contract templates by account ID:", error);
     throw error;
   }
 };
