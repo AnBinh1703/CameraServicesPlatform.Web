@@ -59,7 +59,7 @@ const VoucherSelection = ({
               <Col span={8} key={voucher.productVoucherID}>
                 <Card
                   title={
-                    <div style={{ color: '#1890ff', fontWeight: 'bold' }}>
+                    <div style={{ color: "#1890ff", fontWeight: "bold" }}>
                       {vourcherCode}
                     </div>
                   }
@@ -86,18 +86,22 @@ const VoucherSelection = ({
                 >
                   {selectedVoucher === voucher.vourcherID &&
                     selectedVoucherDetails && (
-                      <div style={{ padding: '8px 0' }}>
-                        <div style={{ marginBottom: '8px' }}>
-                          <strong style={{ marginRight: '8px' }}>Mã Voucher:</strong>
+                      <div style={{ padding: "8px 0" }}>
+                        <div style={{ marginBottom: "8px" }}>
+                          <strong style={{ marginRight: "8px" }}>
+                            Mã Voucher:
+                          </strong>
                           <span>{selectedVoucherDetails.vourcherCode}</span>
                         </div>
-                        <div style={{ marginBottom: '8px' }}>
-                          <strong style={{ marginRight: '8px' }}>Mô tả:</strong>
+                        <div style={{ marginBottom: "8px" }}>
+                          <strong style={{ marginRight: "8px" }}>Mô tả:</strong>
                           <span>{selectedVoucherDetails.description}</span>
                         </div>
                         {selectedVoucherDetails.discountAmount && (
-                          <div style={{ color: '#f5222d', fontWeight: 'bold' }}>
-                            Giảm: {selectedVoucherDetails.discountAmount.toLocaleString()}đ
+                          <div style={{ color: "#f5222d", fontWeight: "bold" }}>
+                            Giảm:{" "}
+                            {selectedVoucherDetails.discountAmount.toLocaleString()}
+                            đ
                           </div>
                         )}
                       </div>

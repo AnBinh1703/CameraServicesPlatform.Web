@@ -313,7 +313,7 @@ const Settings = () => {
                   label={
                     <span>
                       Đơn Vị Thời Gian{" "}
-                      <Tooltip title="Chọn đơn vị thời gian (giờ/ng��y)">
+                      <Tooltip title="Chọn đơn vị thời gian (giờ/ngàyngày)">
                         <InfoCircleOutlined />
                       </Tooltip>
                     </span>

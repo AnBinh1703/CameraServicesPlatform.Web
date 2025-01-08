@@ -5,10 +5,19 @@ export const getOrderDetailsById = async (orderId, pageIndex, pageSize) => {
     const res = await api.get(
       `/orderDetail/get-order-details/${orderId}?pageIndex=${pageIndex}&pageSize=${pageSize}`
     );
-    return res.data;
+    // Return the full response data structure
+    return {
+      result: res.data.result || [],
+      isSuccess: res.data.isSuccess,
+      messages: res.data.messages || []
+    };
   } catch (err) {
     console.error("Error fetching order details:", err);
-    return null;
+    return {
+      result: [],
+      isSuccess: false,
+      messages: [err.message || "Error fetching order details"]
+    };
   }
 };
 export const createOrderWithPayment = async (orderData) => {
@@ -95,7 +104,7 @@ export const getOrderOfAccount = async (AccountID, pageIndex, pageSize) => {
 export const getOrderById = async (orderId, pageIndex, pageSize) => {
   try {
     const res = await api.get(
-      `/order/get-order-by-id?OrderId=${orderId}&pageIndex=${pageIndex}&pageSize=${pageSize}`
+      `/order/get-order-by-id?${orderId}&pageIndex=${pageIndex}&pageSize=${pageSize}`
     );
     return res.data;
   } catch (err) {
@@ -120,7 +129,10 @@ export const createOrderBuy = async (orderData) => {
 
 export const createOrderRent = async (orderData) => {
   try {
-    const response = await axios.post('http://14.225.220.108:2602/order/create-order-rent', orderData);
+    const response = await axios.post(
+      "http://14.225.220.108:2602/order/create-order-rent",
+      orderData
+    );
     return response.data;
   } catch (error) {
     throw error;

@@ -54,7 +54,7 @@ const CreateStaffRefundSupplier = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(30);
   const [total, setTotal] = useState(0);
   const [supplierNames, setSupplierNames] = useState({});
   const [accountNames, setAccountNames] = useState({});
@@ -62,6 +62,8 @@ const CreateStaffRefundSupplier = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
 
   const user = useSelector((state) => state.user.user || {});
 
@@ -283,6 +285,10 @@ const CreateStaffRefundSupplier = () => {
     setSelectedOrderDetails(detailsWithProductNames);
     setIsModalVisible(true);
   };
+  const handleTableChange = (pagination, filters, sorter) => {
+    setPageIndex(pagination.current);
+    setPageSize(pagination.pageSize);
+  };
   const columns = [
     {
       title: "Mã nhà cung cấp",
@@ -450,16 +456,62 @@ const CreateStaffRefundSupplier = () => {
         dataSource={orders}
         rowKey="orderID"
         loading={loading}
+        onChange={handleTableChange}
         pagination={{
           current: pageIndex,
           pageSize: pageSize,
           total: total,
-          onChange: (page, pageSize) => {
-            setPageIndex(page);
-            setPageSize(pageSize);
-          },
+          pageSizeOptions: ['10', '30', '50', '100'],
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng số ${total} mục`,
         }}
       />
+      <Modal
+        title="Chi tiết đơn hàng"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        {selectedOrderDetails && (
+          <ul>
+            {selectedOrderDetails.map((detail) => (
+              <li key={detail.orderDetailsID}>
+                <p>Product ID: {detail.productID}</p>
+                <p>Product Name: {detail.productName}</p>
+                <p>Product Quality: {detail.productQuality}</p>
+                <p>
+                  Product Price:
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(detail.productPrice)}
+                </p>
+                <p>
+                  Product Price Total:
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(detail.productPriceTotal)}
+                </p>
+                <p>Discount: {detail.discount}</p>
+                <p>
+                  Period Rental:
+                  {moment(detail.periodRental).format("DD-MM-YYYY HH:mm")}
+                </p>
+                <p>
+                  Created At:
+                  {moment(detail.createdAt).format("DD-MM-YYYY HH:mm")}
+                </p>
+                <p>
+                  Updated At:
+                  {moment(detail.updatedAt).format("DD-MM-YYYY HH:mm")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
     </div>
   );
 };

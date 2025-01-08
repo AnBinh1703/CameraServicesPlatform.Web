@@ -1,15 +1,25 @@
-import { UploadOutlined } from "@ant-design/icons";
-import { Button, message, Modal, Table, Tag, Typography, Upload } from "antd";
+import { SearchOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  Upload,
+} from "antd";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getStaffByAccountId, getUserById } from "../../../api/accountApi";
 import {
   getAllOrders,
+  getOrderDetailsById,
   updateOrderStatusDepositRefund,
   updateOrderStatusRefund,
 } from "../../../api/orderApi";
-import { getProductById } from "../../../api/productApi"; // Import the function
 import { getSupplierById } from "../../../api/supplierApi";
 import {
   addImagePayment,
@@ -63,7 +73,7 @@ const CreateStaffRefundMember = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
   const [supplierNames, setSupplierNames] = useState({});
   const [accountNames, setAccountNames] = useState({});
@@ -73,6 +83,10 @@ const CreateStaffRefundMember = () => {
   const [imageUrls, setImageUrls] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [sortedInfo, setSortedInfo] = useState({});
 
   const user = useSelector((state) => state.user.user || {});
 
@@ -101,61 +115,67 @@ const CreateStaffRefundMember = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
-    const result = await getAllOrders(pageIndex, pageSize);
-    if (result && result.isSuccess) {
-      setOrders(result.result);
-      setTotal(result.totalCount);
+    try {
+      // Use the current pageSize instead of hardcoding 30
+      const result = await getAllOrders(pageIndex, pageSize);
+      if (result && result.isSuccess) {
+        setOrders(result.result);
+        setTotal(result.totalCount);
 
-      // Fetch supplier and account names
-      const supplierNamesMap = {};
-      const accountNamesMap = {};
-      await Promise.all(
-        result.result.map(async (order) => {
-          if (order.supplierID) {
-            try {
-              const supplierData = await getSupplierById(order.supplierID);
-              if (
-                supplierData &&
-                supplierData.isSuccess &&
-                supplierData.result.items.length > 0
-              ) {
-                supplierNamesMap[order.supplierID] =
-                  supplierData.result.items[0].supplierName;
-              } else {
+        // Fetch supplier and account names
+        const supplierNamesMap = {};
+        const accountNamesMap = {};
+        await Promise.all(
+          result.result.map(async (order) => {
+            if (order.supplierID) {
+              try {
+                const supplierData = await getSupplierById(order.supplierID);
+                if (
+                  supplierData &&
+                  supplierData.isSuccess &&
+                  supplierData.result.items.length > 0
+                ) {
+                  supplierNamesMap[order.supplierID] =
+                    supplierData.result.items[0].supplierName;
+                } else {
+                  console.error(
+                    `No data found for supplierID: ${order.supplierID}`
+                  );
+                }
+              } catch (error) {
                 console.error(
-                  `No data found for supplierID: ${order.supplierID}`
+                  `Error fetching supplierID: ${order.supplierID}`,
+                  error
                 );
               }
-            } catch (error) {
-              console.error(
-                `Error fetching supplierID: ${order.supplierID}`,
-                error
-              );
             }
-          }
-          if (order.accountID) {
-            try {
-              const accountData = await getUserById(order.accountID);
-              if (accountData && accountData.isSuccess) {
-                accountNamesMap[
-                  order.accountID
-                ] = `${accountData.result.lastName} ${accountData.result.firstName}`;
-              } else {
+            if (order.accountID) {
+              try {
+                const accountData = await getUserById(order.accountID);
+                if (accountData && accountData.isSuccess) {
+                  accountNamesMap[
+                    order.accountID
+                  ] = `${accountData.result.lastName} ${accountData.result.firstName}`;
+                } else {
+                  console.error(
+                    `No data found for accountID: ${order.accountID}`
+                  );
+                }
+              } catch (error) {
                 console.error(
-                  `No data found for accountID: ${order.accountID}`
+                  `Error fetching accountID: ${order.accountID}`,
+                  error
                 );
               }
-            } catch (error) {
-              console.error(
-                `Error fetching accountID: ${order.accountID}`,
-                error
-              );
             }
-          }
-        })
-      );
-      setSupplierNames(supplierNamesMap);
-      setAccountNames(accountNamesMap);
+          })
+        );
+        setSupplierNames(supplierNamesMap);
+        setAccountNames(accountNamesMap);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      message.error("Failed to fetch orders");
     }
     setLoading(false);
   };
@@ -210,7 +230,7 @@ const CreateStaffRefundMember = () => {
                 {new Intl.NumberFormat("vi-VN", {
                   style: "currency",
                   currency: "VND",
-                }).format(response.result.totalAmount)}
+                }).format(response.result.refundAmount)}
               </p>
               <Upload
                 name="img"
@@ -309,23 +329,96 @@ const CreateStaffRefundMember = () => {
     }
   };
 
-  const handleViewDetails = async (orderDetails) => {
-    const detailsWithProductNames = await Promise.all(
-      orderDetails.map(async (detail) => {
-        if (!detail.productName) {
-          try {
-            const productData = await getProductById(detail.productID);
-            detail.productName = productData.name;
-          } catch (error) {
-            console.error("Error fetching product name:", error);
-            detail.productName = "N/A";
+  const handleViewDetails = async (orderId) => {
+    try {
+      const result = await getOrderDetailsById(orderId, 1, 100);
+      if (result && result.isSuccess && result.result) {
+        // Set the order details directly from result array
+        setSelectedOrderDetails(result.result);
+        setIsModalVisible(true);
+      } else {
+        message.error("Không thể lấy chi tiết đơn hàng");
+      }
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      message.error("Lỗi khi lấy chi tiết đơn hàng");
+    }
+  };
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
-        }
-        return detail;
-      })
-    );
-    setSelectedOrderDetails(detailsWithProductNames);
-    setIsModalVisible(true);
+          onPressEnter={() => {
+            confirm();
+            setSearchText(selectedKeys[0]);
+            setSearchedColumn(dataIndex);
+          }}
+          style={{ width: 188, marginBottom: 8, display: "block" }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => {
+              confirm();
+              setSearchText(selectedKeys[0]);
+              setSearchedColumn(dataIndex);
+            }}
+            icon={<SearchOutlined />}
+            size="small"
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => {
+              clearFilters();
+              setSearchText("");
+            }}
+            size="small"
+          >
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+  });
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
+    setPageIndex(pagination.current);
+    setPageSize(pagination.pageSize);
   };
 
   const columns = [
@@ -334,11 +427,17 @@ const CreateStaffRefundMember = () => {
       dataIndex: "supplierID",
       key: "supplierID",
       render: (supplierID) => supplierNames[supplierID],
+      ...getColumnSearchProps("supplierID"),
+      sorter: (a, b) => a.supplierID - b.supplierID,
+      sortOrder: sortedInfo.columnKey === "supplierID" && sortedInfo.order,
     },
     {
       title: "Mã đơn hàng",
       dataIndex: "orderID",
       key: "orderID",
+      ...getColumnSearchProps("orderID"),
+      sorter: (a, b) => a.orderID - b.orderID,
+      sortOrder: sortedInfo.columnKey === "orderID" && sortedInfo.order,
     },
     {
       title: "Mã tài khoản",
@@ -356,6 +455,11 @@ const CreateStaffRefundMember = () => {
       title: "Trạng thái đơn hàng",
       dataIndex: "orderStatus",
       key: "orderStatus",
+      filters: Object.entries(orderStatusMap).map(([key, value]) => ({
+        text: value.text,
+        value: parseInt(key),
+      })),
+      onFilter: (value, record) => record.orderStatus === value,
       render: (orderStatus) => {
         const status = orderStatusMap[orderStatus];
         return (
@@ -420,10 +524,12 @@ const CreateStaffRefundMember = () => {
     },
     {
       title: "Chi tiết đơn hàng",
-      dataIndex: "orderDetails",
+      dataIndex: "orderID", // Changed from orderDetails to orderID
       key: "orderDetails",
-      render: (orderDetails) => (
-        <Button type="link" onClick={() => handleViewDetails(orderDetails)}>
+      render: (
+        orderID // Changed parameter to orderID
+      ) => (
+        <Button type="link" onClick={() => handleViewDetails(orderID)}>
           Xem chi tiết
         </Button>
       ),
@@ -509,7 +615,7 @@ const CreateStaffRefundMember = () => {
   ];
 
   return (
-    <div className="p-4 max-w-4xl ">
+    <div className="p-4 max-w-4xl">
       <Title level={2} className="text-center">
         Danh Sách Đơn Hàng
       </Title>
@@ -518,9 +624,19 @@ const CreateStaffRefundMember = () => {
         dataSource={orders}
         rowKey="orderID"
         loading={loading}
+        onChange={handleTableChange}
+        pagination={{
+          current: pageIndex,
+          pageSize: pageSize,
+          total: total,
+          pageSizeOptions: ["10", "30", "50", "100"],
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng số ${total} mục`,
+        }}
       />
       <Modal
-        title="Chi tiết đơn hàng"
+        title="Chi tiết Đơn hàng"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -529,34 +645,34 @@ const CreateStaffRefundMember = () => {
           <ul>
             {selectedOrderDetails.map((detail) => (
               <li key={detail.orderDetailsID}>
-                <p>Product ID: {detail.productID}</p>
-                <p>Product Name: {detail.productName}</p>
-                <p>Product Quality: {detail.productQuality}</p>
+                <p>Mã Sản phẩm: {detail.productID}</p>
+                <p>Tên Sản phẩm: {detail.productName}</p>
+                <p>Chất lượng: {detail.productQuality}</p>
                 <p>
-                  Product Price:
+                  Giá Sản phẩm:
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
                   }).format(detail.productPrice)}
                 </p>
                 <p>
-                  Product Price Total:
+                  Tổng giá trị:
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
                   }).format(detail.productPriceTotal)}
                 </p>
-                <p>Discount: {detail.discount}</p>
+                <p>Giảm giá: {detail.discount}</p>
                 <p>
-                  Period Rental:
+                  Thời hạn thuê:
                   {moment(detail.periodRental).format("DD-MM-YYYY HH:mm")}
                 </p>
                 <p>
-                  Created At:
+                  Ngày tạo:
                   {moment(detail.createdAt).format("DD-MM-YYYY HH:mm")}
                 </p>
                 <p>
-                  Updated At:
+                  Ngày cập nhật:
                   {moment(detail.updatedAt).format("DD-MM-YYYY HH:mm")}
                 </p>
               </li>

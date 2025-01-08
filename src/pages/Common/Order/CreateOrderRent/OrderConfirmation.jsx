@@ -3,7 +3,7 @@ import {
   DollarOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { Card, Descriptions, Tooltip, Typography } from "antd";
+import { Card, Descriptions, Typography } from "antd";
 import styled from "styled-components";
 
 const { Title, Text } = Typography;
@@ -142,21 +142,6 @@ const OrderConfirmation = ({
           <StyledTooltipIcon title="Giá thuê sản phẩm - Tiền này bạn sẽ thanh toán cho Nhà cung cấp" />
           <PriceText strong>{formatCurrency(productPriceRent)}</PriceText>
         </Descriptions.Item>
-
-        <Descriptions.Item
-          label={
-            <IconWrapper>
-              <DollarOutlined style={{ color: "#1890ff", fontSize: "18px" }} />
-              <span>Tiền cọc sản phẩm</span>
-            </IconWrapper>
-          }
-        >
-          <StyledTooltipIcon title="Số tiền đặt cọc để đảm bảo sản phẩm với nhà cung cấp - Tiền này bạn sẽ cọc cho Nhà cung cấp và được Nhà cung cấp hoàn trả lại sau khi trả lại sản phẩm, họăc dùng để đền bù SSản phẩm bạn thuê nếu có hư hại (Điều kiện: Nếu số tiền cần đền bù nhỏ hơn số tiền đặt cọc .) " />
-          <PriceText strong type="warning">
-            {formatCurrency(depositProduct)}
-          </PriceText>
-        </Descriptions.Item>
-
         {selectedVoucherDetails && (
           <>
             <Descriptions.Item
@@ -183,7 +168,34 @@ const OrderConfirmation = ({
             </Descriptions.Item>
           </>
         )}
-
+        <Descriptions.Item
+          label={
+            <IconWrapper>
+              <Text strong style={{ fontSize: "18px", color: "#262626" }}>
+                Tiền cọc sản phẩm
+              </Text>
+            </IconWrapper>
+          }
+          className="total-amount"
+        >
+          <StyledTooltipIcon title="Số tiền đặt cọc để đảm bảo sản phẩm với nhà cung cấp - Tiền này bạn sẽ cọc cho Nhà cung cấp và được Nhà cung cấp hoàn trả lại sau khi trả lại sản phẩm, họăc dùng để đền bù SSản phẩm bạn thuê nếu có hư hại (Điều kiện: Nếu số tiền cần đền bù nhỏ hơn số tiền đặt cọc .) " />
+          <PriceText strong type="warning">
+            {formatCurrency(depositProduct)}
+          </PriceText>
+        </Descriptions.Item>{" "}
+        <Descriptions.Item
+          label={
+            <IconWrapper>
+              <DollarOutlined style={{ color: "#1890ff", fontSize: "18px" }} />
+              <span>Tổng số tiền thanh toán trực tiếp với NCC </span>
+            </IconWrapper>
+          }
+        >
+          <StyledTooltipIcon title="Tổng số tiền cần thanh toán trực tiếp với nhà cung cấp - Bao gồm tiền cọc + tiền thuê sản phẩm. Tiền cọc sản phẩm sẽ được hoàn trả sau khi nhà cung cấp kiểm tra sản phẩm và xác nhận trả hàng." />
+          <PriceText strong style={{ fontSize: "20px", color: "#52c41a" }}>
+            {formatCurrency(totalAmount)}
+          </PriceText>
+        </Descriptions.Item>
         <Descriptions.Item
           label={
             <IconWrapper>
@@ -194,22 +206,6 @@ const OrderConfirmation = ({
         >
           <StyledTooltipIcon title="Số tiền cần đặt trước để giữ sản phẩm cho bạn -  Tiền này sẽ được hệ thống giữ lại, sau khi đơn hàng hoàn thành, hoặc đơn hàng được hủy trong vòng 24h kể từ khi bạn thanh toán thành công sẽ được Hoàn vào tài khoản cuả bạn. " />
           <PriceText strong>{formatCurrency(reservationMoney)}</PriceText>
-        </Descriptions.Item>
-
-        <Descriptions.Item
-          label={
-            <IconWrapper>
-              <Text strong style={{ fontSize: "18px", color: "#262626" }}>
-                Tổng số tiền thanh toán
-              </Text>
-            </IconWrapper>
-          }
-          className="total-amount"
-        >
-          <StyledTooltipIcon title="Tổng số tiền cần thanh toán" />
-          <PriceText strong style={{ fontSize: "20px", color: "#52c41a" }}>
-            {formatCurrency(reservationMoney)}
-          </PriceText>
         </Descriptions.Item>
       </Descriptions>
     </StyledCard>

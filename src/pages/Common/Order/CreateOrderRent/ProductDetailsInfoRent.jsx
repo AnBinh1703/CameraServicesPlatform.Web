@@ -29,11 +29,11 @@ const { Option } = Select;
 const customDatePickerStyle = {
   width: "100%",
   ".ant-picker-input > input": {
-    fontSize: "14px"
+    fontSize: "14px",
   },
   ".ant-picker-suffix": {
-    color: "#1890ff"
-  }
+    color: "#1890ff",
+  },
 };
 
 const priceCardStyle = {
@@ -45,8 +45,8 @@ const priceCardStyle = {
   color: "white",
   transition: "transform 0.3s ease",
   ":hover": {
-    transform: "translateY(-2px)"
-  }
+    transform: "translateY(-2px)",
+  },
 };
 
 const ProductDetailsInfoRent = ({
@@ -69,10 +69,6 @@ const ProductDetailsInfoRent = ({
   setReturnDate,
   form, // Add form prop
 }) => {
-  if (loading) {
-    return <Spin />;
-  }
-
   const pricePerHour = product.pricePerHour;
   const pricePerDay = product.pricePerDay;
   const pricePerWeek = product.pricePerWeek;
@@ -246,7 +242,9 @@ const ProductDetailsInfoRent = ({
       [...Array(24)].map((_, i) => i).filter((h) => h < 7 || h >= 20),
   });
   return (
-    <div> {/* Change outer Card to div to avoid nesting forms */}
+    <div>
+      {" "}
+      {/* Change outer Card to div to avoid nesting forms */}
       <Card
         title={
           <div
@@ -621,37 +619,31 @@ const ProductDetailsInfoRent = ({
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item
-                  name="orderQuantity"
-                  label="Số lượng thuê"
-                  rules={[{ required: true, message: "Vui lòng nhập số lượng thuê" }]}
-                >
-                  <InputNumber min={1} />
-                </Form.Item>
               </Card>
 
               <div style={{ marginTop: "24px" }}>
-                <Card
-                  bordered={false}
-                  style={priceCardStyle}
-                >
+                <Card bordered={false} style={priceCardStyle}>
                   <div style={{ padding: "16px 0" }}>
-                    <div style={{
-                      fontSize: "20px",
-                      marginBottom: "16px",
-                      opacity: 0.9
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        marginBottom: "16px",
+                        opacity: 0.9,
+                      }}
+                    >
                       Tổng giá thuê sản phẩm
                     </div>
-                    <div style={{
-                      fontSize: "36px",
-                      fontWeight: "bold",
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      letterSpacing: "1px"
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "36px",
+                        fontWeight: "bold",
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        letterSpacing: "1px",
+                      }}
+                    >
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
-                        currency: "VND"
+                        currency: "VND",
                       }).format(productPriceRent)}
                     </div>
                   </div>
@@ -674,8 +666,8 @@ const ProductDetailsInfoRent = ({
                   transition: "all 0.3s ease",
                   ":hover": {
                     background: "#e6f7ff",
-                    transform: "translateY(-1px)"
-                  }
+                    transform: "translateY(-1px)",
+                  },
                 }}
                 icon={showContractTerms ? <UpOutlined /> : <DownOutlined />}
               >

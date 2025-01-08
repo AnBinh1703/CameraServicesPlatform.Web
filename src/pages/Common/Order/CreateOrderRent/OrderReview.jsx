@@ -5,7 +5,7 @@ import {
   PictureOutlined,
   TagOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Descriptions, Row, Spin, Empty } from "antd";
+import { Card, Col, Descriptions, Empty, Row, Spin } from "antd";
 import React from "react";
 
 const OrderReview = ({
@@ -25,16 +25,22 @@ const OrderReview = ({
 
   return (
     <Card className="order-review-container" bordered={false}>
-      <h2 style={{ marginBottom: 24, color: '#1890ff' }}>Xem lại đơn hàng của bạn</h2>
+      <h2 style={{ marginBottom: 24, color: "#1890ff" }}>
+        Xem lại đơn hàng của bạn
+      </h2>
       <Row gutter={[24, 24]}>
         <Col span={24}>
           <Card
-            title={<span style={{ color: '#1890ff' }}><InfoCircleOutlined /> Thông tin sản phẩm</span>}
+            title={
+              <span style={{ color: "#1890ff" }}>
+                <InfoCircleOutlined /> Thông tin sản phẩm
+              </span>
+            }
             bordered={false}
             className="inner-card"
           >
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '20px' }}>
+              <div style={{ textAlign: "center", padding: "20px" }}>
                 <Spin tip="Đang tải thông tin sản phẩm..." />
               </div>
             ) : product ? (
@@ -194,7 +200,11 @@ const OrderReview = ({
 
         <Col span={24}>
           <Card
-            title={<span style={{ color: '#1890ff' }}><InfoCircleOutlined /> Thông tin giao hàng</span>}
+            title={
+              <span style={{ color: "#1890ff" }}>
+                <InfoCircleOutlined /> Thông tin giao hàng
+              </span>
+            }
             bordered={false}
             className="inner-card"
           >
@@ -230,7 +240,11 @@ const OrderReview = ({
           <Row gutter={[24, 24]}>
             <Col span={12}>
               <Card
-                title={<span style={{ color: '#1890ff' }}><TagOutlined /> Chi tiết Voucher</span>}
+                title={
+                  <span style={{ color: "#1890ff" }}>
+                    <TagOutlined /> Chi tiết Voucher
+                  </span>
+                }
                 bordered={false}
                 className="inner-card"
               >
@@ -253,14 +267,24 @@ const OrderReview = ({
             </Col>
             <Col span={12}>
               <Card
-                title={<span style={{ color: '#1890ff' }}><DollarOutlined /> Tổng kết đơn hàng</span>}
+                title={
+                  <span style={{ color: "#1890ff" }}>
+                    <DollarOutlined /> Tổng kết đơn hàng
+                  </span>
+                }
                 bordered={false}
                 className="inner-card"
-                style={{ height: '100%' }}
+                style={{ height: "100%" }}
               >
                 <Descriptions bordered column={1} size="small">
                   <Descriptions.Item label="Giá thuê sản phẩm">
-                    <span style={{ color: '#52c41a', fontSize: '18px', fontWeight: 'bold' }}>
+                    <span
+                      style={{
+                        color: "#52c41a",
+                        fontSize: "18px",
+                        fontWeight: "bold",
+                      }}
+                    >
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
@@ -279,12 +303,6 @@ const OrderReview = ({
                       currency: "VND",
                     }).format(reservationMoney)}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Tổng số tiền">
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(totalAmountWithDeposit)}
-                  </Descriptions.Item>
                 </Descriptions>
               </Card>
             </Col>
@@ -297,7 +315,7 @@ const OrderReview = ({
           padding: 24px;
         }
         .inner-card {
-          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
         }
         .ant-descriptions-item-label {
