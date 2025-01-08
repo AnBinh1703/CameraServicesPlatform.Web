@@ -146,15 +146,20 @@ const CreateOrderBuy = () => {
       }
     }
 
+    const orderQuantity = form.getFieldValue('orderQuantity') || 1;
     const productPrice = Number(product.priceBuy);
-    const total = productPrice - discount;
+    const total = (productPrice * orderQuantity) - discount;
 
     setTotalAmount(total);
     console.log("discount", discount);
     console.log("productPrice", productPrice);
+    console.log("orderQuantity", orderQuantity);
     console.log("total", total);
   };
+
   const onFinish = async (values) => {
+    const orderQuantity = form.getFieldValue('orderQuantity') || 1;
+    
     const orderData = {
       supplierID: supplierID || "",
       accountID: accountId || "",
@@ -164,20 +169,21 @@ const CreateOrderBuy = () => {
       orderDate: new Date().toISOString(),
       orderStatus: 0,
       totalAmount: totalAmount || 0,
+      orderQuantity: orderQuantity, // Add this line
       products: [
         {
           productID: product?.productID || "",
           productName: product?.productName || "",
           productDescription: product?.productDescription || "",
           price: product.priceBuy || 0,
-          orderQuantity: product?.orderQuantity, // Renamed from quality
+          orderQuantity: orderQuantity, // Update this to use the form value
         },
       ],
       orderDetailRequests: [
         {
           productID: product?.productID || "",
           productPrice: product?.priceBuy || 0,
-          orderQuantity: product?.orderQuantity, // Renamed from productQuality
+          orderQuantity: orderQuantity, // Update this to use the form value
           discount: selectedVoucher
             ? vouchers.find((voucher) => voucher.vourcherID === selectedVoucher)
                 ?.discountAmount || 0

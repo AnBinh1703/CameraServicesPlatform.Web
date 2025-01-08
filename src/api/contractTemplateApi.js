@@ -106,10 +106,7 @@ export const getContractTemplateByAccountId = async (accountID) => {
         params: { accountID },
       }
     );
-    return {
-      items: response.data.result.items,
-      productID: response.data.result.productID, // Added productID
-    };
+    return response.data; // Ensure full data is returned
   } catch (error) {
     console.error("Error fetching contract templates by account ID:", error);
     throw error;

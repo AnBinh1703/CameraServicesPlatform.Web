@@ -64,7 +64,6 @@ const ProductList = () => {
         );
         setProducts(sortedProducts);
       } catch (error) {
-        message.error("Có lỗi xảy ra khi tải danh sách sản phẩm.");
       } finally {
         setLoading(false);
       }
@@ -146,7 +145,6 @@ const ProductList = () => {
         );
         setProducts(sortedProducts);
       } catch (error) {
-        message.error("Có lỗi xảy ra khi tải danh sách sản phẩm.");
       } finally {
         setLoading(false);
       }

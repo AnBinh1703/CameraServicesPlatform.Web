@@ -4,8 +4,10 @@ import {
   InfoCircleOutlined,
   TagOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Descriptions, Row } from "antd";
+import { Card, Col, Descriptions, Row, Typography } from "antd";
 import React from "react";
+
+const { Text } = Typography;
 
 const OrderReviewBuy = ({
   product,
@@ -15,7 +17,17 @@ const OrderReviewBuy = ({
   selectedVoucherDetails,
   totalAmount,
 }) => {
-  const formattedTotalAmount = isNaN(totalAmount) ? 0 : totalAmount;
+  const orderQuantity = form.getFieldValue('orderQuantity');
+  const subtotal = product?.priceBuy * (orderQuantity || 1);
+  const discount = selectedVoucherDetails?.discountAmount || 0;
+  totalAmount = isNaN(subtotal) ? 0 : subtotal - discount;  // Use passed totalAmount prop
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
 
   return (
     <Card className="order-review-container" bordered={false}>
@@ -56,6 +68,15 @@ const OrderReviewBuy = ({
                     }
                   >
                     {product.productDescription}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <span>
+                        <InfoCircleOutlined /> Số lượng
+                      </span>
+                    }
+                  >
+                    {form.getFieldValue('orderQuantity') || 1}
                   </Descriptions.Item>
                   <Descriptions.Item
                     label={
@@ -134,17 +155,25 @@ const OrderReviewBuy = ({
                   <Descriptions.Item label="Mô tả">
                     {selectedVoucherDetails?.description || "Không có"}
                   </Descriptions.Item>
+                  <Descriptions.Item label="Tạm tính">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(subtotal)}
+                  </Descriptions.Item>
                   <Descriptions.Item label="Số tiền giảm">
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(selectedVoucherDetails?.discountAmount || 0)}
+                    }).format(discount)}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Tổng số tiền">
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(formattedTotalAmount)}
+                  <Descriptions.Item
+                    label={<Text strong>Tổng số tiền</Text>}
+                    className="total-amount"
+                  >
+                    <Text strong style={{ fontSize: "16px", color: "#76c6a8" }}>
+                      {formatCurrency(totalAmount)}
+                    </Text>
                   </Descriptions.Item>
                 </Descriptions>
               </Col>
@@ -157,3 +186,4 @@ const OrderReviewBuy = ({
 };
 
 export default OrderReviewBuy;
+

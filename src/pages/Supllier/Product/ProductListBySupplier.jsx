@@ -1,4 +1,10 @@
-import { EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
+import { createContractTemplate } from "../../../api/contractTemplateApi"; // Add this import
+import {
+  EditOutlined,
+  EyeOutlined,
+  FileAddOutlined,
+  PlusOutlined,
+} from "@ant-design/icons"; // Added FileAddOutlined import
 import {
   Button,
   Input,
@@ -17,10 +23,12 @@ import {
   getProductById,
   getProductBySupplierId,
 } from "../../../api/productApi";
+import ContractTemplateFields from "../../../components/ContractTemplateFields"; // **Added Import**
 import { getBrandName } from "../../../utils/constant";
 import CreateProduct from "./CreateProduct/";
 import DetailProduct from "./DetailProduct";
 import EditProductForm from "./EditProductForm";
+
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -42,6 +50,18 @@ const ProductListBySupplier = () => {
   const [totalItems, setTotalItems] = useState(1);
   const [sortField, setSortField] = useState("createdAt"); // State for sorting field
   const [sortOrder, setSortOrder] = useState("desc"); // State for sorting order
+  const [isContractModalVisible, setIsContractModalVisible] = useState(false); // **Added State for Contract Modal**
+  const [selectedRentableProducts, setSelectedRentableProducts] = useState([]); // **Added State for Selected Products**
+
+  const [isSingleContractModalVisible, setIsSingleContractModalVisible] =
+    useState(false); // **Added State for Single Contract Modal**
+  const [selectedContractProduct, setSelectedContractProduct] = useState(null); // **Added State for Selected Product**
+
+  // **Define handleCloseSingleContractModal Early in the Component**
+  const handleCloseSingleContractModal = () => {
+    setIsSingleContractModalVisible(false);
+    setSelectedContractProduct(null);
+  };
 
   // Fetch supplier ID on component mount
   useEffect(() => {
@@ -136,19 +156,19 @@ const ProductListBySupplier = () => {
     setLoading(true);
     try {
       const response = await getProductById(productID);
-      console.log('Product View Response:', response);
-      
+      console.log("Product View Response:", response);
+
       // Handle both response formats
       const productData = response?.result || response;
-      
+
       if (!productData) {
-        throw new Error('No product data found');
+        throw new Error("No product data found");
       }
 
       setSelectedProduct(productData); // Set the full product data
       setIsModalVisible(true);
     } catch (error) {
-      console.error('Error fetching product details:', error);
+      console.error("Error fetching product details:", error);
       message.error(`Không thể lấy chi tiết sản phẩm: ${error.message}`);
     } finally {
       setLoading(false);
@@ -178,6 +198,36 @@ const ProductListBySupplier = () => {
 
   const handleSortOrderChange = (value) => {
     setSortOrder(value);
+  };
+
+  // **Ensure handleCreateContract Passes the Correct Product**
+  const handleCreateContract = (product) => {
+    if (product && product.productID) {
+      // **Add Validation**
+      setSelectedContractProduct(product);
+      setIsSingleContractModalVisible(true);
+    } else {
+      message.error("Sản phẩm không hợp lệ.");
+    }
+  };
+
+  // **Added Function to Handle Opening Bulk Contract Template Modal**
+  const handleOpenContractModal = () => {
+    const rentableProducts = products.filter((product) => product.status === 1);
+    if (rentableProducts.length === 0) {
+      message.warning(
+        "Không có sản phẩm nào có trạng thái 'Cho thuê' để tạo mẫu hợp đồng."
+      );
+      return;
+    }
+    setSelectedRentableProducts(rentableProducts);
+    setIsContractModalVisible(true);
+  };
+
+  // **Added Function to Handle Closing Bulk Contract Template Modal**
+  const handleCloseContractModal = () => {
+    setIsContractModalVisible(false);
+    setSelectedRentableProducts([]);
   };
 
   const filteredProducts = Array.isArray(products)
@@ -270,6 +320,7 @@ const ProductListBySupplier = () => {
     <a
       href="#"
       className="relative flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100"
+      key={product.productID} // **Ensure Unique Key**
     >
       <img
         className="object-cover w-full rounded-t-lg h-40 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
@@ -341,6 +392,22 @@ const ProductListBySupplier = () => {
           >
             Sửa
           </Button>
+          {/* **Added Button for Creating Contract Template** */}
+          {product.status === 1 && (
+            <Button
+              type="default"
+              icon={<FileAddOutlined />}
+              onClick={() => handleCreateContract(product)}
+              style={{
+                marginRight: "8px",
+                backgroundColor: "#faad14",
+                color: "#fff",
+                borderColor: "#faad14",
+              }}
+            >
+              Tạo Hợp Đồng
+            </Button>
+          )}
         </div>
       </div>
       <div
@@ -409,10 +476,12 @@ const ProductListBySupplier = () => {
             backgroundColor: "#52c41a",
             color: "#fff",
             borderColor: "#52c41a",
+            marginRight: "10px", // **Added Margin for Spacing**
           }}
         >
           Thêm sản phẩm
         </Button>
+        
       </div>
 
       {loading ? (
@@ -468,6 +537,58 @@ const ProductListBySupplier = () => {
           loading={loading}
           onClose={handleClose}
         />
+      </Modal>
+
+      {/* Bulk Contract Template Modal */}
+      <Modal
+        title="Tạo Mẫu Hợp Đồng"
+        visible={isContractModalVisible}
+        onCancel={handleCloseContractModal}
+        footer={null}
+        width={800}
+      >
+        <ContractTemplateFields
+          onSubmit={async (dataArray) => {
+            try {
+              for (const data of dataArray) {
+                await createContractTemplate(data); // Assuming createContractTemplate is imported
+              }
+              message.success("Mẫu hợp đồng đã được tạo thành công.");
+              handleCloseContractModal();
+            } catch (error) {
+              console.error("Error creating contract templates:", error);
+              message.error("Có lỗi xảy ra khi tạo mẫu hợp đồng.");
+            }
+          }}
+          products={selectedRentableProducts}
+          productIDs={selectedRentableProducts.map(
+            (product) => product.productID
+          )} // **Added Prop**
+        />
+      </Modal>
+
+      {/* Single Contract Template Modal */}
+      <Modal
+        title={`Tạo Mẫu Hợp Đồng cho ${
+          selectedContractProduct?.productName || ""
+        }`}
+        visible={isSingleContractModalVisible}
+        onCancel={handleCloseSingleContractModal}
+        footer={null}
+        width={800}
+      >
+        {selectedContractProduct && (
+          <ContractTemplateFields
+            onSubmit={(result) => {
+              if (result) {
+                message.success("Mẫu hợp đồng đã được tạo thành công.");
+                handleCloseSingleContractModal();
+              }
+            }}
+            products={[selectedContractProduct]}
+            productID={selectedContractProduct.productID}
+          />
+        )}
       </Modal>
     </div>
   );
