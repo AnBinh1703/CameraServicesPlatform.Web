@@ -6,7 +6,7 @@ import {
   getContractTemplateByAccountId,
 } from "../api/contractTemplateApi";
 
-const ContractTemplateFields = ({ onSubmit, products, productID: initialProductID }) => { // Added initialProductID prop
+const ContractTemplateFields = ({ onSubmit, products = [], productID: initialProductID }) => { // Added initialProductID prop
   const { user } = useSelector((state) => state.user || {});
   const [form] = Form.useForm();
   const accountID = user.id;
@@ -16,69 +16,76 @@ const ContractTemplateFields = ({ onSubmit, products, productID: initialProductI
 
   // Use effect to update productID when initialProductID changes
   useEffect(() => {
-    setProductID(initialProductID);
-  }, [initialProductID]);
+    if (initialProductID) {
+      setProductID(initialProductID);
+      form.setFieldsValue({ ProductID: initialProductID });
+    }
+  }, [initialProductID, form]);
 
-  const handleFinish = async (values) => {
+  const handleCreateTemplates = async () => {
     try {
-      const templateData = {
-        templateName: values.templateName,
+      const values = await form.validateFields(); // Validate all fields first
+      
+      const templateProductID = initialProductID || productID;
+      if (!templateProductID) {
+        message.error("Không tìm thấy ID sản phẩm");
+        return;
+      }
+
+      const newTemplate = {
+        templateName: values.templateName, // Fix case to match API
         contractTerms: values.contractTerms,
         templateDetails: values.templateDetails,
         penaltyPolicy: values.penaltyPolicy,
-        productID: initialProductID, // Use the passed productID
-        accountID: user.id
+        accountID: user.id,
+        productID: templateProductID // Use the determined productID
       };
 
-      const result = await createContractTemplate(templateData);
-      if (result) {
-        message.success("Tạo mẫu hợp đồng thành công");
+      const result = await createContractTemplate(newTemplate);
+      
+      if (result && result.isSuccess) {
+        message.success("Mẫu hợp đồng đã được tạo thành công");
         form.resetFields();
         setContractTemplates([]);
         setSelectedTemplateId(null);
         if (onSubmit) {
           onSubmit(result);
         }
+      } else {
+        message.error(result?.messages?.[0] || "Lỗi khi tạo mẫu hợp đồng");
       }
     } catch (error) {
-      console.error("Error creating contract template:", error);
-      message.error("Lỗi khi tạo mẫu hợp đồng");
+      console.error("Error creating contract templates:", error);
+      if (error.errorFields) {
+        message.error("Vui lòng điền đầy đủ thông tin");
+      } else {
+        message.error("Lỗi khi tạo mẫu hợp đồng");
+      }
     }
   };
 
   const handleItemClick = async (accountID) => {
     try {
-      const result = await getContractTemplateByAccountId(accountID);
-      const templates = result.result?.items;
-      const fetchedProductID = result.result?.productID; // Extract productID
-      setProductID(fetchedProductID); // Save productID
-      setContractTemplates(templates || []); // Store fetched templates
+      const response = await getContractTemplateByAccountId(accountID);
+      
+      // Add proper null/undefined checks
+      if (!response || !response.result) {
+        setContractTemplates([]);
+        return;
+      }
+
+      const templates = Array.isArray(response.result.items) ? response.result.items : [];
+      const fetchedProductID = response.result.productID;
+      
+      if (fetchedProductID) {
+        setProductID(fetchedProductID);
+      }
+      
+      setContractTemplates(templates);
     } catch (error) {
       console.error("Error fetching contract templates:", error);
-    }
-  };
-
-  const handleCreateTemplates = async () => {
-    try {
-      const values = form.getFieldsValue();
-      const newTemplate = {
-        contractTerms: values.contractTerms,
-        templateDetails: values.templateDetails,
-        penaltyPolicy: values.penaltyPolicy,
-        accountID: user.id,
-        productID: productID, // Use the productID from state
-        TemplateName: values.templateName,
-      };
-      const result = await createContractTemplate(newTemplate);
-      if (result) {
-        message.success("Mẫu hợp đồng đã được tạo thành công");
-        form.resetFields();
-        setContractTemplates([]);
-        setSelectedTemplateId(null);
-      }
-    } catch (error) {
-      console.error("Error creating contract templates:", error);
-      message.error("Lỗi khi tạo mẫu hợp đồng.");
+      message.error("Không thể tải mẫu hợp đồng");
+      setContractTemplates([]);
     }
   };
 
@@ -95,7 +102,7 @@ const ContractTemplateFields = ({ onSubmit, products, productID: initialProductI
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={handleFinish}>
+    <Form form={form} layout="vertical" onFinish={handleCreateTemplates}>
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
@@ -138,7 +145,7 @@ const ContractTemplateFields = ({ onSubmit, products, productID: initialProductI
             <Input.TextArea placeholder="Nhập chi tiết mẫu hợp đồng" rows={4} />
           </Form.Item>
           {/* **Hidden Field for ProductID (if single product) */}
-          {products.length === 1 && (
+          {(products?.length === 1) && (
             <Form.Item name="ProductID" hidden>
               <Input />
             </Form.Item>
@@ -195,6 +202,12 @@ const ContractTemplateFields = ({ onSubmit, products, productID: initialProductI
       </Row>
     </Form>
   );
+};
+
+ContractTemplateFields.defaultProps = {
+  products: [],
+  onSubmit: () => {},
+  productID: null
 };
 
 export default ContractTemplateFields;
