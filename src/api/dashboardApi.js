@@ -1,6 +1,5 @@
 import api from "../api/config";
 
-
 // Get system rating statistics
 export const getSystemRatingStatistics = async () => {
   try {
@@ -10,7 +9,7 @@ export const getSystemRatingStatistics = async () => {
     console.error("Error fetching system rating statistics:", error);
     throw error;
   }
-};// Get system payment statistics
+}; // Get system payment statistics
 export const getSystemPaymentStatistics = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/system-payment-statistics", {
@@ -21,7 +20,7 @@ export const getSystemPaymentStatistics = async (startDate, endDate) => {
     console.error("Error fetching system payment statistics:", error);
     throw error;
   }
-};// Get best selling categories
+}; // Get best selling categories
 export const getBestSellingCategories = async (startDate, endDate) => {
   try {
     const response = await api.get("/dashboard/best-selling-categories", {
@@ -117,7 +116,7 @@ export const getSystemTotalMoneyStatistics = async () => {
   }
 };
 
-// Get order status statistics 
+// Get order status statistics
 export const getMonthOrderCostStatistics = async (startDate, endDate) => {
   try {
     const response = await api.get(
@@ -133,7 +132,6 @@ export const getMonthOrderCostStatistics = async (startDate, endDate) => {
   }
 };
 
-
 //----------------------------------
 // Get month order cost statistics by supplier
 export const getMonthOrderCostStatisticsBySupplier = async (
@@ -142,13 +140,20 @@ export const getMonthOrderCostStatisticsBySupplier = async (
   endDate
 ) => {
   try {
+    // Format dates as ISO strings (YYYY-MM-DD)
+    const formattedStartDate = dayjs(startDate).format('YYYY-MM-DD');
+    const formattedEndDate = dayjs(endDate).format('YYYY-MM-DD');
+
     const response = await api.get(
-      `/dashboard/get-month-order-cost-statistics-by-supplier-id/${supplierId}`,
+      `/dashboard/get-month-order-cost-statistics/${supplierId}`,
       {
-        params: { startDate, endDate },
+        params: {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        },
       }
     );
-    return response.data; // Array of month cost statistics
+    return response.data;
   } catch (error) {
     console.error(
       `Error fetching month order cost statistics for supplier ${supplierId}:`,

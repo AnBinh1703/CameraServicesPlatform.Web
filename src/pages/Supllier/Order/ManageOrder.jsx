@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
 import {
   getCalculateTotalRevenueBySupplier,
-  getMonthOrderCostStatistics,
+  getMonthOrderCostStatisticsBySupplier,
   getSupplierOrderStatistics,
 } from "../../../api/dashboardApi";
 import OrderBuyListBySuplier from "../Order/OrderBuy/OrderBuyListBySuplier";
@@ -72,21 +72,29 @@ const ManageOrder = () => {
     if (supplierId) {
       try {
         setLoading(true);
+        const formattedStartDate = startDate.format("YYYY-MM-DD");
+        const formattedEndDate = endDate.format("YYYY-MM-DD");
+
         const [orderCostStatistics, orderStatistics, totalRevenue] =
           await Promise.all([
-            getMonthOrderCostStatistics(supplierId, startDate, endDate),
+            getMonthOrderCostStatisticsBySupplier(
+              supplierId,
+              startDate,
+              endDate
+            ),
             getSupplierOrderStatistics(supplierId, startDate, endDate),
             getCalculateTotalRevenueBySupplier(supplierId),
           ]);
+
         setData({
-          orderCostStatistics: Array.isArray(orderCostStatistics)
-            ? orderCostStatistics
+          orderCostStatistics: Array.isArray(orderCostStatistics?.result)
+            ? orderCostStatistics.result
             : [],
           orderStatistics: orderStatistics || {},
           totalRevenue: totalRevenue || 0,
         });
-      } catch {
-        message.error("Lỗi khi tải dữ liệu thống kê.");
+      } catch (error) {
+        message.error("Lỗi khi tải dữ liệu thống kê: " + error.message);
       } finally {
         setLoading(false);
       }
@@ -123,81 +131,6 @@ const ManageOrder = () => {
         key: "totalCost",
         render: (text) => formatCurrency(text),
         sorter: (a, b) => a.totalCost - b.totalCost,
-      },
-    ],
-    []
-  );
-
-  const orderStatisticsColumns = useMemo(
-    () => [
-      {
-        title: "Tổng Doanh Thu",
-        dataIndex: "totalSales",
-        key: "totalSales",
-      },
-      {
-        title: "Tổng Số Đơn Hàng",
-        dataIndex: "totalOrders",
-        key: "totalOrders",
-      },
-      {
-        title: "Đơn Hàng Chờ Xử Lý",
-        dataIndex: "pendingOrders",
-        key: "pendingOrders",
-      },
-      {
-        title: "Đơn Hàng Yêu Cầu Hủy",
-        dataIndex: "cancelingOrders",
-        key: "cancelingOrders",
-      },
-
-      {
-        title: "Đơn Hàng Được Duyệt Hủy",
-        dataIndex: "canceledOrders",
-        key: "canceledOrders",
-      },
-      {
-        title: "Đơn Hàng Hoàn Thành",
-        dataIndex: "completedOrders",
-        key: "completedOrders",
-      },
-      {
-        title: "Đơn Hàng Được Sẵn Sàng",
-        dataIndex: "approvedOrders",
-        key: "approvedOrders",
-      },
-
-      {
-        title: "Đơn Hàng Đã Giao",
-        dataIndex: "shippedOrders",
-        key: "shippedOrders",
-      },
-      {
-        title: "Đơn Hàng Thanh Toán Thất Bại",
-        dataIndex: "paymentFailOrders",
-        key: "paymentFailOrders",
-      },
-
-      {
-        title: "Đơn Hàng Thanh Toán",
-        dataIndex: "paymentOrders",
-        key: "paymentOrders",
-      },
-      {
-        title: "Đơn Hàng Chờ Hoàn Tiền",
-        dataIndex: "pendingRefundOrders",
-        key: "pendingRefundOrders",
-      },
-
-      {
-        title: "Đơn Hàng Gia Hạn",
-        dataIndex: "extendOrders",
-        key: "extendOrders",
-      },
-      {
-        title: "Đơn Hàng Hoàn Thành",
-        dataIndex: "completedOrders",
-        key: "completedOrders",
       },
     ],
     []

@@ -124,3 +124,34 @@ export const rejectProductReport = async (productReportID, message) => {
     return null;
   }
 };
+
+// Get product reports by account ID
+export const getProductReportByAccountId = async (accountId, pageIndex = 1, pageSize = 10) => {
+  try {
+    const res = await api.get(`/productReport/get-product-report-by-account-id`, {
+      params: { accountId, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi tải báo cáo sản phẩm theo ID tài khoản:", err);
+    return null;
+  }
+};
+
+// Get product reports by product ID and account ID
+export const getProductReportByProductIdAndAccountId = async (
+  productId,
+  accountId,
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const res = await api.get(`/productReport/get-product-report-by-productId-and-account-id`, {
+      params: { productId, accountId, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi tải báo cáo sản phẩm theo ID sản phẩm và ID tài khoản:", err);
+    return null;
+  }
+};

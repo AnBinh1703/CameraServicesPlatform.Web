@@ -396,120 +396,11 @@ const DashboardSupplier = () => {
     setIsModalVisible(false);
   };
 
-  const handleAddCombo = () => {
-    setIsAddComboModalVisible(true);
-  };
+ 
 
-  const columns = useMemo(
-    () => [
-      {
-        title: "Tên Sản Phẩm",
-        dataIndex: "productName",
-        key: "productName",
-      },
-    ],
-    []
-  );
+ 
 
-  const orderCostColumns = useMemo(
-    () => [
-      {
-        title: "Tháng",
-        dataIndex: "month",
-        key: "month",
-        render: (text) => new Date(text).toLocaleDateString(),
-      },
-      {
-        title: "Tổng Chi Phí",
-        dataIndex: "totalCost",
-        key: "totalCost",
-        render: (text) => formatter.format(text),
-      },
-    ],
-    []
-  );
-
-  const orderStatisticsColumns = useMemo(
-    () => [
-      {
-        title: "Tổng Doanh Thu",
-        dataIndex: "totalSales",
-        key: "totalSales",
-        render: (text) => formatter.format(text),
-      },
-      {
-        title: "Tổng Số Đơn Hàng",
-        dataIndex: "totalOrders",
-        key: "totalOrders",
-      },
-      {
-        title: "Chờ Xử Lý",
-        dataIndex: "pendingOrders",
-        key: "pendingOrders",
-      },
-      {
-        title: "Hoàn Thành",
-        dataIndex: "completedOrders",
-        key: "completedOrders",
-      },
-      {
-        title: "Bị Hủy",
-        dataIndex: "canceledOrders",
-        key: "canceledOrders",
-      },
-      {
-        title: "Được Duyệt",
-        dataIndex: "approvedOrders",
-        key: "approvedOrders",
-      },
-      {
-        title: "Đã Đặt",
-        dataIndex: "placedOrders",
-        key: "placedOrders",
-      },
-      {
-        title: "Đã Giao",
-        dataIndex: "shippedOrders",
-        key: "shippedOrders",
-      },
-      {
-        title: "Thanh Toán Thất Bại",
-        dataIndex: "paymentFailOrders",
-        key: "paymentFailOrders",
-      },
-      {
-        title: "Đang Hủy",
-        dataIndex: "cancelingOrders",
-        key: "cancelingOrders",
-      },
-      {
-        title: "Thanh Toán",
-        dataIndex: "paymentOrders",
-        key: "paymentOrders",
-      },
-      {
-        title: "Chờ Hoàn Tiền",
-        dataIndex: "pendingRefundOrders",
-        key: "pendingRefundOrders",
-      },
-      {
-        title: "Đã Hoàn Tiền",
-        dataIndex: "refundOrders",
-        key: "refundOrders",
-      },
-      {
-        title: "Trả Lại Tiền Đặt Cọc",
-        dataIndex: "depositReturnOrders",
-        key: "depositReturnOrders",
-      },
-      {
-        title: "Gia Hạn",
-        dataIndex: "extendOrders",
-        key: "extendOrders",
-      },
-    ],
-    []
-  );
+ 
 
   return (
     <div className="container mx-auto p-2 bg-gray-50">
@@ -728,15 +619,5 @@ const DashboardSupplier = () => {
     </div>
   );
 };
-
-const getRatingChartData = (ratings) => ({
-  labels: ratings.ratingDistribution?.map((r) => `${r.ratingValue} sao`),
-  datasets: [
-    {
-      data: ratings.ratingDistribution?.map((r) => r.count),
-      backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff"],
-    },
-  ],
-});
 
 export default DashboardSupplier;

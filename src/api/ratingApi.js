@@ -98,3 +98,34 @@ export const getAllRatings = async (pageIndex = 1, pageSize = 10) => {
     return null;
   }
 };
+
+// Get ratings by account ID with pagination
+export const getRatingsByAccountId = async (accountId, pageIndex = 1, pageSize = 10) => {
+  try {
+    const res = await api.get(`/rating/get-ratings-by-account-id`, {
+      params: { accountId, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching ratings for account:", err);
+    return null;
+  }
+};
+
+// Get ratings by product and account ID with pagination
+export const getRatingsByProductAndAccountId = async (
+  productId,
+  accountId,
+  pageIndex = 1,
+  pageSize = 10
+) => {
+  try {
+    const res = await api.get(`/rating/get-ratings-by-product-and-account-id`, {
+      params: { productId, accountId, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching ratings for product and account:", err);
+    return null;
+  }
+};

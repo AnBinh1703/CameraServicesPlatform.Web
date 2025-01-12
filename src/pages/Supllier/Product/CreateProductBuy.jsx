@@ -1,5 +1,16 @@
 import { UploadOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Select, Space, Upload, Card, Row, Col } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  message,
+  Row,
+  Select,
+  Space,
+  Upload,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
@@ -170,7 +181,9 @@ const CreateProductBuy = () => {
             <Form.Item
               name="CategoryID"
               label="Danh mục"
-              rules={[{ required: true, message: "Vui lòng chọn một danh mục!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn một danh mục!" },
+              ]}
             >
               <Select placeholder="Chọn một danh mục">
                 {categories.map((category) => (
@@ -188,7 +201,9 @@ const CreateProductBuy = () => {
             <Form.Item
               name="ProductName"
               label="Tên sản phẩm"
-              rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập tên sản phẩm!" },
+              ]}
             >
               <Input placeholder="Nhập tên sản phẩm" />
             </Form.Item>
@@ -197,7 +212,9 @@ const CreateProductBuy = () => {
             <Form.Item
               name="Brand"
               label="Thương hiệu"
-              rules={[{ required: true, message: "Vui lòng chọn một thương hiệu" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn một thương hiệu" },
+              ]}
             >
               <Select placeholder="Chọn một thương hiệu">
                 <Option value={0}>Canon</Option>
@@ -221,7 +238,10 @@ const CreateProductBuy = () => {
           label="Mô tả"
           rules={[{ required: true, message: "Vui lòng nhập mô tả sản phẩm!" }]}
         >
-          <Input.TextArea rows={4} placeholder="Nhập mô tả chi tiết về sản phẩm" />
+          <Input.TextArea
+            rows={4}
+            placeholder="Nhập mô tả chi tiết về sản phẩm"
+          />
         </Form.Item>
 
         <Row gutter={16}>
@@ -232,8 +252,8 @@ const CreateProductBuy = () => {
               rules={[{ required: true }]}
             >
               <Select placeholder="Đánh giá chất lượng">
-                <Option value={0}>Mới</Option>
-                <Option value={1}>Đã qua sử dụng</Option>
+                <Option value={"Mới"}>Mới</Option>
+                <Option value={"Đã qua sử dụng"}>Đã qua sử dụng</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -262,21 +282,21 @@ const CreateProductBuy = () => {
               <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
             </Upload>
             {filePreview && (
-              <div style={{ marginTop: '1rem' }}>
+              <div style={{ marginTop: "1rem" }}>
                 <img
                   src={filePreview}
                   alt="Preview"
                   style={{
-                    maxWidth: '100%',
+                    maxWidth: "100%",
                     maxHeight: 200,
-                    objectFit: 'contain',
-                    borderRadius: '4px',
+                    objectFit: "contain",
+                    borderRadius: "4px",
                   }}
                 />
-                <Button 
+                <Button
                   danger
                   onClick={handleRemoveFile}
-                  style={{ marginTop: '0.5rem' }}
+                  style={{ marginTop: "0.5rem" }}
                 >
                   Xóa ảnh
                 </Button>
@@ -285,7 +305,11 @@ const CreateProductBuy = () => {
           </Form.Item>
         </Card>
 
-        <Card title="Đặc điểm sản phẩm" size="small" style={{ marginTop: '1rem' }}>
+        <Card
+          title="Đặc điểm sản phẩm"
+          size="small"
+          style={{ marginTop: "1rem" }}
+        >
           {specifications.map((specification, index) => (
             <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
               <Input
@@ -299,7 +323,11 @@ const CreateProductBuy = () => {
               <Input
                 value={specification.description}
                 onChange={(e) =>
-                  handleSpecificationChange(e.target.value, index, "description")
+                  handleSpecificationChange(
+                    e.target.value,
+                    index,
+                    "description"
+                  )
                 }
                 placeholder={`Mô tả ${index + 1}`}
                 style={{ width: "40%" }}
@@ -317,7 +345,7 @@ const CreateProductBuy = () => {
           </Button>
         </Card>
 
-        <Form.Item style={{ marginTop: '1rem', textAlign: 'right' }}>
+        <Form.Item style={{ marginTop: "1rem", textAlign: "right" }}>
           <Button type="primary" htmlType="submit" loading={loading}>
             Tạo sản phẩm
           </Button>

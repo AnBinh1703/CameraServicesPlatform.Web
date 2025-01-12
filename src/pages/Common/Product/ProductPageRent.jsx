@@ -1,6 +1,5 @@
 import {
   CalendarOutlined,
-  DollarOutlined,
   EditOutlined,
   FolderOpenOutlined,
   InfoCircleOutlined,
@@ -22,7 +21,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 import { getCategoryById } from "../../../api/categoryApi";
-import { getAllProduct, getProductByName } from "../../../api/productApi";
+import { getAllProduct } from "../../../api/productApi";
 import { getSupplierById } from "../../../api/supplierApi";
 import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
 
@@ -32,25 +31,25 @@ const { Search } = Input;
 
 const commonStyles = {
   pageWrapper: {
-    minHeight: '100vh',
-    background: 'linear-gradient(145deg, #f6f8fc 0%, #f0f2f5 100%)',
-    padding: '24px',
+    minHeight: "100vh",
+    background: "linear-gradient(145deg, #f6f8fc 0%, #f0f2f5 100%)",
+    padding: "24px",
   },
   searchSection: {
-    width: '70%',
-    maxWidth: '800px',
-    margin: '0 auto 32px',
+    width: "70%",
+    maxWidth: "800px",
+    margin: "0 auto 32px",
   },
   card: {
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    transition: 'all 0.3s ease',
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s ease",
   },
   infoSection: {
-    padding: '20px',
-    borderTop: '1px solid #f0f0f0',
-  }
+    padding: "20px",
+    borderTop: "1px solid #f0f0f0",
+  },
 };
 
 const ProductPageRent = () => {
@@ -162,12 +161,17 @@ const ProductPageRent = () => {
     setCurrentPage(page);
   };
 
-  const availableProducts = products.filter((product) => product.status === 1);
+  const availableProducts = products.filter(
+    (product) => product.status === 1 && product.contractTemplateID != null
+  );
 
   return (
     <Layout>
       <Content style={commonStyles.pageWrapper}>
-        <Title level={2} className="text-center mb-8 text-2xl font-bold text-gray-800">
+        <Title
+          level={2}
+          className="text-center mb-8 text-2xl font-bold text-gray-800"
+        >
           Sản Phẩm Cho Thuê
         </Title>
 
@@ -206,7 +210,10 @@ const ProductPageRent = () => {
                   cover={
                     <div className="relative pt-[75%] overflow-hidden">
                       <img
-                        src={product.listImage[0]?.image || "https://placehold.co/300x200"}
+                        src={
+                          product.listImage[0]?.image ||
+                          "https://placehold.co/300x200"
+                        }
                         alt={product.productName}
                         className="absolute inset-0 w-full h-full object-cover"
                       />
@@ -217,51 +224,73 @@ const ProductPageRent = () => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
                       {product.productName}
                     </h3>
-                    
+
                     <div className="space-y-4">
                       {/* Description */}
-                      <p className="text-gray-600">{product.productDescription}</p>
+                      <p className="text-gray-600">
+                        {product.productDescription}
+                      </p>
 
                       {/* Pricing Section */}
                       <div className="space-y-2 border-t border-b py-3">
                         {product.depositProduct && (
                           <div className="flex justify-between text-red-500">
                             <span>Giá Cọc:</span>
-                            <span className="font-bold">{formatPrice(product.depositProduct)}</span>
+                            <span className="font-bold">
+                              {formatPrice(product.depositProduct)}
+                            </span>
                           </div>
                         )}
                         {[
-                          { price: product.pricePerHour, label: 'giờ' },
-                          { price: product.pricePerDay, label: 'ngày' },
-                          { price: product.pricePerWeek, label: 'tuần' },
-                          { price: product.pricePerMonth, label: 'tháng' },
-                          { price: product.priceBuy, label: 'Giá mua' }
-                        ].map(({ price, label }) => price && (
-                          <div key={label} className="flex justify-between text-green-600">
-                            <span>Giá {label}:</span>
-                            <span className="font-bold">{formatPrice(price)}</span>
-                          </div>
-                        ))}
+                          { price: product.pricePerHour, label: "giờ" },
+                          { price: product.pricePerDay, label: "ngày" },
+                          { price: product.pricePerWeek, label: "tuần" },
+                          { price: product.pricePerMonth, label: "tháng" },
+                          { price: product.priceBuy, label: "Giá mua" },
+                        ].map(
+                          ({ price, label }) =>
+                            price && (
+                              <div
+                                key={label}
+                                className="flex justify-between text-green-600"
+                              >
+                                <span>Giá {label}:</span>
+                                <span className="font-bold">
+                                  {formatPrice(price)}
+                                </span>
+                              </div>
+                            )
+                        )}
                       </div>
 
                       {/* Product Details */}
                       <div className="space-y-2 text-sm">
                         {/* Keep all existing detail fields but with improved layout */}
                         <div className="grid grid-cols-2 gap-4">
-                          <p><TagOutlined className="mr-2" />Thương hiệu: {getBrandName(product.brand)}</p>
-                          <p><StarOutlined className="mr-2" />Đánh giá: {product.rating}</p>
-                          <p><InfoCircleOutlined className="mr-2" />Chất lượng: {product.quality}</p>
+                          <p>
+                            <TagOutlined className="mr-2" />
+                            Thương hiệu: {getBrandName(product.brand)}
+                          </p>
+                          <p>
+                            <StarOutlined className="mr-2" />
+                            Đánh giá: {product.rating}
+                          </p>
+                          <p>
+                            <InfoCircleOutlined className="mr-2" />
+                            Chất lượng: {product.quality}
+                          </p>
                           <p className={getStatusColor(product.status)}>
                             <InfoCircleOutlined className="mr-2" />
                             {getProductStatusEnum(product.status)}
                           </p>
                         </div>
-                        
+
                         {/* Additional Info */}
                         <div className="mt-3 space-y-1 text-gray-600">
                           <p className="text-left">
                             <ShopOutlined className="inline mr-1" />
-                            <strong>Nhà cung cấp:</strong> {product.supplierName}
+                            <strong>Nhà cung cấp:</strong>{" "}
+                            {product.supplierName}
                           </p>
                           <p className="text-left">
                             <FolderOpenOutlined className="inline mr-1" />
@@ -269,7 +298,8 @@ const ProductPageRent = () => {
                           </p>
                           <p className="font-semibold text-left">
                             <CalendarOutlined className="inline mr-1" />
-                            Ngày tạo: {new Date(product.createdAt).toLocaleString()}
+                            Ngày tạo:{" "}
+                            {new Date(product.createdAt).toLocaleString()}
                           </p>
                           <p className="font-semibold text-left">
                             <EditOutlined className="inline mr-1" />
@@ -283,7 +313,9 @@ const ProductPageRent = () => {
                         type="primary"
                         block
                         size="large"
-                        onClick={() => navigate(`/product/${product.productID}`)}
+                        onClick={() =>
+                          navigate(`/product/${product.productID}`)
+                        }
                         className="mt-4 bg-blue-500 hover:bg-blue-600"
                       >
                         Xem Chi Tiết
@@ -293,7 +325,7 @@ const ProductPageRent = () => {
                 </Card>
               ))}
             </div>
-            
+
             <div className="flex justify-center mt-8">
               <Pagination
                 current={currentPage}

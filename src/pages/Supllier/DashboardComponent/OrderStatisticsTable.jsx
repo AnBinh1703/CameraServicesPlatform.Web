@@ -1,6 +1,6 @@
-import React from "react";
-import { Card, Table } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
+import { Card, Table } from "antd";
+import React from "react";
 
 const formatter = new Intl.NumberFormat("vi-VN", {
   style: "currency",
@@ -64,21 +64,7 @@ const orderStatisticsColumns = [
     dataIndex: "paymentOrders",
     key: "paymentOrders",
   },
-  {
-    title: "Chờ Hoàn Tiền",
-    dataIndex: "pendingRefundOrders",
-    key: "pendingRefundOrders",
-  },
-  {
-    title: "Đã Hoàn Tiền",
-    dataIndex: "refundOrders",
-    key: "refundOrders",
-  },
-  {
-    title: "Trả Lại Tiền Đặt Cọc",
-    dataIndex: "depositReturnOrders",
-    key: "depositReturnOrders",
-  },
+
   {
     title: "Gia Hạn",
     dataIndex: "extendOrders",
@@ -90,7 +76,7 @@ const OrderStatisticsTable = ({ orderStatistics }) => (
   <Card
     title={
       <span>
-        <ShoppingCartOutlined /> Thống Kê Đơn Hàng
+        <ShoppingCartOutlined /> Thống Kê Đơn Hàng Của Nhà Cung Cấp
       </span>
     }
     className="shadow-sm"

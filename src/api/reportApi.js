@@ -58,6 +58,19 @@ export const getAllReports = async (pageIndex = 1, pageSize = 100) => {
   }
 };
 
+// Get reports by account ID with pagination
+export const getReportsByAccountId = async (accountId, pageIndex = 1, pageSize = 10) => {
+  try {
+    const res = await api.get(`/report/get-report-by-account-id`, {
+      params: { accountId, pageIndex, pageSize },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching reports by account ID:", err);
+    return null;
+  }
+};
+
 // Reject a report
 export const rejectReport = async (reportId, message) => {
   try {

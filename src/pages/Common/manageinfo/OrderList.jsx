@@ -380,8 +380,7 @@ const OrderList = ({
 
       {sortedOrders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          {/* ... Empty state content ... */}
-        </div>
+         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {sortedOrders.map((order) => (
