@@ -2,7 +2,7 @@ import { Button, Card, Form, message, Select, Spin, Steps } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
- import { createOrderWithPayment } from "../../../../api/orderApi";
+import { createOrderWithPayment } from "../../../../api/orderApi";
 import { getProductById } from "../../../../api/productApi";
 import { getSupplierById } from "../../../../api/supplierApi";
 import {
@@ -27,6 +27,8 @@ const CreateOrderBuy = () => {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
   const [deliveryMethod, setDeliveryMethod] = useState(0);
+    const [shippingAddress, setShippingAddress] = useState(0);
+
   const [supplierInfo, setSupplierInfo] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -192,7 +194,7 @@ const CreateOrderBuy = () => {
         },
       ],
       orderType: 0,
-      shippingAddress: values.shippingAddress || "",
+      shippingAddress: shippingAddress ,
       deliveryMethod: deliveryMethod,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -220,8 +222,8 @@ const CreateOrderBuy = () => {
     {
       title: "Chi tiết sản phẩm",
       content: (
-        <ProductDetailsInfoBuy 
-          product={product} 
+        <ProductDetailsInfoBuy
+          product={product}
           loading={loadingProduct}
           form={form} // Add form prop
         />
@@ -233,6 +235,7 @@ const CreateOrderBuy = () => {
         <DeliveryMethodBuy
           deliveryMethod={deliveryMethod}
           setDeliveryMethod={setDeliveryMethod}
+          setShippingAddress={setShippingAddress}
           supplierInfo={supplierInfo}
           form={form} // Add form prop
         />
@@ -257,6 +260,7 @@ const CreateOrderBuy = () => {
           product={product}
           form={form}
           deliveryMethod={deliveryMethod}
+          shippingAddress={shippingAddress}
           supplierInfo={supplierInfo}
           selectedVoucherDetails={selectedVoucherDetails}
           totalAmount={totalAmount}

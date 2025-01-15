@@ -13,7 +13,6 @@ import {
 } from "../../api/orderApi";
 import { getSupplierById } from "../../api/supplierApi";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
-import ImageUploadPopup from "./ImageUploadPopup";
 import OrderDetails from "./manageinfo/OrderDetails";
 import OrderList from "./manageinfo/OrderList";
 
@@ -177,10 +176,10 @@ const OrderHistory = () => {
     fetchOrderDetails(order.orderID);
   };
 
-  const handlePaymentAgain = async (orderId) => {
+  const handlePaymentAgain = async (orderId) => { // Change parameter to orderId
     try {
       setIsLoading(true);
-      const data = await purchaseOrder(orderId);
+      const data = await purchaseOrder(orderId); // Now using orderId directly
       if (data.isSuccess && data.result) {
         window.location.href = data.result;
       } else {
@@ -267,21 +266,20 @@ const OrderHistory = () => {
                   setIsOrderDetail={setIsOrderDetail}
                 />
               )}
+              {/* Upload popup */}
+              {isUploadPopupOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+                  <ImageUploadPopup
+                    orderId={selectedOrderId}
+                    type={uploadType}
+                    onClose={closeUploadPopup}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
       </div>
-      {/* Upload popup */}
-      {isUploadPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-          <ImageUploadPopup
-            orderId={selectedOrderId}
-            type={uploadType}
-            onClose={closeUploadPopup}
-          />
-        </div>
-      )}
-      a
     </div>
   );
 };

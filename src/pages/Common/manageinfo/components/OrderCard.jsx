@@ -2,24 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllExtendsByOrderId } from "../../../../api/extendApi";
 import { cancelOrder } from "../../../../api/orderApi";
+import { getProductReportByProductId } from "../../../../api/productReportApi";
 import { formatDateTime, formatPrice } from "../utils/orderUtils";
 import ReportRatingDialog from "./ReportRatingDialog";
-import { getProductReportByProductId } from "../../../../api/productReportApi";
 
 const OrderCard = ({
   order,
   orderStatusMap,
+  orderTypeMap,
   deliveryStatusMap,
-  localSupplierMap,
+
   onDetailClick,
   onPaymentAgain,
   onExtendClick,
   onUpdateOrderStatus,
   onOpenUploadPopup,
-  getDisplayValue,
   getSupplierInfo,
   getProductInfo,
-  // Remove accountID prop since we'll get it from Redux
 }) => {
   const user = useSelector((state) => state.user.user || {});
   const [extendHistory, setExtendHistory] = useState([]);
@@ -31,6 +30,12 @@ const OrderCard = ({
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [productReports, setProductReports] = useState([]);
   const [showReportHistory, setShowReportHistory] = useState(false);
+  const [supplierDetails, setSupplierDetails] = useState({
+    supplierName: "Đang tải...",
+    contactNumber: "Đang tải...",
+    supplierAddress: "Đang tải...",
+  });
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     if (order.orderStatus === 3 || order.orderStatus === 12) {
@@ -44,6 +49,16 @@ const OrderCard = ({
     }
   }, [order.orderDetails]);
 
+  useEffect(() => {
+    const loadSupplierInfo = async () => {
+      if (order.supplierID) {
+        const details = await getSupplierInfo(order.supplierID);
+        setSupplierDetails(details);
+      }
+    };
+    loadSupplierInfo();
+  }, [order.supplierID, getSupplierInfo]);
+
   const loadExtendHistory = async () => {
     const response = await getAllExtendsByOrderId(order.orderID);
     if (response?.isSuccess) {
@@ -52,13 +67,13 @@ const OrderCard = ({
   };
 
   const loadProductReports = async () => {
-    const productIds = order.orderDetails.map(detail => detail.productID);
+    const productIds = order.orderDetails.map((detail) => detail.productID);
     const reports = await Promise.all(
-      productIds.map(id => getProductReportByProductId(id))
+      productIds.map((id) => getProductReportByProductId(id))
     );
     const validReports = reports
-      .filter(r => r?.isSuccess)
-      .flatMap(r => r.result)
+      .filter((r) => r?.isSuccess)
+      .flatMap((r) => r.result)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     setProductReports(validReports);
   };
@@ -75,7 +90,6 @@ const OrderCard = ({
       if (response?.isSuccess) {
         alert("Hủy đơn hàng thành công");
         setShowCancelDialog(false);
-        // Optionally refresh the page or update the order list
         window.location.reload();
       } else {
         alert(response?.messages?.[0] || "Có lỗi xảy ra khi hủy đơn hàng");
@@ -84,6 +98,93 @@ const OrderCard = ({
       alert("Có lỗi xảy ra khi hủy đơn hàng");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Helper function to safely format dates
+  const safeFormatDateTime = (date) => {
+    return date ? formatDateTime(date) : "Chưa xác định";
+  };
+
+  // Helper function to safely format prices
+  const safeFormatPrice = (price) => {
+    return price !== null ? formatPrice(price) : "Chưa xác định";
+  };
+
+  // Add helper function inside component if needed
+  const getStatusText = (map, key) => {
+    if (!map || !map[key]) return "Không xác định";
+    return typeof map[key] === "object" ? map[key].text : map[key];
+  };
+
+  // Add status color mapping
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return "bg-blue-100 text-blue-800"; // Chờ xử lý
+      case 1:
+        return "bg-green-100 text-green-800"; // Sản phẩm sẵn sàng được giao
+      case 2:
+        return "bg-yellow-100 text-yellow-800"; // Hoàn thành
+      case 3:
+        return "bg-purple-100 text-purple-800"; // Đã nhận sản phẩm
+      case 4:
+        return "bg-cyan-100 text-cyan-800"; // Đã giao hàng
+      case 5:
+        return "bg-cyan-100 text-cyan-800"; // Thanh toán thất bại
+      case 6:
+        return "bg-lime-100 text-lime-800"; // Đang hủy
+      case 7:
+        return "bg-red-100 text-red-800"; // Đã hủy thành công
+      case 8:
+        return "bg-orange-100 text-orange-800"; // Đã Thanh toán
+      case 9:
+        return "bg-pink-100 text-pink-800"; // Hoàn tiền đang chờ xử lý
+      case 10:
+        return "bg-amber-100 text-amber-800"; // Hoàn tiền thành công
+      case 11:
+        return "bg-yellow-100 text-yellow-800"; // Hoàn trả tiền đặt cọc
+      case 12:
+        return "bg-violet-100 text-violet-800"; // Gia hạn
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Add this function near your other helper functions
+  const getOrderTypeColor = (type) => {
+    switch (type) {
+      case 0:
+        return "bg-indigo-100 text-indigo-800"; // Mua
+      case 1:
+        return "bg-green-100 text-green-800"; // Thuê
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Add this helper function near your other helper functions
+  const getOrderTypeText = (type) => {
+    switch (type) {
+      case 0:
+        return "Mua";
+      case 1:
+        return "Thuê";
+      default:
+        return "Không xác định";
+    }
+  };
+
+  const handleConfirmOrder = async (orderId) => {
+    setIsConfirming(true);
+    try {
+      await onUpdateOrderStatus(orderId);
+      // Reload page after successful confirmation
+      window.location.reload();
+    } catch (error) {
+      console.error("Error confirming order:", error);
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -114,18 +215,21 @@ const OrderCard = ({
                 {formatDateTime(order.orderDate)}
               </span>
             </h3>
-            <div
-              className={`inline-flex items-center px-3 py-1 mt-2 rounded-full text-xs font-medium ${
-                order.orderStatus === 0
-                  ? "bg-yellow-100 text-yellow-800"
-                  : order.orderStatus === 1
-                  ? "bg-blue-100 text-blue-800"
-                  : order.orderStatus === 2
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-            >
-              {getDisplayValue(orderStatusMap, order.orderStatus)}
+            <div className="flex items-center gap-2 mt-2">
+              <div
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  order.orderStatus
+                )}`}
+              >
+                {getStatusText(orderStatusMap, order.orderStatus)}
+              </div>
+              <div
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getOrderTypeColor(
+                  order.orderType
+                )}`}
+              >
+                {getOrderTypeText(order.orderType)}
+              </div>
             </div>
           </div>
         </div>
@@ -153,11 +257,10 @@ const OrderCard = ({
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-800">
-              {getDisplayValue(deliveryStatusMap, order.deliveryStatus)}
+              {getStatusText(deliveryStatusMap, order.deliveriesMethod)}
             </p>
-            <p className="text-sm text-gray-600">
-              {order.shippingAddress || "Nhận tại cửa hàng"}
-            </p>
+
+            <p className="text-sm text-gray-600">{order.shippingAddress}</p>
           </div>
         </div>
 
@@ -167,14 +270,11 @@ const OrderCard = ({
             <h4 className="font-medium text-gray-700 mb-2">
               Thông tin nhà cung cấp
             </h4>
-            <p className="text-sm text-gray-600">
-              {getSupplierInfo(order.supplierID)}
-            </p>
-            {localSupplierMap[order.supplierID]?.supplierAddress && (
-              <p className="text-sm text-gray-500 mt-1">
-                Địa chỉ: {localSupplierMap[order.supplierID].supplierAddress}
-              </p>
-            )}
+            <div className="text-sm text-gray-600 space-y-2">
+              <p>Tên: {supplierDetails.supplierName}</p>
+              <p>Số điện thoại: {supplierDetails.contactNumber}</p>
+              <p>Địa chỉ: {supplierDetails.supplierAddress}</p>
+            </div>
           </div>
         </div>
 
@@ -191,27 +291,30 @@ const OrderCard = ({
         </div>
 
         {/* Rental Details */}
-        <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-700 mb-2">Thời gian thuê</h4>
-            <p className="text-sm text-gray-600">
-              {`${order.durationValue} ${
-                order.durationUnit === 0
-                  ? "giờ"
-                  : order.durationUnit === 1
-                  ? "ngày"
-                  : order.durationUnit === 2
-                  ? "tuần"
-                  : "tháng"
-              }`}
-            </p>
-            <div className="mt-2 text-sm">
-              <p>Bắt đầu: {formatDateTime(order.rentalStartDate)}</p>
-              <p>Kết thúc: {formatDateTime(order.rentalEndDate)}</p>
+        {order.orderType !== 0 && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-700 mb-2">Thời gian thuê</h4>
+              <p className="text-sm text-gray-600">
+                {order.durationValue > 0
+                  ? `${order.durationValue} ${
+                      order.durationUnit === 0
+                        ? "giờ"
+                        : order.durationUnit === 1
+                        ? "ngày"
+                        : order.durationUnit === 2
+                        ? "tuần"
+                        : "tháng"
+                    }`
+                  : "Chưa xác định"}
+              </p>
+              <div className="mt-2 text-sm">
+                <p>Bắt đầu: {safeFormatDateTime(order.rentalStartDate)}</p>
+                <p>Kết thúc: {safeFormatDateTime(order.rentalEndDate)}</p>
+              </div>
             </div>
           </div>
-        </div>
-
+        )}
         {/* Payment Info */}
         <div className="space-y-4">
           <div className="bg-gray-50 p-4 rounded-lg">
@@ -219,20 +322,43 @@ const OrderCard = ({
               Thông tin thanh toán
             </h4>
             <div className="space-y-2 text-sm">
-              <p>
-                Tiền đặt cọc:{" "}
-                <span className="font-medium">
-                  {formatPrice(order.deposit)}
-                </span>
-              </p>
-              <p>
-                Tiền bảo lưu:{" "}
-                <span className="font-medium">
-                  {formatPrice(order.reservationMoney)}
-                </span>
-              </p>
+              {order.deposit !== null && order.deposit !== 0 && (
+                <p>
+                  Tiền đặt cọc:{" "}
+                  <span className="font-medium">
+                    {safeFormatPrice(order.deposit)}
+                  </span>
+                </p>
+              )}
+              {order.reservationMoney !== null &&
+                order.reservationMoney !== 0 && (
+                  <p>
+                    Tiền giữ chỗ:{" "}
+                    <span className="font-medium">
+                      {safeFormatPrice(order.reservationMoney)}
+                    </span>
+                  </p>
+                )}
               <p className="text-teal-600 font-medium">
-                Tổng tiền: {formatPrice(order.totalAmount)}
+                Tổng tiền: {safeFormatPrice(order.totalAmount)}
+              </p>
+              <p>
+                Trạng thái:{" "}
+                <span className="font-medium">
+                  {order.isPayment ? "Đã thanh toán" : "Chưa thanh toán"}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* CancelCancel Info */}
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-medium text-gray-700 mb-2">Thông tin hủy</h4>
+            <div className="space-y-2 text-sm">
+              <p className="text-teal-600 font-medium">
+                Lí do hủy: {order.cancelMessage}
               </p>
             </div>
           </div>
@@ -351,7 +477,7 @@ const OrderCard = ({
 
           {showReportHistory && (
             <div className="mt-4 space-y-4">
-              {productReports.map(report => (
+              {productReports.map((report) => (
                 <div
                   key={report.productReportID}
                   className="bg-gray-50 p-4 rounded-lg"
@@ -386,36 +512,46 @@ const OrderCard = ({
         </button>
         {order.orderStatus === 0 && (
           <button
-            onClick={() => onPaymentAgain(order)}
+            onClick={() => onPaymentAgain(order.orderID)} // Change this line
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Thanh toán
           </button>
         )}
-        {(order.orderStatus === 3 || order.orderStatus === 12) && (
+        {order.isPayment &&
+          (order.orderStatus === 3 || order.orderStatus === 12) && (
+            <button
+              onClick={() => onExtendClick(order)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Gia hạn
+            </button>
+          )}
+        {order.isPayment && order.orderStatus === 1 && (
           <button
-            onClick={() => onExtendClick(order)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            onClick={() => handleConfirmOrder(order.orderID)}
+            disabled={isConfirming}
+            className={`px-4 py-2 text-white rounded-lg transition-colors ${
+              isConfirming
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Gia hạn
+            {isConfirming ? "Đang xử lý..." : "Xác nhận đã nhận sản phẩm thuê"}
           </button>
         )}
-        {order.orderStatus === 1 && (
-          <button
-            onClick={() => onUpdateOrderStatus(order.orderID)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            Xác nhận đặt hàng
-          </button>
-        )}
-        {order.orderStatus === 2 && (
-          <button
-            onClick={() => onOpenUploadPopup(order.orderID, "after")}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Hình ảnh sau
-          </button>
-        )}
+        {order.isPayment &&
+          (order.orderStatus === 1 ||
+            order.orderStatus === 3 ||
+            order.orderStatus === 4 ||
+            order.orderStatus === 12) && (
+            <button
+              onClick={() => onOpenUploadPopup(order.orderID, "after")}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Thêm hình ảnh trước khi trả hàng
+            </button>
+          )}
         {(order.orderStatus === 0 || order.orderStatus === 8) && (
           <button
             onClick={() => setShowCancelDialog(true)}

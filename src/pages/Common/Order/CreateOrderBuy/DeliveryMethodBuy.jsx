@@ -1,13 +1,22 @@
-import { Card, Form, Radio,Descriptions, Input } from "antd";
+import { Card, Form, Radio, Descriptions, Input } from "antd";
 import React from "react";
 
- const DeliveryMethodBuy = ({
+const DeliveryMethodBuy = ({
   deliveryMethod,
   setDeliveryMethod,
+  setShippingAddress,
   supplierInfo,
 }) => {
   const handleDeliveryMethodChange = (e) => {
     setDeliveryMethod(e.target.value);
+    // Reset shipping address when switching to store pickup
+    if (e.target.value === 0) {
+      setShippingAddress("");
+    }
+  };
+
+  const handleAddressChange = (e) => {
+    setShippingAddress(e.target.value);
   };
 
   return (
@@ -29,6 +38,7 @@ import React from "react";
           <Radio value={1}>Giao hàng tận nơi</Radio>
         </Radio.Group>
       </Form.Item>
+
       {deliveryMethod === 1 && (
         <Form.Item
           label="Địa chỉ giao hàng"
@@ -40,7 +50,7 @@ import React from "react";
             },
           ]}
         >
-          <Input />
+          <Input onChange={handleAddressChange} placeholder="Nhập địa chỉ giao hàng" />
         </Form.Item>
       )}
 
