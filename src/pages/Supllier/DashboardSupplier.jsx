@@ -396,12 +396,6 @@ const DashboardSupplier = () => {
     setIsModalVisible(false);
   };
 
- 
-
- 
-
- 
-
   return (
     <div className="container mx-auto p-2 bg-gray-50">
       <Title level={3} className="text-center mb-4 text-blue-600">

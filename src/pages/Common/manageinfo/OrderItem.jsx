@@ -332,7 +332,7 @@ const OrderItem = ({
               Đến nhận
             </button>
           )}
-          {order.orderStatus === 3 && order.orderType === 0 && (
+          {order.orderStatus === 3 && order.orderType === 1 && (
             <button
               className="bg-green-500 text-white rounded-md py-2 px-4"
               onClick={(e) => {

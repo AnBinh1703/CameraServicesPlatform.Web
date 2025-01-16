@@ -60,56 +60,74 @@ const VoucherList = () => {
 
   const columns = [
     {
-      title: "Mã voucher",
+      title: "Mã Voucher",
       dataIndex: "vourcherCode",
       key: "vourcherCode",
+      className: "font-semibold",
     },
     {
-      title: "Mô tả",
+      title: "Mô Tả",
       dataIndex: "description",
       key: "description",
+      className: "text-gray-600",
     },
     {
-      title: "Số tiền giảm giá",
+      title: "Giá Trị Giảm",
       dataIndex: "discountAmount",
       key: "discountAmount",
-      render: (text) => `${text} VND`,
+      render: (text) => (
+        <span className="text-blue-600 font-medium">{text.toLocaleString()} VNĐ</span>
+      ),
     },
-
     {
-      title: "Hiệu lực từ",
+      title: "Ngày Bắt Đầu",
       dataIndex: "validFrom",
       key: "validFrom",
-      render: (text) => moment(text).format("DD-MM-YYYY HH:mm"),
+      render: (text) => (
+        <span className="text-gray-600">
+          {moment(text).format("DD/MM/YYYY HH:mm")}
+        </span>
+      ),
     },
     {
-      title: "Ngày hết hạn",
+      title: "Ngày Kết Thúc",
       dataIndex: "expirationDate",
       key: "expirationDate",
-      render: (text) => moment(text).format("DD-MM-YYYY HH:mm"),
+      render: (text) => (
+        <span className="text-gray-600">
+          {moment(text).format("DD/MM/YYYY HH:mm")}
+        </span>
+      ),
     },
     {
-      title: "Hoạt động",
+      title: "Trạng Thái",
       dataIndex: "isActive",
       key: "isActive",
       render: (isActive) =>
         isActive ? (
-          <CheckCircleOutlined style={{ color: "green" }} />
+          <span className="text-green-600 flex items-center">
+            <CheckCircleOutlined className="mr-1" /> Đang hoạt động
+          </span>
         ) : (
-          <CloseCircleOutlined style={{ color: "red" }} />
+          <span className="text-red-600 flex items-center">
+            <CloseCircleOutlined className="mr-1" /> Ngừng hoạt động
+          </span>
         ),
     },
   ];
 
   return (
-    <div>
-      <Input
-        placeholder="Tìm kiếm theo mã voucher hoặc mô tả"
+    <div className="bg-white p-4 rounded-lg">
+      <Input.Search
+        placeholder="Nhập mã voucher hoặc mô tả để tìm kiếm..."
         onChange={(e) => handleSearch(e.target.value)}
-        style={{ marginBottom: 16 }}
+        className="mb-4"
+        allowClear
       />
       {loading ? (
-        <Spin />
+        <div className="text-center py-8">
+          <Spin size="large" />
+        </div>
       ) : (
         <>
           <Table
@@ -118,8 +136,10 @@ const VoucherList = () => {
             rowKey="vourcherID"
             pagination={false}
             onRow={(record) => ({
-              onDoubleClick: () => handleRowDoubleClick(record), // Handle double click
+              onDoubleClick: () => handleRowDoubleClick(record),
+              className: "cursor-pointer hover:bg-gray-50",
             })}
+            className="border rounded-lg"
           />
           <Pagination
             current={pageIndex}
@@ -128,39 +148,43 @@ const VoucherList = () => {
             onChange={(page) => setPageIndex(page)}
             showSizeChanger
             onShowSizeChange={(current, size) => setPageSize(size)}
-            style={{ marginTop: 16, textAlign: "right" }}
+            className="mt-4 text-right"
+            showTotal={(total) => `Tổng cộng: ${total} voucher`}
           />
           <Modal
-            title="Chi tiết voucher"
+            title="Thông Tin Chi Tiết Voucher"
             visible={visible}
             onCancel={() => setVisible(false)}
             footer={null}
+            width={600}
           >
             {selectedVoucher && (
-              <div>
-                <p>
-                  <strong>Mã voucher:</strong> {selectedVoucher.vourcherCode}
+              <div className="space-y-3">
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Mã Voucher:</strong>
+                  <span>{selectedVoucher.vourcherCode}</span>
                 </p>
-                <p>
-                  <strong>Mô tả:</strong> {selectedVoucher.description}
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Mô Tả:</strong>
+                  <span>{selectedVoucher.description}</span>
                 </p>
-                <p>
-                  <strong>Số tiền giảm giá:</strong>
-                  {selectedVoucher.discountAmount} VND
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Giá Trị Giảm:</strong>
+                  <span>{selectedVoucher.discountAmount.toLocaleString()} VNĐ</span>
                 </p>
-                <p>
-                  <strong>Hiệu lực từ:</strong>
-                  {new Date(selectedVoucher.validFrom).toLocaleDateString()}
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Ngày Bắt Đầu:</strong>
+                  <span>{moment(selectedVoucher.validFrom).format("DD/MM/YYYY HH:mm")}</span>
                 </p>
-                <p>
-                  <strong>Ngày hết hạn:</strong>
-                  {new Date(
-                    selectedVoucher.expirationDate
-                  ).toLocaleDateString()}
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Ngày Kết Thúc:</strong>
+                  <span>{moment(selectedVoucher.expirationDate).format("DD/MM/YYYY HH:mm")}</span>
                 </p>
-                <p>
-                  <strong>Hoạt động:</strong>
-                  {selectedVoucher.isActive ? "Có" : "Không"}
+                <p className="flex justify-between border-b pb-2">
+                  <strong>Trạng Thái:</strong>
+                  <span className={selectedVoucher.isActive ? "text-green-600" : "text-red-600"}>
+                    {selectedVoucher.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                  </span>
                 </p>
               </div>
             )}

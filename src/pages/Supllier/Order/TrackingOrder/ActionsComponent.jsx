@@ -115,7 +115,7 @@ const ActionsComponent = ({
           className="ml-2"
           style={{ marginRight: 8, marginBottom: 8 }}
         >
-          Trả hàng
+          Trả hàng 
         </Button>
       )}
       <Modal

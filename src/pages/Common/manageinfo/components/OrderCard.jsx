@@ -541,6 +541,7 @@ const OrderCard = ({
           </button>
         )}
         {order.isPayment &&
+          order.orderType === 1 &&
           (order.orderStatus === 1 ||
             order.orderStatus === 3 ||
             order.orderStatus === 4 ||

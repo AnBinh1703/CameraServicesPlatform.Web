@@ -51,6 +51,7 @@ import ManageProductOfSuplier from "../pages/Supllier/Product/ManageProductOfSup
 import ManageReportProductOfSupplier from "../pages/Supllier/ReportProduct/ManageReportProductOfSupplier";
 import ManageVoucherOfSuplier from "../pages/Supllier/Voucher/ManageVoucherOfSuplier";
 import ProtectedRouteAdmin from "./PrivateRoute/ProtectedRouteAdmin";
+import ManageSupplierByStaff from "../pages/Supllier/ManageSupplierByStaff";
 function Routers() {
   const routing = useRoutes([
     {
@@ -180,6 +181,8 @@ function Routers() {
       children: [
         { index: true, element: <Navigate to="dashboard" replace /> },
         { path: "dashboard", element: <DashboardStaff /> },
+        { path: "manage-suppplier", element: <ManageSupplierByStaff /> },
+
         { path: "manage-category", element: <ManageCategory /> },
         { path: "manage-product", element: <ManageProduct /> },
         { path: "manage-voucher", element: <ManageVoucher /> },

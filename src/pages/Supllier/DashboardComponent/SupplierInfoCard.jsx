@@ -1,6 +1,6 @@
-import React from "react";
-import { Card, Descriptions, Button } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import { Button, Card, Descriptions } from "antd";
+import React from "react";
 
 const SupplierInfoCard = ({ supplierDetails, showModal }) => (
   <Card

@@ -4,7 +4,7 @@ import {
   CheckOutlined,
   SmileOutlined,
 } from "@ant-design/icons";
-import { message, Modal, Table, Input } from "antd";
+import { Input, message, Modal, Table } from "antd";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { getAllExtendsByOrderId, getExtendById } from "../../../api/extendApi";
@@ -253,7 +253,7 @@ const TrackingOrder = ({ order, onUpdate }) => {
         content: (
           <div>
             <p>Vui lòng nhập lý do hủy đơn:</p>
-            <Input.TextArea 
+            <Input.TextArea
               value={cancelMessage}
               onChange={(e) => setCancelMessage(e.target.value)}
               placeholder="Nhập lý do hủy đơn hàng"
@@ -269,7 +269,7 @@ const TrackingOrder = ({ order, onUpdate }) => {
           setCancelMessage(""); // Reset message if canceled
         },
         okText: "Xác nhận",
-        cancelText: "Hủy bỏ"
+        cancelText: "Hủy bỏ",
       });
       return;
     }
@@ -313,9 +313,9 @@ const TrackingOrder = ({ order, onUpdate }) => {
     });
   };
 
-  const steps = [
+  const allSteps = [
     {
-      title: "Phê duyệt đơn hàng",
+      title: "Chờ Phê duyệt đơn hàng",
       description: "Xác nhận và phê duyệt đơn hàng mới",
       status: 0,
       icon: <CheckOutlined />,
@@ -396,6 +396,7 @@ const TrackingOrder = ({ order, onUpdate }) => {
       title: "Chờ hoàn tiền",
       description: "Đang xử lý hoàn tiền cho khách hàng",
       status: [2, 7],
+      forOrderType: 1, // Add this property to indicate this step is only for rental orders
       icon: <CheckCircleOutlined />,
       action: "pending-refund",
       color: "orange",
@@ -404,6 +405,23 @@ const TrackingOrder = ({ order, onUpdate }) => {
       textColor: "text-orange-700",
     },
   ];
+
+  // Filter steps based on orderType and orderStatus
+  const steps = allSteps.filter(step => {
+    // Check if step should be included based on orderType
+    const typeCheck = !step.forOrderType || step.forOrderType === order?.orderType;
+    
+    // Hide cancellation steps if status is not 6 or 7
+    const hideCancellationSteps = 
+      ['Yêu cầu hủy đơn', 'Xác nhận hủy đơn'].includes(step.title) && 
+      ![6, 7].includes(order?.orderStatus);
+    
+    // Hide processing and later steps if order is cancelled or being cancelled
+    const hideProcessingAndLater = [6, 7].includes(order?.orderStatus) && 
+      ['Đang xử lý', 'Đang vận chuyển', 'Chờ trả hàng', 'Hoàn thành', 'Chờ hoàn tiền'].includes(step.title);
+      
+    return typeCheck && !hideCancellationSteps && !hideProcessingAndLater;
+  });
 
   const StepsComponent = ({ currentStep, steps }) => (
     <div className="w-full max-w-5xl mx-auto">

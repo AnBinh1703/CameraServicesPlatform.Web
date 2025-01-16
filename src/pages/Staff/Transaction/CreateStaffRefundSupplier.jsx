@@ -1,5 +1,21 @@
-import { UploadOutlined } from "@ant-design/icons";
-import { Button, message, Modal, Table, Tag, Typography, Upload } from "antd";
+import {
+  HomeOutlined,
+  SearchOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Card,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  Upload,
+} from "antd";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -64,6 +80,10 @@ const CreateStaffRefundSupplier = () => {
   const [imageUrls, setImageUrls] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [sortedInfo, setSortedInfo] = useState({});
 
   const user = useSelector((state) => state.user.user || {});
 
@@ -285,7 +305,69 @@ const CreateStaffRefundSupplier = () => {
     setSelectedOrderDetails(detailsWithProductNames);
     setIsModalVisible(true);
   };
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: "block" }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => handleReset(clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+  });
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
   const handleTableChange = (pagination, filters, sorter) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
     setPageIndex(pagination.current);
     setPageSize(pagination.pageSize);
   };
@@ -295,28 +377,77 @@ const CreateStaffRefundSupplier = () => {
       dataIndex: "supplierID",
       key: "supplierID",
       render: (supplierID) => supplierNames[supplierID],
+      ...getColumnSearchProps("supplierID"),
+      sorter: (a, b) => a.supplierID - b.supplierID,
+      sortOrder: sortedInfo.columnKey === "supplierID" && sortedInfo.order,
     },
     {
       title: "Mã đơn hàng",
       dataIndex: "orderID",
       key: "orderID",
-    },
-    {
-      title: "Mã tài khoản",
-      dataIndex: "accountID",
-      key: "accountID",
-      render: (accountID) => accountNames[accountID],
+      ...getColumnSearchProps("orderID"),
+      sorter: (a, b) => a.orderID - b.orderID,
+      sortOrder: sortedInfo.columnKey === "orderID" && sortedInfo.order,
     },
     {
       title: "Ngày đặt hàng",
       dataIndex: "orderDate",
       key: "orderDate",
       render: (orderDate) => moment(orderDate).format("DD - MM - YYYY HH:mm"),
+      sorter: (a, b) => moment(a.orderDate).unix() - moment(b.orderDate).unix(),
+      sortOrder: sortedInfo.columnKey === "orderDate" && sortedInfo.order,
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
+        <div style={{ padding: 8 }}>
+          <Space direction="vertical">
+            <Input
+              placeholder="YYYY-MM-DD"
+              value={selectedKeys[0]}
+              onChange={(e) =>
+                setSelectedKeys(e.target.value ? [e.target.value] : [])
+              }
+              onPressEnter={() => confirm()}
+              style={{ width: 188, marginBottom: 8, display: "block" }}
+            />
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => confirm()}
+                size="small"
+                style={{ width: 90 }}
+              >
+                Filter
+              </Button>
+              <Button
+                onClick={() => clearFilters()}
+                size="small"
+                style={{ width: 90 }}
+              >
+                Reset
+              </Button>
+            </Space>
+          </Space>
+        </div>
+      ),
+      onFilter: (value, record) => {
+        if (!value) return true;
+        const orderDate = moment(record.orderDate).format("YYYY-MM-DD");
+        return orderDate.includes(value);
+      },
     },
     {
       title: "Trạng thái đơn hàng",
       dataIndex: "orderStatus",
       key: "orderStatus",
+      filters: Object.entries(orderStatusMap).map(([key, value]) => ({
+        text: value.text,
+        value: parseInt(key),
+      })),
+      onFilter: (value, record) => record.orderStatus === value,
       render: (orderStatus) => {
         const status = orderStatusMap[orderStatus];
         return (
@@ -330,11 +461,19 @@ const CreateStaffRefundSupplier = () => {
       title: "Tổng số tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
+      sorter: (a, b) => a.totalAmount - b.totalAmount,
+      sortOrder: sortedInfo.columnKey === "totalAmount" && sortedInfo.order,
       render: (totalAmount) =>
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
           currency: "VND",
         }).format(totalAmount),
+    },
+    {
+      title: "Mã tài khoản",
+      dataIndex: "accountID",
+      key: "accountID",
+      render: (accountID) => accountNames[accountID],
     },
     {
       title: "Loại đơn hàng",
@@ -447,71 +586,71 @@ const CreateStaffRefundSupplier = () => {
   ];
 
   return (
-    <div className="p-4 max-w-4xl ">
-      <Title level={2} className="text-center">
-        Danh Sách Đơn Hàng
-      </Title>
-      <Table
-        columns={columns}
-        dataSource={orders}
-        rowKey="orderID"
-        loading={loading}
-        onChange={handleTableChange}
-        pagination={{
-          current: pageIndex,
-          pageSize: pageSize,
-          total: total,
-          pageSizeOptions: ['10', '30', '50', '100'],
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `Tổng số ${total} mục`,
-        }}
-      />
-      <Modal
-        title="Chi tiết đơn hàng"
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-      >
-        {selectedOrderDetails && (
-          <ul>
-            {selectedOrderDetails.map((detail) => (
-              <li key={detail.orderDetailsID}>
-                <p>Product ID: {detail.productID}</p>
-                <p>Product Name: {detail.productName}</p>
-                <p>Product Quality: {detail.productQuality}</p>
-                <p>
-                  Product Price:
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(detail.productPrice)}
-                </p>
-                <p>
-                  Product Price Total:
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(detail.productPriceTotal)}
-                </p>
-                <p>Discount: {detail.discount}</p>
-                <p>
-                  Period Rental:
-                  {moment(detail.periodRental).format("DD-MM-YYYY HH:mm")}
-                </p>
-                <p>
-                  Created At:
-                  {moment(detail.createdAt).format("DD-MM-YYYY HH:mm")}
-                </p>
-                <p>
-                  Updated At:
-                  {moment(detail.updatedAt).format("DD-MM-YYYY HH:mm")}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Modal>
+    <div className="site-card-border-less-wrapper">
+      <Card bordered={false} className="criclebox">
+        <div className="mb-4">
+          <Breadcrumb>
+            <Breadcrumb.Item href="/">
+              <HomeOutlined />
+            </Breadcrumb.Item>
+            <Breadcrumb.Item href="/staff">Nhân viên</Breadcrumb.Item>
+            <Breadcrumb.Item>Hoàn tiền nhà cung cấp</Breadcrumb.Item>
+          </Breadcrumb>
+        </div>
+
+        <div className="table-responsive">
+          <Title level={2} className="mb-4">
+            Danh sách đơn hàng cần hoàn tiền cho nhà cung cấp
+          </Title>
+
+          <Table
+            columns={columns}
+            dataSource={orders}
+            rowKey="orderID"
+            loading={loading}
+            onChange={handleTableChange}
+            scroll={{ x: 1500 }}
+            className="ant-table-content"
+            pagination={{
+              current: pageIndex,
+              pageSize: pageSize,
+              total: total,
+              pageSizeOptions: ["10", "30", "50", "100"],
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total) => `Tổng số ${total} mục`,
+              className: "ant-pagination-custom",
+            }}
+          />
+        </div>
+      </Card>
+
+      <style jsx>{`
+        .site-card-border-less-wrapper {
+          padding: 24px;
+          background: #f0f2f5;
+        }
+        .table-responsive {
+          overflow-x: auto;
+        }
+        .order-details-list {
+          max-height: 60vh;
+          overflow-y: auto;
+          padding: 0 10px;
+        }
+        .modal-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1890ff;
+        }
+        .custom-modal .ant-modal-content {
+          border-radius: 8px;
+        }
+        .ant-pagination-custom {
+          margin-top: 16px;
+          text-align: right;
+        }
+      `}</style>
     </div>
   );
 };

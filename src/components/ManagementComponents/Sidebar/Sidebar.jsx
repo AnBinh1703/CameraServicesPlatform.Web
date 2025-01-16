@@ -36,6 +36,7 @@ const SideBar = () => {
         link: "manage-transaction-system",
         icon: <RiFileListLine />,
       },
+      { name: "NHÀ CUNG CẤP", link: "manage-suppplier" },
       {
         name: "QUẢN LÍ GÓI ĐĂNG KÍ",
         link: "manage-combo",
@@ -76,11 +77,11 @@ const SideBar = () => {
         link: "responsibilities-rights",
         icon: <RiHandCoinLine />,
       },
-      {
-        name: "BÁO CÁO - ĐÁNH GIÁ",
-        link: "report-rating",
-        icon: <RiSettings4Line />,
-      },
+      // {
+      //   name: "BÁO CÁO - ĐÁNH GIÁ",
+      //   link: "report-rating",
+      //   icon: <RiSettings4Line />,
+      // },
     ],
 
     ADMIN: [
@@ -97,11 +98,11 @@ const SideBar = () => {
         link: "manage-policy",
         icon: <RiSettings4Line />,
       },
-      {
-        name: "BÁO CÁO - ĐÁNH GIÁ",
-        link: "report-rating",
-        icon: <RiSettings4Line />,
-      },
+      // {
+      //   name: "BÁO CÁO - ĐÁNH GIÁ",
+      //   link: "report-rating",
+      //   icon: <RiSettings4Line />,
+      // },
 
       { name: "CẤU HÌNH", link: "settings", icon: <RiSettings4Line /> },
       { name: "GIAO DỊCH", link: "transaction-ad", icon: <RiSettings4Line /> },

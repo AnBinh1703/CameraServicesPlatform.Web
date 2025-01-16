@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
-import { Row, Col, Card, RangePicker, Spin } from 'antd';
-import { useDashboardData } from '../../hooks/useDashboardData';
-import SupplierInfoCard from './DashboardComponent/SupplierInfoCard';
-import RevenueCard from './DashboardComponent/RevenueCard';
-import ComboCarousel from './DashboardComponent/ComboCarousel';
-import OrderCostStatisticsTable from './DashboardComponent/OrderCostStatisticsTable';
-import ProductStatisticsTable from './DashboardComponent/ProductStatisticsTable';
-import OrderStatisticsTable from './DashboardComponent/OrderStatisticsTable';
-import PaymentStatisticsChart from '../../components/dashboard/PaymentStatisticsChart';
+import { Card, Col, RangePicker, Row, Spin } from "antd";
+import React, { useState } from "react";
+import PaymentStatisticsChart from "../../components/dashboard/PaymentStatisticsChart";
+import { useDashboardData } from "../../hooks/useDashboardData";
+import ComboCarousel from "./DashboardComponent/ComboCarousel";
+import RevenueCard from "./DashboardComponent/RevenueCard";
+import SupplierInfoCard from "./DashboardComponent/SupplierInfoCard";
 // ... other imports
 
 const DashboardSupplier = () => {
-  const [dateRange, setDateRange] = useState([/* initial values */]);
+  const [dateRange, setDateRange] = useState([
+    /* initial values */
+  ]);
   const { loading, statistics } = useDashboardData(supplierId, dateRange);
 
   return (
@@ -37,7 +36,10 @@ const DashboardSupplier = () => {
         <Row gutter={[16, 16]}>
           {/* Supplier Info and Revenue Cards */}
           <Col xs={24} lg={12}>
-            <SupplierInfoCard supplierDetails={supplierDetails} showModal={showModal} />
+            <SupplierInfoCard
+              supplierDetails={supplierDetails}
+              showModal={showModal}
+            />
           </Col>
           <Col xs={24} lg={12}>
             <RevenueCard totalRevenue={statistics.totalRevenue} />
@@ -53,12 +55,12 @@ const DashboardSupplier = () => {
           </Col>
 
           <Col xs={24} lg={12}>
-            <PaymentStatisticsChart 
-              payments={statistics.payments} 
-              formatter={formatter} 
+            <PaymentStatisticsChart
+              payments={statistics.payments}
+              formatter={formatter}
             />
           </Col>
-          
+
           {/* ... other components */}
         </Row>
       )}

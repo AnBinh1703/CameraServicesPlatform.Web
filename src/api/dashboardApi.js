@@ -1,5 +1,5 @@
+import dayjs from "dayjs";
 import api from "../api/config";
-
 // Get system rating statistics
 export const getSystemRatingStatistics = async () => {
   try {
@@ -140,12 +140,11 @@ export const getMonthOrderCostStatisticsBySupplier = async (
   endDate
 ) => {
   try {
-    // Format dates as ISO strings (YYYY-MM-DD)
-    const formattedStartDate = dayjs(startDate).format('YYYY-MM-DD');
-    const formattedEndDate = dayjs(endDate).format('YYYY-MM-DD');
+    const formattedStartDate = dayjs(startDate).format("MM-DD-YYYY");
+    const formattedEndDate = dayjs(endDate).format("MM-DD-YYYY");
 
     const response = await api.get(
-      `/dashboard/get-month-order-cost-statistics/${supplierId}`,
+      `/dashboard/get-month-order-cost-statistics-by-supplier-id/${supplierId}`,
       {
         params: {
           startDate: formattedStartDate,

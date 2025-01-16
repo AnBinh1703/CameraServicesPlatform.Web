@@ -1,6 +1,15 @@
-import { SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import {
+  CheckCircleFilled,
+  CloseCircleFilled,
+  FileSearchOutlined,
+  HomeOutlined,
+  SearchOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import {
+  Breadcrumb,
   Button,
+  Card,
   Input,
   message,
   Modal,
@@ -50,11 +59,7 @@ const orderStatusMap = {
   8: { text: "Đã Thanh toán", color: "orange", icon: "fa-money-bill-wave" },
   9: { text: "Hoàn tiền đang chờ xử lý", color: "pink", icon: "fa-clock" },
   10: { text: "Hoàn tiền thành công ", color: "brown", icon: "fa-undo" },
-  11: {
-    text: "Hoàn tiền đang chờ xử lý",
-    color: "gold",
-    icon: "fa-piggy-bank",
-  },
+  11: { text: "Hoàn trả tiền đặt cọc", color: "gold", icon: "fa-piggy-bank" },
   12: { text: "Gia hạn", color: "violet", icon: "fa-calendar-plus" },
 };
 
@@ -216,7 +221,7 @@ const CreateStaffRefundMember = () => {
       }
 
       if (response && response.isSuccess) {
-        setSelectedOrderId(orderID);
+        setSelectedOrderId(response.result.orderId);
         Modal.success({
           title: "Thông tin hoàn tiền",
           content: (
@@ -235,7 +240,7 @@ const CreateStaffRefundMember = () => {
               <Upload
                 name="img"
                 beforeUpload={(file) => {
-                  handleUpload(file);
+                  handleUpload(file, response.result.orderId);
                   return false;
                 }}
                 showUploadList={false}
@@ -256,26 +261,27 @@ const CreateStaffRefundMember = () => {
     }
   };
 
-  const handleUpload = async (file) => {
-    if (!selectedOrderId) {
-      message.error("Order ID is not available.");
+  const handleUpload = async (file, orderId) => {
+    if (!orderId) {
+      message.error("Order ID is not available for upload.");
       return;
     }
 
     setUploading(true);
     try {
-      const response = await addImagePayment(selectedOrderId, file);
+      const response = await addImagePayment(orderId, file);
       if (response.isSuccess) {
-        message.success("Image uploaded successfully.");
+        message.success("Image uploaded successfully for order: " + orderId);
         setImageUrls((prev) => ({
           ...prev,
-          [selectedOrderId]: URL.createObjectURL(file),
+          [orderId]: URL.createObjectURL(file),
         }));
+        fetchOrders(); // Refresh the orders list
       } else {
-        message.error("Failed to upload image.");
+        message.error("Failed to upload image: " + (response.messages || "Unknown error"));
       }
     } catch (error) {
-      message.error("Error uploading image.");
+      message.error("Error uploading image: " + (error.message || "Unknown error"));
       console.error("Error uploading image:", error);
     } finally {
       setUploading(false);
@@ -307,25 +313,41 @@ const CreateStaffRefundMember = () => {
   const handleViewImage = async (orderID) => {
     try {
       const response = await getTransactionImage(orderID);
-      if (response.isSuccess) {
+      if (response.isSuccess && response.result) {
+        // Create URL from base64 string if response is in base64
+        const imageUrl = response.result.startsWith('data:image') 
+          ? response.result 
+          : `data:image/jpeg;base64,${response.result}`;
+          
         Modal.info({
           title: "Hình ảnh giao dịch",
+          width: 800,
+          centered: true,
           content: (
-            <div>
+            <div style={{ textAlign: 'center' }}>
               <img
-                src={response.result}
+                src={imageUrl}
                 alt="Transaction"
-                style={{ width: "100%", marginBottom: "10px" }}
+                style={{ 
+                  maxWidth: '100%',
+                  maxHeight: '70vh',
+                  objectFit: 'contain',
+                  marginBottom: '10px' 
+                }}
+                onError={(e) => {
+                  message.error("Error loading image");
+                  e.target.src = "error-image-url"; // You can add a fallback image
+                }}
               />
             </div>
           ),
         });
       } else {
-        message.error("Không thể lấy hình ảnh giao dịch.");
+        message.error("Không có hình ảnh cho giao dịch này");
       }
     } catch (error) {
-      message.error("Error fetching transaction image.");
       console.error("Error fetching transaction image:", error);
+      message.error("Lỗi khi tải hình ảnh giao dịch");
     }
   };
 
@@ -423,43 +445,78 @@ const CreateStaffRefundMember = () => {
 
   const columns = [
     {
-      title: "Mã nhà cung cấp",
+      title: "Mã NCC",
       dataIndex: "supplierID",
       key: "supplierID",
+      width: 100,
       render: (supplierID) => supplierNames[supplierID],
       ...getColumnSearchProps("supplierID"),
       sorter: (a, b) => a.supplierID - b.supplierID,
       sortOrder: sortedInfo.columnKey === "supplierID" && sortedInfo.order,
     },
     {
-      title: "Mã đơn hàng",
+      title: "Mã ĐH",
       dataIndex: "orderID",
       key: "orderID",
+      width: 80,
       ...getColumnSearchProps("orderID"),
       sorter: (a, b) => a.orderID - b.orderID,
       sortOrder: sortedInfo.columnKey === "orderID" && sortedInfo.order,
     },
     {
-      title: "Mã tài khoản",
+      title: "Mã TK",
       dataIndex: "accountID",
       key: "accountID",
+      width: 100,
       render: (accountID) => accountNames[accountID],
     },
     {
-      title: "Ngày đặt hàng",
+      title: "Ngày đặt",
       dataIndex: "orderDate",
       key: "orderDate",
-      render: (orderDate) => moment(orderDate).format("DD - MM - YYYY HH:mm"),
+      width: 120,
+      render: (orderDate) => moment(orderDate).format("DD/MM/YY HH:mm"),
+      sorter: (a, b) => moment(b.orderDate).unix() - moment(a.orderDate).unix(), // Sort in descending order
+      defaultSortOrder: "descend", // Default to showing latest first
+      sortOrder: sortedInfo.columnKey === "orderDate" && sortedInfo.order,
+      filters: [
+        { text: "Hôm nay", value: "today" },
+        { text: "7 ngày qua", value: "week" },
+        { text: "30 ngày qua", value: "month" },
+      ],
+      onFilter: (value, record) => {
+        const orderDate = moment(record.orderDate);
+        const now = moment();
+        switch (value) {
+          case "today":
+            return orderDate.isSame(now, "day");
+          case "week":
+            return orderDate.isAfter(now.subtract(7, "days"));
+          case "month":
+            return orderDate.isAfter(now.subtract(30, "days"));
+          default:
+            return true;
+        }
+      },
     },
     {
-      title: "Trạng thái đơn hàng",
+      title: "Trạng thái",
       dataIndex: "orderStatus",
       key: "orderStatus",
-      filters: Object.entries(orderStatusMap).map(([key, value]) => ({
-        text: value.text,
-        value: parseInt(key),
-      })),
-      onFilter: (value, record) => record.orderStatus === value,
+      width: 120,
+      defaultFilteredValue: ["9", "11"], // Default to showing status 9 and 11
+      filters: [
+        { text: "Hoàn tiền đang chờ xử lý (9)", value: "9" },
+        { text: "Hoàn tiền đang chờ xử lý (11)", value: "11" },
+        ...Object.entries(orderStatusMap)
+          .filter(([key]) => !["9", "11"].includes(key))
+          .map(([key, value]) => ({
+            text: value.text,
+            value: key,
+          })),
+      ],
+      onFilter: (value, record) =>
+        record.orderStatus.toString() === value.toString(),
       render: (orderStatus) => {
         const status = orderStatusMap[orderStatus];
         return (
@@ -468,11 +525,20 @@ const CreateStaffRefundMember = () => {
           </Tag>
         );
       },
+      sorter: (a, b) => {
+        // Prioritize status 9 and 11
+        if ([9, 11].includes(a.orderStatus) && ![9, 11].includes(b.orderStatus))
+          return -1;
+        if (![9, 11].includes(a.orderStatus) && [9, 11].includes(b.orderStatus))
+          return 1;
+        return a.orderStatus - b.orderStatus;
+      },
     },
     {
-      title: "Tổng số tiền",
+      title: "Tổng tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
+      width: 100,
       render: (totalAmount) =>
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -480,9 +546,10 @@ const CreateStaffRefundMember = () => {
         }).format(totalAmount),
     },
     {
-      title: "Loại đơn hàng",
+      title: "Loại ĐH",
       dataIndex: "orderType",
       key: "orderType",
+      width: 90,
       render: (orderType) => {
         const type = orderTypeMap[orderType];
         return (
@@ -492,11 +559,11 @@ const CreateStaffRefundMember = () => {
         );
       },
     },
-
     {
-      title: "Phương thức giao hàng",
+      title: "PT Giao hàng",
       dataIndex: "deliveriesMethod",
       key: "deliveriesMethod",
+      width: 120,
       render: (deliveriesMethod) => {
         const method = deliveryStatusMap[deliveriesMethod];
         return (
@@ -507,9 +574,10 @@ const CreateStaffRefundMember = () => {
       },
     },
     {
-      title: "Tiền đặt cọc",
+      title: "Đặt cọc",
       dataIndex: "deposit",
       key: "deposit",
+      width: 100,
       render: (deposit) =>
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -517,20 +585,37 @@ const CreateStaffRefundMember = () => {
         }).format(deposit),
     },
     {
-      title: "Thanh toán",
+      title: "T.Toán",
       dataIndex: "isPayment",
       key: "isPayment",
-      render: (isPayment) => (isPayment ? "Đã thanh toán" : "Chưa thanh toán"),
+      width: 80,
+      render: (isPayment) => (
+        <span style={{ color: isPayment ? "#52c41a" : "#ff4d4f" }}>
+          {isPayment ? (
+            <>
+              <CheckCircleFilled /> Đã Thanh Toán
+            </>
+          ) : (
+            <>
+              <CloseCircleFilled /> Chưa Thanh Toán
+            </>
+          )}
+        </span>
+      ),
     },
     {
-      title: "Chi tiết đơn hàng",
-      dataIndex: "orderID", // Changed from orderDetails to orderID
+      title: "Chi tiết",
+      dataIndex: "orderID",
       key: "orderDetails",
-      render: (
-        orderID // Changed parameter to orderID
-      ) => (
-        <Button type="link" onClick={() => handleViewDetails(orderID)}>
-          Xem chi tiết
+      width: 80,
+      render: (orderID) => (
+        <Button
+          type="link"
+          size="small"
+          icon={<FileSearchOutlined />}
+          onClick={() => handleViewDetails(orderID)}
+        >
+          Xem
         </Button>
       ),
     },
@@ -538,6 +623,7 @@ const CreateStaffRefundMember = () => {
       title: "Tiền giữ chỗ",
       dataIndex: "reservationMoney",
       key: "reservationMoney",
+      width: 100,
       render: (reservationMoney) =>
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -547,13 +633,17 @@ const CreateStaffRefundMember = () => {
     {
       title: "Hành động",
       key: "action",
+      width: 100,
       render: (text, record) =>
-        ((record.orderStatus === 7 && record.orderType === 0) ||
-          (record.orderStatus === 7 && record.orderType === 1) ||
-          record.orderStatus === 11 ||
-          record.orderStatus === 9) && (
+        ((record.orderStatus === 11 &&
+          record.isPayment &&
+          record.orderType === 1) ||
+          (record.orderStatus === 7 &&
+            record.isPayment &&
+            record.orderType === 1)) && (
           <Button
             type="primary"
+            size="small"
             onClick={() =>
               handleRefund(record.orderID, record.orderStatus, record.orderType)
             }
@@ -563,123 +653,278 @@ const CreateStaffRefundMember = () => {
         ),
     },
     {
-      title: "Cập nhật trạng thái",
+      title: "Cập nhật",
       key: "updateStatus",
+      width: 120,
       render: (text, record) =>
-        (record.orderStatus === 9 && record.orderType === 0) ||
+        (record.orderStatus === 11 && record.orderType === 0) ||
         record.orderStatus === 11 ? (
           <Button
             type="default"
+            size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 0)}
           >
-            Cập nhật trạng thái hoàn tiền
+           Xử lí giao dịch cho NCC
           </Button>
         ) : record.orderStatus === 9 && record.orderType === 1 ? (
           <Button
             type="default"
+            size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 1)}
           >
-            Cập nhật trạng thái hoàn tiền đặt cọc
+            Xử lí giao dịch Cho khách
           </Button>
         ) : null,
     },
     {
-      title: "Hình ảnh giao dịch",
+      title: "Hình ảnh",
       key: "upload",
+      width: 120,
       render: (text, record) => (
-        <div>
+        <Space size="small">
           <Upload
             name="img"
             beforeUpload={(file) => {
-              setSelectedOrderId(record.orderID);
-              handleUpload(file);
+              handleUpload(file, record.orderID);
               return false;
             }}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>Upload Image</Button>
+            <Button icon={<UploadOutlined />} size="small">
+              Upload
+            </Button>
           </Upload>
-          {imageUrls[record.orderID] && (
-            <img
-              src={imageUrls[record.orderID]}
-              alt="Transaction"
-              style={{ width: "100px", marginTop: "10px" }}
-            />
-          )}
-          <Button type="link" onClick={() => handleViewImage(record.orderID)}>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleViewImage(record.orderID)}
+          >
             Xem
           </Button>
-        </div>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div className="p-4 max-w-4xl">
-      <Title level={2} className="text-center">
-        Danh Sách Đơn Hàng
-      </Title>
-      <Table
-        columns={columns}
-        dataSource={orders}
-        rowKey="orderID"
-        loading={loading}
-        onChange={handleTableChange}
-        pagination={{
-          current: pageIndex,
-          pageSize: pageSize,
-          total: total,
-          pageSizeOptions: ["10", "30", "50", "100"],
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `Tổng số ${total} mục`,
-        }}
-      />
+    <div className="site-card-border-less-wrapper">
+      <Card bordered={false} className="criclebox h-full">
+        <div className="flex flex-col h-full">
+          <div className="mb-6">
+            <Breadcrumb className="mb-4">
+              <Breadcrumb.Item href="/">
+                <HomeOutlined />
+              </Breadcrumb.Item>
+              <Breadcrumb.Item href="/staff">Nhân viên</Breadcrumb.Item>
+              <Breadcrumb.Item>Quản lý hoàn tiền</Breadcrumb.Item>
+            </Breadcrumb>
+            <Title level={2} className="font-medium text-2xl">
+              Danh Sách Đơn Hàng Cần Hoàn Tiền
+            </Title>
+          </div>
+
+          <div className="table-wrapper flex-1">
+            <Table
+              columns={columns}
+              dataSource={orders}
+              rowKey="orderID"
+              loading={loading}
+              onChange={handleTableChange}
+              scroll={{ x: "max-content", y: "calc(100vh - 280px)" }}
+              className="refund-table"
+              pagination={{
+                current: pageIndex,
+                pageSize: pageSize,
+                total: total,
+                pageSizeOptions: ["10", "30", "50", "100"],
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total) => `Tổng số ${total} mục`,
+                className: "ant-pagination-custom",
+              }}
+            />
+          </div>
+        </div>
+      </Card>
+
       <Modal
-        title="Chi tiết Đơn hàng"
+        title={<div className="modal-title">Chi tiết Đơn hàng</div>}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
+        width={700}
+        className="refund-modal"
+        bodyStyle={{ maxHeight: "calc(100vh - 200px)", overflow: "auto" }}
       >
         {selectedOrderDetails && (
-          <ul>
+          <div className="order-details-list">
             {selectedOrderDetails.map((detail) => (
-              <li key={detail.orderDetailsID}>
-                <p>Mã Sản phẩm: {detail.productID}</p>
-                <p>Tên Sản phẩm: {detail.productName}</p>
-                <p>Chất lượng: {detail.productQuality}</p>
-                <p>
-                  Giá Sản phẩm:
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(detail.productPrice)}
-                </p>
-                <p>
-                  Tổng giá trị:
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(detail.productPriceTotal)}
-                </p>
-                <p>Giảm giá: {detail.discount}</p>
-                <p>
-                  Thời hạn thuê:
-                  {moment(detail.periodRental).format("DD-MM-YYYY HH:mm")}
-                </p>
-                <p>
-                  Ngày tạo:
-                  {moment(detail.createdAt).format("DD-MM-YYYY HH:mm")}
-                </p>
-                <p>
-                  Ngày cập nhật:
-                  {moment(detail.updatedAt).format("DD-MM-YYYY HH:mm")}
-                </p>
-              </li>
+              <Card
+                key={detail.orderDetailsID}
+                className="mb-4"
+                bordered={false}
+                style={{ backgroundColor: "#f5f5f5" }}
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p>
+                      <strong>Mã Sản phẩm:</strong> {detail.productID}
+                    </p>
+                    <p>
+                      <strong>Tên Sản phẩm:</strong> {detail.productName}
+                    </p>
+                    <p>
+                      <strong>Chất lượng:</strong> {detail.productQuality}
+                    </p>
+                    <p>
+                      <strong>Giá Sản phẩm:</strong>{" "}
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(detail.productPrice)}
+                    </p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Tổng giá trị:</strong>{" "}
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(detail.productPriceTotal)}
+                    </p>
+                    <p>
+                      <strong>Giảm giá:</strong> {detail.discount}
+                    </p>
+                    <p>
+                      <strong>Thời hạn thuê:</strong>{" "}
+                      {moment(detail.periodRental).format("DD-MM-YYYY HH:mm")}
+                    </p>
+                    <p>
+                      <strong>Ngày tạo:</strong>{" "}
+                      {moment(detail.createdAt).format("DD-MM-YYYY HH:mm")}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             ))}
-          </ul>
+          </div>
         )}
       </Modal>
+
+      <style jsx>{`
+        .site-card-border-less-wrapper {
+          padding: 24px;
+          background: #f0f2f5;
+          min-height: 100vh;
+        }
+        :global(.refund-table) {
+          background: white;
+          border-radius: 8px;
+        }
+        :global(.ant-table-wrapper) {
+          width: 100%;
+          overflow: auto;
+        }
+        :global(.table-wrapper) {
+          margin: -24px;
+          padding: 24px;
+          background: white;
+          border-radius: 0 0 8px 8px;
+        }
+        :global(.criclebox) {
+          box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.05);
+        }
+        :global(.refund-modal .ant-modal-content) {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        :global(.refund-modal .ant-modal-body) {
+          padding: 24px;
+        }
+        :global(.ant-tag) {
+          margin: 4px;
+        }
+        :global(.ant-btn) {
+          border-radius: 6px;
+        }
+        .ant-table-thead > tr > th {
+          padding: 8px 6px;
+          font-size: 13px;
+        }
+        .ant-table-tbody > tr > td {
+          padding: 6px;
+          font-size: 13px;
+        }
+        .ant-btn-sm {
+          font-size: 12px;
+          padding: 0 8px;
+        }
+        .ant-tag {
+          margin: 0;
+          font-size: 12px;
+        }
+        .ant-space-item {
+          margin-right: 4px !important;
+        }
+        :global(.ant-table-thead > tr > th) {
+          background: #f6f8fa;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 12px;
+          padding: 12px 8px;
+        }
+
+        :global(.ant-table) {
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        :global(.ant-table-tbody > tr:hover > td) {
+          background: #f5f5f5;
+        }
+
+        :global(.ant-btn-link) {
+          padding: 0 4px;
+        }
+
+        :global(.ant-tag) {
+          border-radius: 4px;
+          padding: 2px 8px;
+          font-weight: 500;
+        }
+
+        :global(.ant-breadcrumb) {
+          margin-bottom: 24px;
+        }
+
+        :global(.ant-card) {
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        :global(.table-wrapper) {
+          background: white;
+          padding: 24px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        :global(.ant-btn) {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        :global(.anticon) {
+          font-size: 14px;
+        }
+
+        :global(.ant-table-column-title) {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      `}</style>
     </div>
   );
 };

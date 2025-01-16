@@ -1,10 +1,13 @@
-import { Button, Modal, Spin, Table } from "antd";
+import { Button, Modal, Spin, Table, Breadcrumb, Card, Typography } from "antd";
+import { HomeOutlined } from "@ant-design/icons";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
   getAllTransactions,
   getTransactionById,
 } from "../../../api/transactionApi";
+
+const { Title } = Typography;
 
 const TransactionType = {
   0: "Thanh toán",
@@ -120,88 +123,64 @@ const TransactionList = () => {
   ];
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Danh sách giao dịch</h1>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <div>
-          <Table
-            dataSource={transactions}
-            columns={columns}
-            rowKey="transactionID"
-            pagination={false}
-            onRow={(record) => ({
-              onDoubleClick: () => handleRowDoubleClick(record),
-            })}
-          />
-          <div className="flex justify-between items-center mt-4">
-            <Button onClick={handlePreviousPage} disabled={pageIndex === 1}>
-              Trước
-            </Button>
-            <span>Trang {pageIndex}</span>
-            <Button onClick={handleNextPage}>Tiếp</Button>
+    <div className="site-card-border-less-wrapper">
+      <Card bordered={false} className="criclebox h-full">
+        <div className="flex flex-col h-full">
+          <div className="mb-6">
+            <Breadcrumb className="mb-4">
+              <Breadcrumb.Item href="/">
+                <HomeOutlined />
+              </Breadcrumb.Item>
+              <Breadcrumb.Item href="/staff">Nhân viên</Breadcrumb.Item>
+              <Breadcrumb.Item>Danh sách giao dịch</Breadcrumb.Item>
+            </Breadcrumb>
+            <Title level={2} className="font-medium text-2xl">
+              Danh sách giao dịch
+            </Title>
+          </div>
+
+          <div className="table-wrapper flex-1">
+            <Table
+              columns={columns}
+              dataSource={transactions}
+              rowKey="transactionID"
+              loading={loading}
+              scroll={{ x: 'max-content', y: 'calc(100vh - 280px)' }}
+              className="transactions-table"
+              pagination={false}
+              onRow={(record) => ({
+                onDoubleClick: () => handleRowDoubleClick(record),
+                className: "hover:bg-gray-50 cursor-pointer",
+              })}
+            />
           </div>
         </div>
-      )}
-      <Modal
-        title="Chi tiết giao dịch"
-        visible={isModalVisible}
-        onCancel={handleModalClose}
-        footer={[
-          <Button key="close" onClick={handleModalClose}>
-            Đóng
-          </Button>,
-        ]}
-      >
-        {selectedTransaction && (
-          <div>
-            <p>
-              <strong>Mã giao dịch:</strong> {selectedTransaction.transactionID}
-            </p>
-            <p>
-              <strong>Mã đơn hàng:</strong> {selectedTransaction.orderID}
-            </p>
-            <p>
-              <strong>Ngày giao dịch:</strong>
-              {selectedTransaction.transactionDate}
-            </p>
-            <p>
-              <strong>Số tiền:</strong> {selectedTransaction.amount}
-            </p>
-            <p>
-              <strong>Loại giao dịch:</strong>
-              {TransactionType[selectedTransaction.transactionType]}
-            </p>
-            <p>
-              <strong>Trạng thái thanh toán:</strong>
-              {PaymentStatus[selectedTransaction.paymentStatus]}
-            </p>
-            <p>
-              <strong>Phương thức thanh toán:</strong>
-              {PaymentMethod[selectedTransaction.paymentMethod]}
-            </p>
-            <p>
-              <strong>Mã giao dịch VNPAY:</strong>
-              {selectedTransaction.vnpayTransactionID}
-            </p>
-            <p>
-              <strong>Trạng thái giao dịch VNPAY:</strong>
-              {
-                VNPAYTransactionStatus[
-                  selectedTransaction.vnpayTransactionStatus
-                ]
-              }
-            </p>
-            <p>
-              <strong>Thời gian giao dịch VNPAY:</strong>
-              {selectedTransaction.vnpayTransactionTime}
-            </p>
-          </div>
-        )}
-      </Modal>
+      </Card>
+
+      <style jsx>{`
+        .site-card-border-less-wrapper {
+          padding: 24px;
+          background: #f0f2f5;
+          min-height: 100vh;
+        }
+        :global(.transactions-table) {
+          background: white;
+          border-radius: 8px;
+        }
+        :global(.ant-table-wrapper) {
+          width: 100%;
+          overflow: auto;
+        }
+        :global(.table-wrapper) {
+          margin: -24px;
+          padding: 24px;
+          background: white;
+          border-radius: 0 0 8px 8px;
+        }
+        :global(.criclebox) {
+          box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.05);
+        }
+      `}</style>
     </div>
   );
 };

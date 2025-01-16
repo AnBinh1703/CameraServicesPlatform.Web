@@ -199,36 +199,83 @@ const PersonalPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Trang Cá Nhân</h1>
-      <SupplierInfo supplierInfo={supplierInfo} showModal={showModal} />
-      <Button type="primary" onClick={showComboModal} className="my-4">
-        Đăng Ký Gói Dịch Vụ
-      </Button>
-      <ComboRegistrationModal
-        isComboModalVisible={isComboModalVisible}
-        handleComboModalCancel={handleComboModalCancel}
-        currentStep={currentStep}
-        steps={steps}
-        servicePlans={servicePlans}
-        selectedPlanId={selectedPlanId}
-        handleCardClick={handleCardClick}
-        handleChoosePlan={handleChoosePlan}
-        form={form}
-        next={next}
-        prev={prev}
-        handleCreateCombo={handleCreateCombo}
-        confirmLoading={confirmLoading}
-        formatCurrency={formatCurrency}
-      />
-      <UpdateSupplierModal
-        isModalVisible={isModalVisible}
-        handleCancel={handleCancel}
-        handleUpdateSupplier={handleUpdateSupplier}
-        supplierInfo={supplierInfo}
-        fileList={fileList}
-        handleUploadChange={handleUploadChange}
-      />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Trang Cá Nhân</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Quản lý thông tin và gói dịch vụ của bạn
+          </p>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 gap-8">
+          {/* Supplier Info Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Thông Tin Nhà Cung Cấp
+              </h2>
+              <Button
+                type="primary"
+                onClick={showModal}
+                className="hover:bg-blue-600 transition-colors"
+              >
+                Cập Nhật Thông Tin
+              </Button>
+            </div>
+            <SupplierInfo supplierInfo={supplierInfo} showModal={showModal} />
+          </div>
+
+          {/* Service Plans Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Gói Dịch Vụ
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Đăng ký các gói dịch vụ để mở rộng kinh doanh
+                </p>
+              </div>
+              <Button
+                type="primary"
+                onClick={showComboModal}
+                className="bg-green-500 hover:bg-green-600 border-none h-10 px-6 flex items-center"
+              >
+                <span className="mr-2">+</span> Đăng Ký Gói Dịch Vụ
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Modals */}
+        <ComboRegistrationModal
+          isComboModalVisible={isComboModalVisible}
+          handleComboModalCancel={handleComboModalCancel}
+          currentStep={currentStep}
+          steps={steps}
+          servicePlans={servicePlans}
+          selectedPlanId={selectedPlanId}
+          handleCardClick={handleCardClick}
+          handleChoosePlan={handleChoosePlan}
+          form={form}
+          next={next}
+          prev={prev}
+          handleCreateCombo={handleCreateCombo}
+          confirmLoading={confirmLoading}
+          formatCurrency={formatCurrency}
+        />
+        <UpdateSupplierModal
+          isModalVisible={isModalVisible}
+          handleCancel={handleCancel}
+          handleUpdateSupplier={handleUpdateSupplier}
+          supplierInfo={supplierInfo}
+          fileList={fileList}
+          handleUploadChange={handleUploadChange}
+        />
+      </div>
     </div>
   );
 };

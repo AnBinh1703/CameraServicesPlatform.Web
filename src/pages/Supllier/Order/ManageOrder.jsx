@@ -72,17 +72,17 @@ const ManageOrder = () => {
     if (supplierId) {
       try {
         setLoading(true);
-        const formattedStartDate = startDate.format("YYYY-MM-DD");
-        const formattedEndDate = endDate.format("YYYY-MM-DD");
+        const formattedStartDate = dayjs(startDate).format("YYYY-MM-DD");
+        const formattedEndDate = dayjs(endDate).format("YYYY-MM-DD");
 
         const [orderCostStatistics, orderStatistics, totalRevenue] =
           await Promise.all([
             getMonthOrderCostStatisticsBySupplier(
               supplierId,
-              startDate,
-              endDate
+              formattedStartDate,
+              formattedEndDate
             ),
-            getSupplierOrderStatistics(supplierId, startDate, endDate),
+            getSupplierOrderStatistics(supplierId, formattedStartDate, formattedEndDate),
             getCalculateTotalRevenueBySupplier(supplierId),
           ]);
 
@@ -90,11 +90,11 @@ const ManageOrder = () => {
           orderCostStatistics: Array.isArray(orderCostStatistics?.result)
             ? orderCostStatistics.result
             : [],
-          orderStatistics: orderStatistics || {},
-          totalRevenue: totalRevenue || 0,
+          orderStatistics: orderStatistics?.result || {},
+          totalRevenue: totalRevenue?.result || 0,
         });
       } catch (error) {
-        message.error("Lỗi khi tải dữ liệu thống kê: " + error.message);
+        message.error("Lỗi khi tải dữ liệu thống kê: " + (error.message || "Unknown error"));
       } finally {
         setLoading(false);
       }

@@ -10,13 +10,12 @@ import {
 import { getSupplierById } from "../../../api/supplierApi";
 import { formatDateTime, formatPrice } from "../../../utils/util";
 
-// Replace existing status maps with new ones
+// Update the status maps translations
 const orderStatusMap = {
   0: { text: "Chờ xử lý", color: "blue", icon: "fa-hourglass-start" },
-  1: { label: "Processing", color: "blue" },
-  2: { label: "Completed", color: "green" },
-  3: { label: "Cancelled", color: "red" },
-  // Add other status mappings as needed
+  1: { label: "Đang xử lý", color: "blue" },
+  2: { label: "Hoàn thành", color: "green" },
+  3: { label: "Đã hủy", color: "red" },
 };
 
 const orderTypeMap = {
@@ -59,6 +58,7 @@ const CreateReportProductForm = () => {
   const [form] = Form.useForm();
   const [productDetails, setProductDetails] = useState({});
   const [supplierDetails, setSupplierDetails] = useState({});
+  const [reportProductDetails, setReportProductDetails] = useState({});
 
   const fetchOrders = async () => {
     try {
@@ -82,12 +82,32 @@ const CreateReportProductForm = () => {
     }
   };
 
+  const fetchReportProductDetails = async (productId) => {
+    try {
+      const response = await getProductById(productId);
+      if (response && response.productName) {
+        setReportProductDetails(prev => ({
+          ...prev,
+          [productId]: response
+        }));
+      }
+    } catch (error) {
+      console.error(`Error fetching product details for ID ${productId}:`, error);
+    }
+  };
+
   const fetchProductReports = async () => {
     try {
       setIsLoading(true);
       const response = await getProductReportByAccountId(user.id, 1, 100);
       if (response?.isSuccess) {
         setProductReports(response.result || []);
+        // Fetch product details for each report
+        response.result?.forEach(report => {
+          if (report.productID) {
+            fetchReportProductDetails(report.productID);
+          }
+        });
       } else {
         message.error("Failed to fetch product reports");
       }
@@ -242,31 +262,36 @@ const CreateReportProductForm = () => {
     }
   };
 
+  // Update status text in renderReportItems
   const renderReportItems = (report) => (
     <tr
       key={report.productReportID}
       className="cursor-pointer hover:bg-gray-50 transition-colors"
     >
-      <td className="py-3 px-4 border-b">{report.productReportID}</td>
-      <td className="py-3 px-4 border-b">{report.productID}</td>
-      <td className="py-3 px-4 border-b">
+      <td className="py-4 px-6 border-b text-center w-24">{report.productReportID}</td>
+      <td className="py-4 px-6 border-b text-center w-48">
+        {reportProductDetails[report.productID]?.productName || report.productID}
+      </td>
+      <td className="py-4 px-6 border-b text-center w-32">
         <span
-          className={`px-2 py-1 rounded-full text-sm font-semibold text-white 
+          className={`inline-block px-3 py-1 rounded-full text-sm font-semibold text-white 
           ${
-            report.statusType === "Approved"
+            report.statusType === "Đã duyệt"
               ? "bg-green-500"
-              : report.statusType === "Reject"
+              : report.statusType === "Từ chối"
               ? "bg-red-500"
               : "bg-yellow-500"
           }`}
         >
-          {report.statusType}
+          {report.statusType === "Approved" ? "Đã duyệt" 
+            : report.statusType === "Reject" ? "Từ chối" 
+            : "Chờ xử lý"}
         </span>
       </td>
-      <td className="py-3 px-4 border-b">{report.reason}</td>
-      <td className="py-3 px-4 border-b">{report.message || "-"}</td>
-      <td className="py-3 px-4 border-b">{formatDateTime(report.createdAt)}</td>
-      <td className="py-3 px-4 border-b">{formatDateTime(report.updatedAt)}</td>
+      <td className="py-4 px-6 border-b w-64 truncate">{report.reason}</td>
+      <td className="py-4 px-6 border-b w-48 truncate">{report.message || "-"}</td>
+      <td className="py-4 px-6 border-b text-center w-40">{formatDateTime(report.createdAt)}</td>
+      <td className="py-4 px-6 border-b text-center w-40">{formatDateTime(report.updatedAt)}</td>
     </tr>
   );
 
@@ -382,16 +407,41 @@ const CreateReportProductForm = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="container mx-auto px-4">
+      <div className="flex justify-between items-center mb-6">
         <Button
           type="primary"
           onClick={() => handleOpenModal()}
-          className="bg-blue-500"
+          className="bg-blue-500 px-6 py-2"
         >
           Tạo báo cáo mới
         </Button>
       </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <p>Đang tải...</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto shadow-md rounded-lg">
+          <table className="min-w-full bg-white">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="py-4 px-6 border-b text-center w-24">Mã báo cáo</th>
+                <th className="py-4 px-6 border-b text-center w-48">Tên sản phẩm</th>
+                <th className="py-4 px-6 border-b text-center w-32">Trạng thái</th>
+                <th className="py-4 px-6 border-b text-center w-64">Lý do</th>
+                <th className="py-4 px-6 border-b text-center w-48">Phản hồi</th>
+                <th className="py-4 px-6 border-b text-center w-40">Ngày tạo</th>
+                <th className="py-4 px-6 border-b text-center w-40">Ngày cập nhật</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {productReports.map(renderReportItems)}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Modal
         title="Tạo báo cáo sản phẩm"
