@@ -27,19 +27,37 @@ const { Search } = Input;
 
 const commonStyles = {
   pageWrapper: {
-    padding: '24px',
-    backgroundColor: '#f0f2f5',
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #f6f8fc 0%, #f0f2f5 100%)",
+    padding: "32px 24px",
   },
   searchSection: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '24px',
+    width: "80%",
+    maxWidth: "1000px",
+    margin: "0 auto 40px",
+    background: "white",
+    padding: "24px",
+    borderRadius: "16px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
   },
   card: {
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
+    borderRadius: "20px",
+    overflow: "hidden",
+    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.08)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    border: "none",
+    background: "white",
+  },
+  priceTag: {
+    position: "absolute",
+    top: "16px",
+    right: "16px",
+    background: "rgba(0, 0, 0, 0.75)",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    zIndex: 1,
   },
 };
 
@@ -172,7 +190,8 @@ const ProductPageBuy = () => {
   return (
     <Layout>
       <Content style={commonStyles.pageWrapper}>
-        <Title level={2} className="text-center mb-8 text-2xl font-bold text-gray-800">
+        <Title level={2} className="text-center mb-12 text-3xl font-bold text-gray-800">
+          <TagOutlined className="mr-3" />
           Sản Phẩm Bán
         </Title>
 
@@ -196,29 +215,33 @@ const ProductPageBuy = () => {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center mt-10">
+          <div className="flex flex-col items-center mt-16">
             <Spin size="large" />
-            <p className="mt-4 text-lg">Đang tải sản phẩm...</p>
+            <p className="mt-4 text-lg text-gray-600">Đang tải sản phẩm...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {availableProducts.map((product) => (
               <Card
                 key={product.productID}
                 style={commonStyles.card}
-                className="hover:-translate-y-1 hover:shadow-xl"
+                className="hover:-translate-y-2 hover:shadow-2xl"
                 cover={
-                  <div className="relative pt-[75%] overflow-hidden">
+                  <div className="relative pt-[75%] overflow-hidden group">
                     <img
                       src={product.listImage[0]?.image || "https://placehold.co/300x200"}
                       alt={product.productName}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-opacity duration-300" />
+                    <div style={commonStyles.priceTag}>
+                      {formatPrice(product.priceBuy)}
+                    </div>
                   </div>
                 }
               >
-                <div className="p-5">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 line-clamp-2 hover:text-blue-600 transition-colors">
                     {product.productName}
                   </h3>
                   

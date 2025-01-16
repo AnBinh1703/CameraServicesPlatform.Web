@@ -144,11 +144,12 @@ const CreateProduct = () => {
     formData.append("ProductDescription", values.ProductDescription);
     formData.append("Quality", values.Quality);
     formData.append("Brand", values.Brand);
-    formData.append("Status", values.Status);
+    // Set Status based on productType
+    formData.append("Status", productType === "rent" ? 1 : 0);
     formData.append("DateOfManufacture", values.DateOfManufacture);
     formData.append("OriginalPrice", values.OriginalPrice);
 
-    // Append specifications as JSON string
+    // Append specifications as a properly formatted string:string object
     formData.append(
       "listProductSpecification",
       JSON.stringify(validSpecifications)
@@ -492,21 +493,6 @@ const CreateProduct = () => {
                   ]}
                 >
                   <Input type="number" min="1" placeholder="Nhập số lượng" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="Status"
-                  label="Trạng thái"
-                  rules={[
-                    { required: true, message: "Trạng thái là bắt buộc!" },
-                  ]}
-                >
-                  <Select placeholder="Chọn trạng thái">
-                    <Option value={0}>Sản phẩm để bán</Option>
-                    <Option value={1}>Sản phẩm để thuê</Option>
-                    <Option value={4}>Sản phẩm ngừng kinh doanh</Option>
-                  </Select>
                 </Form.Item>
               </Col>
             </Row>

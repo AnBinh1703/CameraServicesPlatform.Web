@@ -7,6 +7,7 @@ import {
   ShopOutlined,
   StarOutlined,
   TagOutlined,
+  ClearOutlined,
 } from "@ant-design/icons"; // Import Ant Design icons
 import {
   Button,
@@ -32,23 +33,25 @@ const { Search } = Input;
 const commonStyles = {
   pageWrapper: {
     minHeight: "100vh",
-    background: "linear-gradient(145deg, #f6f8fc 0%, #f0f2f5 100%)",
-    padding: "24px",
+    background: "linear-gradient(135deg, #f6f8fc 0%, #f0f2f5 100%)",
+    padding: "32px 24px",
   },
   searchSection: {
-    width: "70%",
-    maxWidth: "800px",
-    margin: "0 auto 32px",
+    width: "80%",
+    maxWidth: "1000px",
+    margin: "0 auto 40px",
+    background: "white",
+    padding: "24px",
+    borderRadius: "16px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
   },
   card: {
-    borderRadius: "16px",
+    borderRadius: "20px",
     overflow: "hidden",
-    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-    transition: "all 0.3s ease",
-  },
-  infoSection: {
-    padding: "20px",
-    borderTop: "1px solid #f0f0f0",
+    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.08)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    border: "none",
+    background: "white",
   },
 };
 
@@ -170,69 +173,76 @@ const ProductPageRent = () => {
       <Content style={commonStyles.pageWrapper}>
         <Title
           level={2}
-          className="text-center mb-8 text-2xl font-bold text-gray-800"
+          className="text-center mb-12 text-3xl font-bold text-gray-800"
         >
+          <ShopOutlined className="mr-3" />
           Sản Phẩm Cho Thuê
         </Title>
 
-        <div style={commonStyles.searchSection} className="flex gap-4">
-          <Search
-            placeholder="Tìm kiếm sản phẩm..."
-            enterButton={<SearchOutlined />}
-            size="large"
-            value={searchTerm}
-            onSearch={handleSearch}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-          />
-          <Button
-            onClick={handleClearSearch}
-            size="large"
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg"
-          >
-            Xóa Tìm Kiếm
-          </Button>
+        <div style={commonStyles.searchSection}>
+          <div className="flex flex-col md:flex-row gap-4">
+            <Search
+              placeholder="Nhập tên sản phẩm cần tìm..."
+              enterButton={
+                <Button type="primary" className="bg-blue-500">
+                  <SearchOutlined /> Tìm Kiếm
+                </Button>
+              }
+              size="large"
+              value={searchTerm}
+              onSearch={handleSearch}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleClearSearch}
+              size="large"
+              icon={<ClearOutlined />}
+              className="bg-gray-50 hover:bg-gray-100 border-gray-200 min-w-[120px]"
+            >
+              Xóa
+            </Button>
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center mt-10">
+          <div className="flex flex-col items-center mt-16">
             <Spin size="large" />
-            <p className="mt-4 text-lg">Đang tải sản phẩm...</p>
+            <p className="mt-4 text-lg text-gray-600">Đang tải sản phẩm...</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {availableProducts.map((product) => (
                 <Card
                   key={product.productID}
                   style={commonStyles.card}
-                  className="hover:-translate-y-1 hover:shadow-xl"
+                  className="hover:-translate-y-2 hover:shadow-2xl"
                   cover={
-                    <div className="relative pt-[75%] overflow-hidden">
+                    <div className="relative pt-[75%] overflow-hidden group">
                       <img
                         src={
                           product.listImage[0]?.image ||
                           "https://placehold.co/300x200"
                         }
                         alt={product.productName}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                       />
+                      <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-opacity duration-300" />
                     </div>
                   }
                 >
-                  <div className="p-5">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 line-clamp-2 hover:text-blue-600 transition-colors">
                       {product.productName}
                     </h3>
 
                     <div className="space-y-4">
-                      {/* Description */}
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 line-clamp-3 text-sm">
                         {product.productDescription}
                       </p>
 
-                      {/* Pricing Section */}
-                      <div className="space-y-2 border-t border-b py-3">
+                      <div className="space-y-2 border-t border-b py-4">
                         {product.depositProduct && (
                           <div className="flex justify-between text-red-500">
                             <span>Giá Cọc:</span>
@@ -263,9 +273,7 @@ const ProductPageRent = () => {
                         )}
                       </div>
 
-                      {/* Product Details */}
                       <div className="space-y-2 text-sm">
-                        {/* Keep all existing detail fields but with improved layout */}
                         <div className="grid grid-cols-2 gap-4">
                           <p>
                             <TagOutlined className="mr-2" />
@@ -285,7 +293,6 @@ const ProductPageRent = () => {
                           </p>
                         </div>
 
-                        {/* Additional Info */}
                         <div className="mt-3 space-y-1 text-gray-600">
                           <p className="text-left">
                             <ShopOutlined className="inline mr-1" />
@@ -326,13 +333,13 @@ const ProductPageRent = () => {
               ))}
             </div>
 
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-12">
               <Pagination
                 current={currentPage}
                 pageSize={pageSize}
                 total={totalProducts}
                 onChange={onPageChange}
-                className="bg-white p-4 rounded-lg shadow"
+                className="bg-white px-6 py-4 rounded-xl shadow-sm"
               />
             </div>
           </>

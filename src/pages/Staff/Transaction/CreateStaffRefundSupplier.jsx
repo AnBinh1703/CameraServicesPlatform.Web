@@ -27,6 +27,7 @@ import {
   addImagePayment,
   createStaffRefundSupplier,
   getTransactionImage,
+  updateOrderStatusRefund, // Add this import
 } from "../../../api/transactionApi";
 
 const { Title } = Typography;
@@ -197,11 +198,12 @@ const CreateStaffRefundSupplier = () => {
       let response = await createStaffRefundSupplier(orderID, staffId);
 
       if (response && response.isSuccess) {
-        setSelectedOrderId(orderID);
+        setSelectedOrderId(response.result.orderId); // Make sure to set the orderId
         Modal.success({
           title: "Thông tin hoàn tiền",
+          width: 600,
           content: (
-            <div>
+            <div className="refund-info">
               <p>Ngân hàng: {response.result.bankName}</p>
               <p>Số tài khoản: {response.result.accountNumber}</p>
               <p>Chủ tài khoản: {response.result.accountHolder}</p>
@@ -213,18 +215,30 @@ const CreateStaffRefundSupplier = () => {
                   currency: "VND",
                 }).format(response.result.refundAmount)}
               </p>
-              <Upload
-                name="img"
-                beforeUpload={(file) => {
-                  handleUpload(file);
-                  return false;
-                }}
-                showUploadList={false}
-              >
-                <Button icon={<UploadOutlined />}>Upload Image</Button>
-              </Upload>
+              <div className="upload-section">
+                <Upload
+                  name="img"
+                  listType="picture-card"
+                  showUploadList={{
+                    showPreviewIcon: true,
+                    showRemoveIcon: true,
+                    showDownloadIcon: false,
+                  }}
+                  beforeUpload={(file) => {
+                    handleUpload(file, response.result.orderId);
+                    return false;
+                  }}
+                  maxCount={1}
+                >
+                  <div>
+                    <UploadOutlined />
+                    <div style={{ marginTop: 8 }}>Tải lên hình ảnh</div>
+                  </div>
+                </Upload>
+              </div>
             </div>
           ),
+          className: "refund-modal",
         });
       } else {
         message.error("Không thể khởi tạo thanh toán.");
@@ -237,26 +251,33 @@ const CreateStaffRefundSupplier = () => {
     }
   };
 
-  const handleUpload = async (file) => {
-    if (!selectedOrderId) {
-      message.error("Order ID is not available.");
+  const handleUpload = async (file, orderId) => {
+    if (!orderId) {
+      message.error("Mã đơn hàng không có sẵn cho tải lên.");
       return;
     }
 
     setUploading(true);
     try {
-      const response = await addImagePayment(selectedOrderId, file);
+      const response = await addImagePayment(orderId, file);
       if (response.isSuccess) {
-        message.success("Image uploaded successfully.");
+        message.success(`Tải lên hình ảnh thành công cho đơn hàng: ${orderId}`);
         setImageUrls((prev) => ({
           ...prev,
-          [selectedOrderId]: URL.createObjectURL(file),
+          [orderId]: URL.createObjectURL(file),
         }));
+        // Optionally refresh the orders list
+        // fetchOrders();
       } else {
-        message.error("Failed to upload image.");
+        message.error(
+          "Không thể tải lên hình ảnh: " +
+            (response.messages || "Lỗi không xác định")
+        );
       }
     } catch (error) {
-      message.error("Error uploading image.");
+      message.error(
+        "Lỗi khi tải lên hình ảnh: " + (error.message || "Lỗi không xác định")
+      );
       console.error("Error uploading image:", error);
     } finally {
       setUploading(false);
@@ -285,6 +306,25 @@ const CreateStaffRefundSupplier = () => {
     } catch (error) {
       message.error("Error fetching transaction image.");
       console.error("Error fetching transaction image:", error);
+    }
+  };
+  const handleConfirmRefund = async (orderId) => {
+    try {
+      const response = await updateOrderStatusRefund(orderId);
+      if (response.isSuccess) {
+        message.success("Xác nhận hoàn tiền thành công");
+        fetchOrders(); // Refresh the table data
+      } else {
+        message.error(
+          "Không thể xác nhận hoàn tiền: " +
+            (response.messages || "Lỗi không xác định")
+        );
+      }
+    } catch (error) {
+      message.error(
+        "Lỗi khi xác nhận hoàn tiền: " + (error.message || "Lỗi không xác định")
+      );
+      console.error("Error confirming refund:", error);
     }
   };
   const handleViewDetails = async (orderDetails) => {
@@ -544,43 +584,64 @@ const CreateStaffRefundSupplier = () => {
       render: (text, record) =>
         (record.orderType === 0 && record.reservationMoney > 0) ||
         record.orderStatus === 2 ? (
-          <Button
-            type="primary"
-            onClick={() =>
-              handleRefund(record.orderID, record.orderStatus, record.orderType)
-            }
-          >
-            Thanh toán cho nhà cung cấp
-          </Button>
+          <Space size="small">
+            <Button
+              type="primary"
+              onClick={() =>
+                handleRefund(
+                  record.orderID,
+                  record.orderStatus,
+                  record.orderType
+                )
+              }
+            >
+              Thanh toán cho nhà cung cấp
+            </Button>
+            {record.orderStatus === 2 && ( // Only show confirm button for status 9
+              <Button
+                type="default"
+                onClick={() => {
+                  Modal.confirm({
+                    title: "Xác nhận hoàn tiền",
+                    content:
+                      "Bạn có chắc chắn muốn xác nhận đã hoàn tiền thành công?",
+                    okText: "Xác nhận",
+                    cancelText: "Hủy",
+                    onOk: () => handleConfirmRefund(record.orderID),
+                  });
+                }}
+              >
+                Xác nhận hoàn tiền
+              </Button>
+            )}
+          </Space>
         ) : null,
     },
     {
       title: "Hình ảnh giao dịch",
       key: "upload",
       render: (text, record) => (
-        <div>
+        <Space size="small">
           <Upload
             name="img"
+            showUploadList={false}
             beforeUpload={(file) => {
-              setSelectedOrderId(record.orderID);
-              handleUpload(file);
+              handleUpload(file, record.orderID);
               return false;
             }}
-            showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>Upload Image</Button>
+            <Button icon={<UploadOutlined />} size="small" loading={uploading}>
+              Upload
+            </Button>
           </Upload>
-          {imageUrls[record.orderID] && (
-            <img
-              src={imageUrls[record.orderID]}
-              alt="Transaction"
-              style={{ width: "100px", marginTop: "10px" }}
-            />
-          )}
-          <Button type="link" onClick={() => handleViewImage(record.orderID)}>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleViewImage(record.orderID)}
+          >
             Xem
           </Button>
-        </div>
+        </Space>
       ),
     },
   ];

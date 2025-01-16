@@ -10,6 +10,7 @@ import {
   Breadcrumb,
   Button,
   Card,
+  Image,
   Input,
   message,
   Modal,
@@ -224,31 +225,76 @@ const CreateStaffRefundMember = () => {
         setSelectedOrderId(response.result.orderId);
         Modal.success({
           title: "Thông tin hoàn tiền",
+          width: 600,
           content: (
-            <div>
-              <p>Ngân hàng: {response.result.bankName}</p>
-              <p>Số tài khoản: {response.result.accountNumber}</p>
-              <p>Chủ tài khoản: {response.result.accountHolder}</p>
-              <p>Mã đơn hàng: {response.result.orderId}</p>
-              <p>
-                Tổng số tiền:
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(response.result.refundAmount)}
-              </p>
-              <Upload
-                name="img"
-                beforeUpload={(file) => {
-                  handleUpload(file, response.result.orderId);
-                  return false;
-                }}
-                showUploadList={false}
-              >
-                <Button icon={<UploadOutlined />}>Upload Image</Button>
-              </Upload>
+            <div className="refund-info">
+              <div className="info-section">
+                <div className="info-row">
+                  <span className="label">Ngân hàng:</span>
+                  <span className="value">{response.result.bankName}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Số tài khoản:</span>
+                  <span className="value">{response.result.accountNumber}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Chủ tài khoản:</span>
+                  <span className="value">{response.result.accountHolder}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Mã đơn hàng:</span>
+                  <span className="value">{response.result.orderId}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Tổng số tiền:</span>
+                  <span className="value">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(response.result.refundAmount)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="upload-section">
+                <Upload
+                  name="img"
+                  listType="picture-card"
+                  showUploadList={{
+                    showPreviewIcon: true,
+                    showRemoveIcon: true,
+                    showDownloadIcon: false,
+                  }}
+                  beforeUpload={(file) => {
+                    handleUpload(file, response.result.orderId);
+                    return false;
+                  }}
+                  maxCount={1}
+                  onPreview={(file) => {
+                    Modal.info({
+                      title: "Xem hình ảnh",
+                      width: 800,
+                      centered: true,
+                      content: (
+                        <Image
+                          alt="preview"
+                          style={{ width: "100%" }}
+                          src={file.thumbUrl || file.url}
+                        />
+                      ),
+                    });
+                  }}
+                >
+                  <div>
+                    <UploadOutlined />
+                    <div style={{ marginTop: 8 }}>Tải lên hình ảnh</div>
+                  </div>
+                </Upload>
+              </div>
             </div>
           ),
+          className: "refund-modal",
+          style: { top: 20 },
         });
       } else {
         message.error("Không thể khởi tạo thanh toán.");
@@ -278,10 +324,14 @@ const CreateStaffRefundMember = () => {
         }));
         fetchOrders(); // Refresh the orders list
       } else {
-        message.error("Failed to upload image: " + (response.messages || "Unknown error"));
+        message.error(
+          "Failed to upload image: " + (response.messages || "Unknown error")
+        );
       }
     } catch (error) {
-      message.error("Error uploading image: " + (error.message || "Unknown error"));
+      message.error(
+        "Error uploading image: " + (error.message || "Unknown error")
+      );
       console.error("Error uploading image:", error);
     } finally {
       setUploading(false);
@@ -310,40 +360,60 @@ const CreateStaffRefundMember = () => {
     }
   };
 
+  const handleConfirmRefund = async (orderId) => {
+    try {
+      const response = await updateOrderStatusRefund(orderId);
+      if (response.isSuccess) {
+        message.success("Xác nhận hoàn tiền thành công");
+        fetchOrders(); // Refresh the table data
+      } else {
+        message.error("Không thể xác nhận hoàn tiền: " + (response.messages || "Lỗi không xác định"));
+      }
+    } catch (error) {
+      message.error("Lỗi khi xác nhận hoàn tiền: " + (error.message || "Lỗi không xác định"));
+      console.error("Error confirming refund:", error);
+    }
+  };
+
   const handleViewImage = async (orderID) => {
     try {
       const response = await getTransactionImage(orderID);
       if (response.isSuccess && response.result) {
-        // Create URL from base64 string if response is in base64
-        const imageUrl = response.result.startsWith('data:image') 
-          ? response.result 
-          : `data:image/jpeg;base64,${response.result}`;
-          
+        // Use the URL directly from the response
+        const imageUrl = response.result;
+
         Modal.info({
-          title: "Hình ảnh giao dịch",
+          title: `Hình ảnh giao dịch - Mã đơn hàng: ${orderID}`,
           width: 800,
           centered: true,
+          maskClosable: true,
           content: (
-            <div style={{ textAlign: 'center' }}>
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+                marginBottom: "20px",
+              }}
+            >
               <img
                 src={imageUrl}
-                alt="Transaction"
-                style={{ 
-                  maxWidth: '100%',
-                  maxHeight: '70vh',
-                  objectFit: 'contain',
-                  marginBottom: '10px' 
+                alt={`Transaction ${orderID}`}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "70vh",
+                  objectFit: "contain",
                 }}
                 onError={(e) => {
-                  message.error("Error loading image");
-                  e.target.src = "error-image-url"; // You can add a fallback image
+                  message.error("Không thể tải hình ảnh");
+                  e.target.style.display = "none";
                 }}
               />
             </div>
           ),
+          onOk() {},
         });
       } else {
-        message.error("Không có hình ảnh cho giao dịch này");
+        message.warning("Không có hình ảnh cho giao dịch này");
       }
     } catch (error) {
       console.error("Error fetching transaction image:", error);
@@ -462,6 +532,20 @@ const CreateStaffRefundMember = () => {
       ...getColumnSearchProps("orderID"),
       sorter: (a, b) => a.orderID - b.orderID,
       sortOrder: sortedInfo.columnKey === "orderID" && sortedInfo.order,
+      render: (orderID) => (
+        <Space>
+          {orderID}
+          <Button
+            type="link"
+            size="small"
+            icon={<FileSearchOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewImage(orderID);
+            }}
+          />
+        </Space>
+      ),
     },
     {
       title: "Mã TK",
@@ -633,24 +717,47 @@ const CreateStaffRefundMember = () => {
     {
       title: "Hành động",
       key: "action",
-      width: 100,
-      render: (text, record) =>
-        ((record.orderStatus === 11 &&
-          record.isPayment &&
-          record.orderType === 1) ||
-          (record.orderStatus === 7 &&
+      width: 200,
+      render: (text, record) => (
+        <Space size="small">
+          {/* Existing refund button */}
+          {((record.orderStatus === 11 &&
             record.isPayment &&
-            record.orderType === 1)) && (
-          <Button
-            type="primary"
-            size="small"
-            onClick={() =>
-              handleRefund(record.orderID, record.orderStatus, record.orderType)
-            }
-          >
-            Hoàn tiền
-          </Button>
-        ),
+            record.orderType === 1) ||
+            (record.orderStatus === 7 &&
+              record.isPayment &&
+              record.orderType === 1)) && (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() =>
+                handleRefund(record.orderID, record.orderStatus, record.orderType)
+              }
+            >
+              Hoàn tiền
+            </Button>
+          )}
+          
+          {/* Add new confirm button for status 9 */}
+          {record.orderStatus === 9 && (
+            <Button
+              type="default"
+              size="small"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận hoàn tiền',
+                  content: 'Bạn có chắc chắn muốn xác nhận đã hoàn tiền thành công?',
+                  okText: 'Xác nhận',
+                  cancelText: 'Hủy',
+                  onOk: () => handleConfirmRefund(record.orderID)
+                });
+              }}
+            >
+              Xác nhận hoàn tiền
+            </Button>
+          )}
+        </Space>
+      ),
     },
     {
       title: "Cập nhật",
@@ -664,7 +771,7 @@ const CreateStaffRefundMember = () => {
             size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 0)}
           >
-           Xử lí giao dịch cho NCC
+            Xử lí giao dịch Cho khách
           </Button>
         ) : record.orderStatus === 9 && record.orderType === 1 ? (
           <Button
@@ -923,6 +1030,62 @@ const CreateStaffRefundMember = () => {
           display: flex;
           align-items: center;
           gap: 4px;
+        }
+
+        :global(.refund-info) {
+          padding: 20px;
+        }
+
+        :global(.info-section) {
+          margin-bottom: 24px;
+          background: #f8f9fa;
+          padding: 16px;
+          border-radius: 8px;
+        }
+
+        :global(.info-row) {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          padding: 8px 0;
+          border-bottom: 1px dashed #e8e8e8;
+        }
+
+        :global(.info-row:last-child) {
+          border-bottom: none;
+          margin-bottom: 0;
+        }
+
+        :global(.label) {
+          font-weight: 500;
+          color: #666;
+        }
+
+        :global(.value) {
+          color: #1890ff;
+          font-weight: 500;
+        }
+
+        :global(.upload-section) {
+          text-align: center;
+        }
+
+        :global(.ant-upload-list-picture-card .ant-upload-list-item) {
+          padding: 0;
+        }
+
+        :global(.ant-upload.ant-upload-select-picture-card) {
+          width: 100%;
+          margin-bottom: 0;
+        }
+
+        :global(.ant-modal-body) {
+          padding: 0;
+        }
+
+        :global(.ant-upload-list-picture-card-container) {
+          width: 100%;
+          height: 200px;
         }
       `}</style>
     </div>

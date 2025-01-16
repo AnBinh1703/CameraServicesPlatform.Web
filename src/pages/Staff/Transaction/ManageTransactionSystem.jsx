@@ -16,7 +16,7 @@ const ManageTransactionSystem = () => {
     {
       key: "2",
 
-      label: "Danh Sách Giao Dịch Hoàn Trả",
+      label: "Danh Sách Giao Dịch NCC",
       children: <HistoryTransactionList refresh={refreshList} />,
     },
     {

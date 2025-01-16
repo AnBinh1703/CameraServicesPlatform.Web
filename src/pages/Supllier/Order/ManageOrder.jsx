@@ -27,9 +27,7 @@ import {
   getMonthOrderCostStatisticsBySupplier,
   getSupplierOrderStatistics,
 } from "../../../api/dashboardApi";
-import OrderBuyListBySuplier from "../Order/OrderBuy/OrderBuyListBySuplier";
 import OrderListBySuplier from "../Order/OrderListBySuplier";
-import OrderRentListBySuplier from "../Order/OrderRent/OrderRentListBySuplier";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -82,7 +80,11 @@ const ManageOrder = () => {
               formattedStartDate,
               formattedEndDate
             ),
-            getSupplierOrderStatistics(supplierId, formattedStartDate, formattedEndDate),
+            getSupplierOrderStatistics(
+              supplierId,
+              formattedStartDate,
+              formattedEndDate
+            ),
             getCalculateTotalRevenueBySupplier(supplierId),
           ]);
 
@@ -94,7 +96,9 @@ const ManageOrder = () => {
           totalRevenue: totalRevenue?.result || 0,
         });
       } catch (error) {
-        message.error("Lỗi khi tải dữ liệu thống kê: " + (error.message || "Unknown error"));
+        message.error(
+          "Lỗi khi tải dữ liệu thống kê: " + (error.message || "Unknown error")
+        );
       } finally {
         setLoading(false);
       }
@@ -147,26 +151,26 @@ const ManageOrder = () => {
       ),
       children: <OrderListBySuplier refresh={refreshList} />,
     },
-    {
-      key: "2",
-      label: (
-        <span className="font-medium text-lg text-gray-700 flex items-center">
-          <DollarOutlined className="mr-2" />
-          Danh sách đơn hàng mua
-        </span>
-      ),
-      children: <OrderBuyListBySuplier refresh={refreshList} />,
-    },
-    {
-      key: "3",
-      label: (
-        <span className="font-medium text-lg text-gray-700 flex items-center">
-          <FileDoneOutlined className="mr-2" />
-          Danh sách đơn hàng thuê
-        </span>
-      ),
-      children: <OrderRentListBySuplier refresh={refreshList} />,
-    },
+    // {
+    //   key: "2",
+    //   label: (
+    //     <span className="font-medium text-lg text-gray-700 flex items-center">
+    //       <DollarOutlined className="mr-2" />
+    //       Danh sách đơn hàng mua
+    //     </span>
+    //   ),
+    //   children: <OrderBuyListBySuplier refresh={refreshList} />,
+    // },
+    // {
+    //   key: "3",
+    //   label: (
+    //     <span className="font-medium text-lg text-gray-700 flex items-center">
+    //       <FileDoneOutlined className="mr-2" />
+    //       Danh sách đơn hàng thuê
+    //     </span>
+    //   ),
+    //   children: <OrderRentListBySuplier refresh={refreshList} />,
+    // },
   ];
 
   const handleDateChange = (dates) => {
