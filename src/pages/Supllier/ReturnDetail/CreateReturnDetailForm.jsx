@@ -51,7 +51,7 @@ const CreateReturnDetailForm = ({ orderID, onSuccess }) => {
       </Form.Item>
       <Form.Item
         name="penaltyApplied"
-        label="Phạt áp dụng"
+        label="Phụ thu"
         rules={[
           { required: true, message: "Vui lòng nhập số tiền phạt áp dụng" },
         ]}

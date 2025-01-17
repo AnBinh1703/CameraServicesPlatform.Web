@@ -2,7 +2,6 @@ import { Modal } from "antd";
 import React from "react";
 import ContractOrder from "../../Contract/ContractOrder";
 import TrackingOrder from "../TrackingOrder";
-
 const OrderBothModals = ({
   selectedOrder,
   isTrackingModalVisible,
@@ -13,7 +12,7 @@ const OrderBothModals = ({
 }) => (
   <>
     <Modal
-      title="Theo dõi đơn hàng"
+      title="Theo dõi đơn hàng "
       open={isTrackingModalVisible}
       onCancel={handleCloseTrackingModal}
       footer={null}

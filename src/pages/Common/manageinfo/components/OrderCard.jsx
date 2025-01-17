@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllExtendsByOrderId } from "../../../../api/extendApi";
 import { cancelOrder } from "../../../../api/orderApi";
-import { getProductReportByProductId } from "../../../../api/productReportApi";
+import { getProductReportByAccountId } from "../../../../api/productReportApi"; // Updated import
 import { formatDateTime, formatPrice } from "../utils/orderUtils";
 import ReportRatingDialog from "./ReportRatingDialog";
 
@@ -67,15 +67,14 @@ const OrderCard = ({
   };
 
   const loadProductReports = async () => {
-    const productIds = order.orderDetails.map((detail) => detail.productID);
-    const reports = await Promise.all(
-      productIds.map((id) => getProductReportByProductId(id))
-    );
-    const validReports = reports
-      .filter((r) => r?.isSuccess)
-      .flatMap((r) => r.result)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setProductReports(validReports);
+    const accountId = user.id; // Assuming user ID is available
+    const response = await getProductReportByAccountId(accountId);
+    if (response?.isSuccess) {
+      const validReports = response.result.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setProductReports(validReports);
+    }
   };
 
   const handleCancelOrder = async () => {
@@ -565,7 +564,8 @@ const OrderCard = ({
         {(order.orderStatus === 7 ||
           order.orderStatus === 10 ||
           order.orderStatus === 11 ||
-          order.orderStatus === 2) && (
+          order.orderStatus === 2 ||
+          (order.orderStatus === 4 && order.orderType == 0)) && (
           <>
             <button
               onClick={() => setShowReportDialog(true)}

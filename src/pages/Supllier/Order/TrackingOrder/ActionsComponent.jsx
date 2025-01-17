@@ -106,8 +106,8 @@ const ActionsComponent = ({
           Giao hàng
         </Button>
       )}
-      {(order.orderStatus === 4 ||
-        order.orderStatus === 12 ||
+      {((order.orderStatus === 4 && order.orderType === 1) ||
+        (order.orderStatus === 12 && order.orderType === 1) ||
         (order.orderStatus === 3 && order.orderType === 1)) && (
         <Button
           type="primary"
@@ -115,7 +115,7 @@ const ActionsComponent = ({
           className="ml-2"
           style={{ marginRight: 8, marginBottom: 8 }}
         >
-          Trả hàng 
+          Trả hàng
         </Button>
       )}
       <Modal
@@ -129,7 +129,8 @@ const ActionsComponent = ({
           onSuccess={() => setShowReturnDetailForm(false)}
         />
       </Modal>
-      {(order.orderStatus === 4 || returnInitiated) && (
+      {((order.orderStatus === 4 && order.orderType === 1) ||
+        returnInitiated) && (
         <Button
           type="primary"
           onClick={() => showConfirm("complete", order.orderID)}
@@ -140,7 +141,8 @@ const ActionsComponent = ({
           Kết thúc đơn thuê
         </Button>
       )}
-      {(order.orderStatus === 4 || returnInitiated) && (
+      {((order.orderStatus === 4 && order.orderType === 1) ||
+        returnInitiated) && (
         <Button
           type="primary"
           onClick={() => showConfirm("pending-refund", order.orderID)}
@@ -151,17 +153,18 @@ const ActionsComponent = ({
           Gửi yêu cầu hoàn tiền cho hệ thống
         </Button>
       )}
-      {order.orderStatus === 7 && (
-        <Button
-          type="primary"
-          onClick={() => showConfirm("pending-refund", order.orderID)}
-          className="ml-2"
-          icon={<CheckCircleOutlined />}
-          style={{ marginRight: 8, marginBottom: 8 }}
-        >
-          Gửi yêu cầu hoàn tiền cho hệ thống
-        </Button>
-      )}
+      {order.orderStatus === 7 &&
+        order.pay(
+          <Button
+            type="primary"
+            onClick={() => showConfirm("pending-refund", order.orderID)}
+            className="ml-2"
+            icon={<CheckCircleOutlined />}
+            style={{ marginRight: 8, marginBottom: 8 }}
+          >
+            Gửi yêu cầu hoàn tiền cho hệ thống
+          </Button>
+        )}
       {order.orderStatus === 1 &&
         order.deliveriesMethod === 0 &&
         order.orderType === 1 && (
@@ -175,7 +178,7 @@ const ActionsComponent = ({
             Khách đã đến nhận hàng
           </Button>
         )}
-      {order.orderStatus === 1 && (
+      {order.orderStatus === 1 && order.orderType === 1 && (
         <Upload
           customRequest={({ file }) => handleBeforeUpload(file)}
           showUploadList={false}

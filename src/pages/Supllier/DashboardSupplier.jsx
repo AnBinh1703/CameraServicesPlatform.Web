@@ -44,7 +44,6 @@ import {
 } from "../../api/dashboardApi";
 import { getSupplierById, updateSupplier } from "../../api/supplierApi";
 import ComboCarousel from "./DashboardComponent/ComboCarousel";
-import OrderCostStatisticsTable from "./DashboardComponent/OrderCostStatisticsTable";
 import OrderStatisticsTable from "./DashboardComponent/OrderStatisticsTable";
 import ProductStatisticsTable from "./DashboardComponent/ProductStatisticsTable";
 import RevenueCard from "./DashboardComponent/RevenueCard";
@@ -486,12 +485,7 @@ const DashboardSupplier = () => {
               totalDuration={totalDuration}
             />
           </Col>
-          <Col xs={24} lg={12}>
-            <OrderCostStatisticsTable
-              orderCostStatistics={statistics.orderCosts}
-            />
-          </Col>
-          <Col xs={24} lg={12}>
+          <Col xs={24}>
             <ProductStatisticsTable
               productStatistics={statistics.productStats}
             />

@@ -1,6 +1,7 @@
-import { Button, Table, Tag } from "antd";
+import { Button, Modal, Table, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
+import { getReturnDetailByOrderId } from "../../../../api/returnDetailApi"; // Ensure to import your api instance
 import {
   deliveryStatusMap,
   orderStatusMap,
@@ -19,6 +20,9 @@ const OrderBothTable = ({
   setContractModalVisible,
 }) => {
   const [filteredOrders, setFilteredOrders] = useState(orders);
+  const [returnDetail, setReturnDetail] = useState(null);
+  const [returnDetailModalVisible, setReturnDetailModalVisible] =
+    useState(false); // Add this line
 
   const handleSearch = (searchText) => {
     const filtered = orders.filter((order) =>
@@ -130,16 +134,35 @@ const OrderBothTable = ({
             Theo dõi đơn hàng
           </Button>
           {record.orderType === 1 && (
-            <Button
-              type="default"
-              onClick={() => {
-                setSelectedOrder(record);
-                setContractModalVisible(true);
-              }}
-              style={{ marginLeft: 8 }}
-            >
-              Hợp đồng
-            </Button>
+            <>
+              <Button
+                type="default"
+                onClick={() => {
+                  setSelectedOrder(record);
+                  setContractModalVisible(true);
+                }}
+                style={{ marginLeft: 8 }}
+              >
+                Hợp đồng
+              </Button>
+              {(record.orderStatus === 11 || record.orderStatus === 10) && (
+                <Button
+                  type="default"
+                  onClick={async () => {
+                    const returnDetail = await getReturnDetailByOrderId(
+                      record.orderID
+                    );
+                    if (returnDetail) {
+                      setReturnDetail(returnDetail.result);
+                      setReturnDetailModalVisible(true);
+                    }
+                  }}
+                  style={{ marginLeft: 8 }}
+                >
+                  Chi tiết trả hàng
+                </Button>
+              )}
+            </>
           )}
         </>
       ),
@@ -167,6 +190,39 @@ const OrderBothTable = ({
           },
         }}
       />
+      <Modal
+        title="Chi tiết trả hàng"
+        visible={returnDetailModalVisible}
+        onCancel={() => setReturnDetailModalVisible(false)}
+        footer={null}
+      >
+        {returnDetail && (
+          <div>
+            <p>Mã trả hàng: {returnDetail.returnID}</p>
+            <p>Mã đơn hàng: {returnDetail.orderID}</p>
+            <p>
+              Ngày trả hàng:{" "}
+              {moment(returnDetail.returnDate).format("DD/MM/YYYY HH:mm:ss")}
+            </p>
+            <p>Tình trạng: {returnDetail.condition}</p>
+            <p>
+              Phạt áp dụng:{" "}
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(returnDetail.penaltyApplied)}
+            </p>
+            <p>
+              Ngày tạo:{" "}
+              {moment(returnDetail.createdAt).format("DD/MM/YYYY HH:mm:ss")}
+            </p>
+            <p>
+              Ngày cập nhật:{" "}
+              {moment(returnDetail.updatedAt).format("DD/MM/YYYY HH:mm:ss")}
+            </p>
+          </div>
+        )}
+      </Modal>
     </>
   );
 };

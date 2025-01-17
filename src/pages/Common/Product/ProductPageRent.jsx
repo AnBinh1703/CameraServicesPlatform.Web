@@ -147,7 +147,9 @@ const ProductPageRent = () => {
     setCurrentPage(page);
   };
 
-  const availableProducts = products.filter((product) => product.status === 1);
+  const availableProducts = products.filter(
+    (product) => product.status === 1 && product.contractTemplateID != null
+  );
 
   return (
     <Layout>

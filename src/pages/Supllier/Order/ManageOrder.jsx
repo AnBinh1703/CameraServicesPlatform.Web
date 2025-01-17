@@ -1,25 +1,7 @@
-import {
-  DollarOutlined,
-  DownOutlined,
-  FileDoneOutlined,
-  ReloadOutlined,
-  ShoppingCartOutlined,
-  UpOutlined,
-} from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Col,
-  DatePicker,
-  message,
-  Row,
-  Space,
-  Table,
-  Tabs,
-  Typography,
-} from "antd";
+import { ShoppingCartOutlined } from "@ant-design/icons";
+import { Card, DatePicker, message, Row, Space, Tabs, Typography } from "antd";
 import dayjs from "dayjs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
 import {
@@ -88,9 +70,9 @@ const ManageOrder = () => {
             getCalculateTotalRevenueBySupplier(supplierId),
           ]);
 
-        console.log('Order Cost Statistics:', orderCostStatistics);
-        console.log('Order Statistics:', orderStatistics);
-        console.log('Total Revenue:', totalRevenue);
+        console.log("Order Cost Statistics:", orderCostStatistics);
+        console.log("Order Statistics:", orderStatistics);
+        console.log("Total Revenue:", totalRevenue);
 
         setData({
           orderCostStatistics: Array.isArray(orderCostStatistics?.result)
@@ -100,7 +82,7 @@ const ManageOrder = () => {
           totalRevenue: totalRevenue?.result || 0,
         });
 
-        console.log('Final Data State:', {
+        console.log("Final Data State:", {
           orderCostStatistics: Array.isArray(orderCostStatistics?.result)
             ? orderCostStatistics.result
             : [],
@@ -108,7 +90,7 @@ const ManageOrder = () => {
           totalRevenue: totalRevenue?.result || 0,
         });
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
         message.error(
           "Lỗi khi tải dữ liệu thống kê: " + (error.message || "Unknown error")
         );
@@ -132,26 +114,6 @@ const ManageOrder = () => {
       currency: "VND",
     }).format(value);
   };
-
-  const orderCostColumns = useMemo(
-    () => [
-      {
-        title: "Tháng",
-        dataIndex: "month",
-        key: "month",
-        render: (text) => dayjs(text).format("MM/YYYY"),
-        sorter: (a, b) => dayjs(a.month).unix() - dayjs(b.month).unix(),
-      },
-      {
-        title: "Tổng Chi Phí",
-        dataIndex: "totalCost",
-        key: "totalCost",
-        render: (text) => formatCurrency(text),
-        sorter: (a, b) => a.totalCost - b.totalCost,
-      },
-    ],
-    []
-  );
 
   const tabItems = [
     {
@@ -207,109 +169,14 @@ const ManageOrder = () => {
     }));
   };
 
-  const summaryItems = [
-    {
-      title: "Tổng Doanh Thu",
-      value: formatCurrency(data.totalRevenue),
-      icon: <DollarOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Tổng Đơn Hàng",
-      value: data.orderStatistics.totalOrders,
-      icon: <ShoppingCartOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Chờ Xử Lý",
-      value: data.orderStatistics.pendingOrders,
-      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Đã Đặt",
-      value: data.orderStatistics.placedOrders,
-      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Được Duyệt",
-      value: data.orderStatistics.approvedOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Đang Giao",
-      value: data.orderStatistics.shippedOrders,
-      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hoàn Thành",
-      value: data.orderStatistics.completedOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Thanh Toán",
-      value: data.orderStatistics.paymentOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Thanh Toán Thất Bại",
-      value: data.orderStatistics.paymentFailOrders,
-      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Yêu Cầu Hủy",
-      value: data.orderStatistics.cancelingOrders,
-      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Đã Hủy",
-      value: data.orderStatistics.canceledOrders,
-      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Chờ Hoàn Tiền",
-      value: data.orderStatistics.pendingRefundOrders,
-      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Đã Hoàn Tiền",
-      value: data.orderStatistics.refundOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hoàn Trả Cọc",
-      value: data.orderStatistics.depositReturnOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Gia Hạn",
-      value: data.orderStatistics.extendOrders,
-      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
-    },
-  ];
-
   return (
     <div className="p-6 bg-gradient-to-tr from-blue-100 to-white rounded-2xl shadow-lg max-w-8xl mx-auto">
       <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
         TRANG QUẢN LÍ ĐƠN HÀNG
       </h1>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <div className="flex justify-between items-center">
-          <RangePicker
-            onChange={handleDateChange}
-            defaultValue={[startDate, endDate]}
-            className="rounded-md"
-            allowClear
-          />
-          <Space>
-            <Button
-              type="primary"
-              icon={<ReloadOutlined />}
-              onClick={refreshData}
-            >
-              Refresh
-            </Button>
-          </Space>
-        </div>
         <Row gutter={[8, 8]}>
-          {summaryItems.map((item) => (
+          {/* {summaryItems.map((item) => (
             <Col xs={24} sm={12} md={6} lg={3} key={item.title}>
               <Card className="summary-card" bodyStyle={{ padding: "8px" }}>
                 <div className="flex items-center space-x-2">
@@ -323,42 +190,7 @@ const ManageOrder = () => {
                 </div>
               </Card>
             </Col>
-          ))}
-        </Row>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={12}>
-            <Card
-              title={
-                <div className="flex justify-between items-center">
-                  <span>Thống Kê Chi Phí Đơn Hàng</span>
-                  <Button
-                    type="text"
-                    onClick={() => toggleCollapse("costStats")}
-                    icon={
-                      collapseStates.costStats ? (
-                        <UpOutlined />
-                      ) : (
-                        <DownOutlined />
-                      )
-                    }
-                  />
-                </div>
-              }
-              className="custom-card"
-              bordered={false}
-            >
-              {collapseStates.costStats && (
-                <Table
-                  dataSource={data.orderCostStatistics}
-                  columns={orderCostColumns}
-                  pagination={false}
-                  rowKey="month"
-                  className="custom-table"
-                />
-              )}
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}></Col>
+          ))} */}
         </Row>
 
         <Card

@@ -348,19 +348,9 @@ const TrackingOrder = ({ order, onUpdate }) => {
       borderColor: "border-yellow-300",
       textColor: "text-yellow-700",
     },
+
     {
       title: "Đang xử lý",
-      description: "Đơn hàng đang được xử lý và chuẩn bị",
-      status: 1,
-      icon: <SmileOutlined />,
-      action: "ship",
-      color: "blue",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-300",
-      textColor: "text-blue-700",
-    },
-    {
-      title: "Đang vận chuyển",
       description: "Sản phẩm đang được vận chuyển đến khách hàng",
       status: 1,
       icon: <CarOutlined />,
@@ -407,19 +397,26 @@ const TrackingOrder = ({ order, onUpdate }) => {
   ];
 
   // Filter steps based on orderType and orderStatus
-  const steps = allSteps.filter(step => {
+  const steps = allSteps.filter((step) => {
     // Check if step should be included based on orderType
-    const typeCheck = !step.forOrderType || step.forOrderType === order?.orderType;
-    
+    const typeCheck =
+      !step.forOrderType || step.forOrderType === order?.orderType;
+
     // Hide cancellation steps if status is not 6 or 7
-    const hideCancellationSteps = 
-      ['Yêu cầu hủy đơn', 'Xác nhận hủy đơn'].includes(step.title) && 
+    const hideCancellationSteps =
+      ["Yêu cầu hủy đơn", "Xác nhận hủy đơn"].includes(step.title) &&
       ![6, 7].includes(order?.orderStatus);
-    
+
     // Hide processing and later steps if order is cancelled or being cancelled
-    const hideProcessingAndLater = [6, 7].includes(order?.orderStatus) && 
-      ['Đang xử lý', 'Đang vận chuyển', 'Chờ trả hàng', 'Hoàn thành', 'Chờ hoàn tiền'].includes(step.title);
-      
+    const hideProcessingAndLater =
+      [6, 7].includes(order?.orderStatus) &&
+      [
+        "Đang xử lý",
+        "Chờ trả hàng",
+        "Hoàn thành",
+        "Chờ hoàn tiền",
+      ].includes(step.title);
+
     return typeCheck && !hideCancellationSteps && !hideProcessingAndLater;
   });
 

@@ -51,6 +51,19 @@ export const getReturnDetailById = async (returnId) => {
   }
 };
 
+// Get a return detail by Order ID
+export const getReturnDetailByOrderId = async (orderId) => {
+  try {
+    const res = await api.get(
+      `/returnDetail/get-return-detail-by-order-id?OrderId=${orderId}`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching return detail by Order ID:", err);
+    return null;
+  }
+};
+
 // Get all return details with pagination
 export const getAllReturnDetails = async (pageIndex = 1, pageSize = 100) => {
   try {
