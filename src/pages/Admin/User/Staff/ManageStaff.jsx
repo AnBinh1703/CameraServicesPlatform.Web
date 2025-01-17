@@ -1,16 +1,11 @@
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-import { Button, Space, Table } from "antd";
+import { Button, Space, Table, Modal, Form, Input, Select, message } from "antd";
 import React, { useEffect, useState } from "react";
-import {
-  getAllActiveAccounts,
-  getAllInactiveAccounts,
-  getAllStaff,
-} from "../../../../api/staffApi";
+import { getAllStaff, updateStaffById } from "../../../../api/staffApi";
 import LoadingComponent from "../../../../components/LoadingComponent/LoadingComponent";
 
 const ManageStaff = () => {
@@ -22,6 +17,9 @@ const ManageStaff = () => {
   });
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState("all"); // 'all', 'active', 'inactive'
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [form] = Form.useForm();
 
   const fetchStaff = async (page = 1, pageSize = 10) => {
     setLoading(true);
@@ -53,6 +51,37 @@ const ManageStaff = () => {
   useEffect(() => {
     fetchStaff(pagination.current, pagination.pageSize);
   }, [filterType]); // Re-fetch when filter changes
+
+  const handleEdit = (record) => {
+    setEditingStaff(record);
+    form.setFieldsValue({
+      firstName: record.firstName,
+      lastName: record.lastName,
+      phone: record.account?.phoneNumber,
+      email: record.account?.email,
+      gender: record.account?.gender,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleUpdate = async (values) => {
+    try {
+      const response = await updateStaffById(editingStaff.staffID, {
+        ...values,
+        staffID: editingStaff.staffID,
+      });
+
+      if (response?.isSuccess) {
+        message.success("Cập nhật nhân viên thành công");
+        setEditModalVisible(false);
+        fetchStaff(pagination.current, pagination.pageSize);
+      } else {
+        message.error(response?.messages?.[0] || "Cập nhật thất bại");
+      }
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi cập nhật");
+    }
+  };
 
   const columns = [
     {
@@ -133,11 +162,12 @@ const ManageStaff = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Button type="primary" icon={<EditOutlined />}>
+          <Button 
+            type="primary" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEdit(record)}
+          >
             Sửa
-          </Button>
-          <Button danger icon={<DeleteOutlined />}>
-            Xóa
           </Button>
         </Space>
       ),
@@ -173,24 +203,6 @@ const ManageStaff = () => {
           >
             Tất cả nhân viên
           </Button>
-          <Button
-            type={filterType === "active" ? "primary" : "default"}
-            onClick={() => handleFilterChange("active")}
-            size="large"
-            icon={<CheckCircleOutlined />}
-            className="min-w-[150px]"
-          >
-            Đang hoạt động
-          </Button>
-          <Button
-            type={filterType === "inactive" ? "primary" : "default"}
-            onClick={() => handleFilterChange("inactive")}
-            size="large"
-            icon={<CloseCircleOutlined />}
-            className="min-w-[150px]"
-          >
-            Ngưng hoạt động
-          </Button>
         </Space>
       </div>
 
@@ -211,6 +223,48 @@ const ManageStaff = () => {
           scroll={{ x: "max-content" }}
         />
       </div>
+      <Modal
+        title="Chỉnh sửa thông tin nhân viên"
+        open={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          onFinish={handleUpdate}
+          layout="vertical"
+        >
+          <Form.Item
+            name="firstName"
+            label="Tên"
+            rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="lastName"
+            label="Họ"
+            rules={[{ required: true, message: 'Vui lòng nhập họ' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="gender"
+            label="Giới tính"
+          >
+            <Select>
+              <Select.Option value={0}>Nam</Select.Option>
+              <Select.Option value={1}>Nữ</Select.Option>
+              <Select.Option value={2}>Khác</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Cập nhật
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

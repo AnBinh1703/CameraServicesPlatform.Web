@@ -33,10 +33,7 @@ const PersonalPage = () => {
       title: "Chọn Gói",
       content: "Chọn gói dịch vụ",
     },
-    {
-      title: "Chọn thời gian",
-      content: "Chọn thời gian bắt đầu",
-    },
+
     {
       title: "Xác nhận",
       content: "Xác nhận thông tin",

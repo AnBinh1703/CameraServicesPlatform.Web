@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
@@ -18,8 +18,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   createProductVoucher,
-  deleteProductVoucher,
-  getAllProductVouchers,
+  getProductVoucherBySupplierId,
   updateProductVoucher,
 } from "../../../api/ProductVoucherApi";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
@@ -27,7 +26,7 @@ import {
   getProductById,
   getProductBySupplierId,
 } from "../../../api/productApi";
-import { getAllVouchers, getVoucherById } from "../../../api/voucherApi";
+import { getVoucherById, getVouchersBySupplierId } from "../../../api/voucherApi";
 import LoadingComponent from "../../../components/LoadingComponent/LoadingComponent";
 
 dayjs.extend(customParseFormat);
@@ -53,9 +52,11 @@ const ProductVoucher = () => {
   const [total, setTotal] = useState(1);
 
   const fetchProductVouchers = async () => {
+    if (!supplierId) return;
+    
     setLoading(true);
     try {
-      const result = await getAllProductVouchers();
+      const result = await getProductVoucherBySupplierId(supplierId, pageIndex, pageSize);
       if (result && result.isSuccess) {
         const vouchersWithDetails = await Promise.all(
           result.result.map(async (voucher) => {
@@ -132,13 +133,18 @@ const ProductVoucher = () => {
   };
   useEffect(() => {
     if (supplierId) {
+      fetchProductVouchers();
       fetchProducts();
+      fetchVouchers();
     }
   }, [supplierId, pageIndex, pageSize]);
+
   const fetchVouchers = async () => {
+    if (!supplierId) return;
+    
     setLoading(true);
     try {
-      const response = await getAllVouchers(1, 100);
+      const response = await getVouchersBySupplierId(supplierId, 1, 100);
       if (response && response.result) {
         const filteredVouchers = response.result.filter((voucher) =>
           dayjs(voucher.expirationDate).isAfter(dayjs())
@@ -151,31 +157,6 @@ const ProductVoucher = () => {
       message.error("Lấy dữ liệu voucher thất bại.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProductVouchers();
-    fetchProducts();
-    fetchVouchers();
-  }, []);
-
-  const handleDelete = async (voucherId) => {
-    const confirm = window.confirm(
-      "Bạn có chắc muốn xóa voucher sản phẩm này không?"
-    );
-    if (confirm) {
-      try {
-        const result = await deleteProductVoucher(voucherId);
-        if (result) {
-          message.success("Xóa voucher sản phẩm thành công!");
-          fetchProductVouchers();
-        } else {
-          message.error("Xóa voucher sản phẩm thất bại.");
-        }
-      } catch (error) {
-        message.error("Đã xảy ra lỗi khi xóa voucher sản phẩm.");
-      }
     }
   };
 
@@ -288,13 +269,6 @@ const ProductVoucher = () => {
           >
             Sửa
           </Button>
-          <Button
-            onClick={() => handleDelete(record.productVoucherID)}
-            danger
-            icon={<DeleteOutlined />}
-          >
-            Xóa
-          </Button>
         </div>
       ),
     },
@@ -303,7 +277,7 @@ const ProductVoucher = () => {
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <Title level={2} className="text-center mb-4 text-blue-500">
-        Voucher Sản Phẩm
+        Voucher Sản Phẩm Nhà Cung Cấp
       </Title>
       <Button
         type="primary"

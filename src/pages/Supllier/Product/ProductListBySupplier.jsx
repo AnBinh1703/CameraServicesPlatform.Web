@@ -1,4 +1,3 @@
-import { createContractTemplate } from "../../../api/contractTemplateApi"; // Add this import
 import {
   EditOutlined,
   EyeOutlined,
@@ -19,13 +18,14 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getSupplierIdByAccountId } from "../../../api/accountApi";
 import { getCategoryById } from "../../../api/categoryApi"; // Import the API for fetching category by ID
+import { createContractTemplate } from "../../../api/contractTemplateApi"; // Add this import
 import {
   getProductById,
   getProductBySupplierId,
 } from "../../../api/productApi";
 import ContractTemplateFields from "../../../components/ContractTemplateFields"; // **Added Import**
 import { getBrandName } from "../../../utils/constant";
-import CreateProduct from "./CreateProduct/";
+import CreateProduct from "./CreateProduct";
 import DetailProduct from "./DetailProduct";
 import EditProductForm from "./EditProductForm";
 
@@ -481,7 +481,6 @@ const ProductListBySupplier = () => {
         >
           Thêm sản phẩm
         </Button>
-        
       </div>
 
       {loading ? (

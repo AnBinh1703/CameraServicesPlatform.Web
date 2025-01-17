@@ -11,9 +11,8 @@ const reportTypeMap = {
 
 const statusMap = {
   0: { text: "Chờ xử lý", color: "yellow" },
-  1: { text: "Đang xử lý", color: "blue" },
-  2: { text: "Đã xử lý", color: "green" },
-  3: { text: "Từ chối", color: "red" },
+  1: { text: "Đã xử lý", color: "green" },
+  2: { text: "Từ chối", color: "red" },
 };
 
 const CreateReportSystemForm = () => {
@@ -86,6 +85,13 @@ const CreateReportSystemForm = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === "0001-01-01T00:00:00") {
+      return "Chưa cập nhật";
+    }
+    return new Date(dateString).toLocaleString("vi-VN");
+  };
+
   return (
     <div className="container mx-auto p-4">
       <LoadingComponent isLoading={isLoading} title="Đang xử lý..." />
@@ -143,26 +149,47 @@ const CreateReportSystemForm = () => {
       {reports.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold mb-4">Lịch sử báo cáo</h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {reports.map((report) => (
-              <div key={report.reportID} className="border-b pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-semibold">
-                      {reportTypeMap[report.reportType]}
-                    </p>
-                    <p className="text-gray-600">{report.reportDetails}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(report.reportDate).toLocaleString("vi-VN")}
-                    </p>
+              <div
+                key={report.reportID}
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-lg">
+                        {reportTypeMap[report.reportType]}
+                      </p>
+                      <p className="text-gray-600">{report.reportDetails}</p>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        statusMap[report.status].color === "yellow"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : statusMap[report.status].color === "blue"
+                          ? "bg-blue-100 text-blue-800"
+                          : statusMap[report.status].color === "green"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {statusMap[report.status].text}
+                    </span>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm bg-${
-                      statusMap[report.status].color
-                    }-100 text-${statusMap[report.status].color}-800`}
-                  >
-                    {statusMap[report.status].text}
-                  </span>
+
+                  <div className="border-t pt-2 mt-2">
+                    {report.message && (
+                      <p className="text-gray-700 mb-2">
+                        <span className="font-medium">Phản hồi:</span>{" "}
+                        {report.message}
+                      </p>
+                    )}
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <p>Mã báo cáo: {report.reportID}</p>
+                      <p>Ngày báo cáo: {formatDate(report.reportDate)}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

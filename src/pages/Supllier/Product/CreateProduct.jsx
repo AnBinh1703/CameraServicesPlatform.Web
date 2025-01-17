@@ -29,7 +29,6 @@ const { Option } = Select;
 const { Title } = Typography;
 
 const CreateProduct = () => {
-  // Removed { isRent } prop
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -130,35 +129,34 @@ const CreateProduct = () => {
       (spec) => spec.feature && spec.description
     );
 
+    // Transform specifications to array format
+    const transformedSpecifications = validSpecifications.map(
+      (spec) => spec.feature + ":" + spec.description
+    );
+
     if (!supplierId) {
       message.error("Supplier ID is missing or invalid.");
       return;
     }
 
-    // Create FormData for multipart/form-data
     const formData = new FormData();
-    formData.append("SerialNumber", values.SerialNumber);
-    formData.append("SupplierID", supplierId);
-    formData.append("CategoryID", values.CategoryID);
-    formData.append("ProductName", values.ProductName);
-    formData.append("ProductDescription", values.ProductDescription);
-    formData.append("Quality", values.Quality);
-    formData.append("Brand", values.Brand);
-    // Set Status based on productType
+
+    // Basic product info
+    formData.append("SerialNumber", values.SerialNumber || "");
+    formData.append("SupplierID", supplierId || "");
+    formData.append("CategoryID", values.CategoryID || "");
+    formData.append("ProductName", values.ProductName || "");
+    formData.append("ProductDescription", values.ProductDescription || "");
+    formData.append("Quality", values.Quality || "");
+    formData.append("Brand", values.Brand || 0);
     formData.append("Status", productType === "rent" ? 1 : 0);
-    formData.append("DateOfManufacture", values.DateOfManufacture);
-    formData.append("OriginalPrice", values.OriginalPrice);
+    formData.append("DateOfManufacture", values.DateOfManufacture || "");
+    formData.append("OriginalPrice", values.OriginalPrice || 0);
 
-    // Append specifications as a properly formatted string:string object
-    formData.append(
-      "listProductSpecification",
-      JSON.stringify(validSpecifications)
-    );
-
-    // Append file if exists
-    if (file) {
-      formData.append("File", file);
-    }
+    // Append each specification separately
+    transformedSpecifications.forEach((spec, index) => {
+      formData.append(`listProductSpecification[${index}]`, spec);
+    });
 
     if (productType === "rent") {
       // Use productType state
@@ -214,7 +212,7 @@ const CreateProduct = () => {
         form.resetFields();
         setFile(null);
         setFilePreview(null);
-        setSpecifications([{ feature: "", description: "" }]);
+        setSpecifications([{ feature: description }]);
         setSelectedVoucher(null);
       } else {
         message.error(result?.message || "Failed to create product.");
@@ -228,9 +226,6 @@ const CreateProduct = () => {
         );
       } else {
         console.error("Error when creating product:", error.message);
-        message.error(
-          "An unexpected error occurred while creating the product."
-        );
       }
     } finally {
       setLoading(false);
@@ -437,8 +432,8 @@ const CreateProduct = () => {
                 ]}
               >
                 <Select placeholder="Đánh giá chất lượng sản phẩm">
-                  <Option value={0}>Mới</Option>
-                  <Option value={1}>Đã qua sử dụng</Option>
+                  <Option value="Mới">Mới</Option>
+                  <Option value="Đã qua sử dụng">Đã qua sử dụng</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -584,7 +579,11 @@ const CreateProduct = () => {
         footer={null}
         width={800} // Increased modal width for better layout
       >
-        <ContractTemplateFields onSubmit={handleContractTemplateSubmit} />
+        <ContractTemplateFields
+          onSubmit={handleContractTemplateSubmit}
+          products={[]}
+          productID={createdProductID}
+        />
       </Modal>
     </>
   );

@@ -1,7 +1,6 @@
 import {
   AppstoreAddOutlined,
   CalendarOutlined,
-  DollarOutlined,
   EditOutlined,
   InfoCircleOutlined,
   SearchOutlined,
@@ -74,7 +73,7 @@ const ProductPageBuy = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const productData = await getAllProduct(1, 20);
+      const productData = await getAllProduct(1, 50);
       if (productData) {
         const productsWithDetails = await Promise.all(
           productData.map(async (product) => {
@@ -190,7 +189,10 @@ const ProductPageBuy = () => {
   return (
     <Layout>
       <Content style={commonStyles.pageWrapper}>
-        <Title level={2} className="text-center mb-12 text-3xl font-bold text-gray-800">
+        <Title
+          level={2}
+          className="text-center mb-12 text-3xl font-bold text-gray-800"
+        >
           <TagOutlined className="mr-3" />
           Sản Phẩm Bán
         </Title>
@@ -229,7 +231,10 @@ const ProductPageBuy = () => {
                 cover={
                   <div className="relative pt-[75%] overflow-hidden group">
                     <img
-                      src={product.listImage[0]?.image || "https://placehold.co/300x200"}
+                      src={
+                        product.listImage[0]?.image ||
+                        "https://placehold.co/300x200"
+                      }
                       alt={product.productName}
                       className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                     />
@@ -244,10 +249,12 @@ const ProductPageBuy = () => {
                   <h3 className="text-xl font-bold text-gray-800 mb-4 line-clamp-2 hover:text-blue-600 transition-colors">
                     {product.productName}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {/* Description */}
-                    <p className="text-gray-600">{product.productDescription}</p>
+                    <p className="text-gray-600">
+                      {product.productDescription}
+                    </p>
 
                     {/* Price */}
                     {product.priceBuy && (
@@ -282,7 +289,7 @@ const ProductPageBuy = () => {
                           Đánh giá: {product.rating}
                         </p>
                       </div>
-                      
+
                       <div className="mt-3 space-y-1 text-gray-600">
                         {/* Keep existing additional info */}
                         <p className="font-semibold text-left">
@@ -299,7 +306,8 @@ const ProductPageBuy = () => {
                         </p>
                         <p className="font-semibold text-left">
                           <CalendarOutlined className="inline mr-1" />
-                          Ngày tạo: {new Date(product.createdAt).toLocaleString()}
+                          Ngày tạo:{" "}
+                          {new Date(product.createdAt).toLocaleString()}
                         </p>
                         <p className="font-semibold text-left">
                           <EditOutlined className="inline mr-1" />

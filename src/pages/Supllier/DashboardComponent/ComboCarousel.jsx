@@ -99,11 +99,7 @@ const ComboCarousel = ({
     fetchSupplierId();
   }, [user?.id]);
 
-  const steps = [
-    { title: "Chọn Gói" },
-    { title: "Chọn Thời Gian" },
-    { title: "Xác Nhận" },
-  ];
+  const steps = [{ title: "Chọn Gói" }, { title: "Xác Nhận" }];
 
   const showComboModal = () => {
     setIsComboModalVisible(true);

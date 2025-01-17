@@ -12,6 +12,7 @@ import {
   getComboById,
   updateComboOfSupplier,
 } from "../../../../api/comboApi";
+import { getSupplierById } from "../../../../api/supplierApi"; // Add this import
 
 const Combo = () => {
   const [combos, setCombos] = useState([]);
@@ -20,6 +21,7 @@ const Combo = () => {
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
   const [comboDetails, setComboDetails] = useState({});
+  const [supplierDetails, setSupplierDetails] = useState({});
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -84,6 +86,24 @@ const Combo = () => {
     }
   };
 
+  const fetchSupplierDetails = async (supplierId) => {
+    try {
+      const response = await getSupplierById(supplierId);
+      if (response?.isSuccess) {
+        setSupplierDetails((prev) => ({
+          ...prev,
+          [supplierId]: response.result,
+        }));
+      }
+      console.log(
+        "Fetching supplier details",
+        response.result.items?.[0].supplierName
+      );
+    } catch (error) {
+      console.error("Failed to fetch supplier details:", error);
+    }
+  };
+
   const columns = [
     {
       title: "Mã Combo",
@@ -91,6 +111,19 @@ const Combo = () => {
       key: "comboId",
       ...getColumnSearchProps("comboId"),
       sorter: (a, b) => a.comboId.localeCompare(b.comboId),
+    },
+    {
+      title: "Tên NCC",
+      dataIndex: "supplierID",
+      key: "supplierName",
+      render: (supplierId) =>
+        supplierDetails[supplierId]?.supplierName || "Đang tải...",
+      ...getColumnSearchProps("supplierID"),
+      sorter: (a, b) => {
+        const nameA = supplierDetails[a.supplierID]?.supplierName || "";
+        const nameB = supplierDetails[b.supplierID]?.supplierName || "";
+        return nameA.localeCompare(nameB);
+      },
     },
     {
       title: "Tên Combo",
@@ -122,12 +155,12 @@ const Combo = () => {
           color={isDisable ? "success" : "error"}
           icon={isDisable ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
         >
-          {isDisable ? "Vô hiệu hóa" : "Hết Hạn"}
+          {isDisable ? "Còn hiệu lực " : "Hết Hạn"}
         </Tag>
       ),
       filters: [
         { text: "Hết Hạn", value: false },
-        { text: "Vô hiệu hóa", value: true },
+        { text: "Còn hiệu lực", value: true },
       ],
       onFilter: (value, record) => record.isDisable === value,
     },
@@ -140,8 +173,9 @@ const Combo = () => {
       console.log("Fetched combos:", response.result); // Add this line to log the data
       if (response.isSuccess) {
         setCombos(response.result || []);
-        // Fetch combo details for each combo
+        // Fetch supplier details for each combo
         response.result?.forEach((combo) => {
+          fetchSupplierDetails(combo.supplierID);
           fetchComboDetails(combo.comboId);
         });
       } else {

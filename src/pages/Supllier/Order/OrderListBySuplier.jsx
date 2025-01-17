@@ -72,8 +72,6 @@ const OrderListBySupplier = ({ refresh }) => {
               (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
             );
             setOrders(sortedOrders || []);
-          } else {
-            message.error("Lấy đơn hàng không thành công.");
           }
         } catch (err) {
           console.error("Error fetching orders:", err);

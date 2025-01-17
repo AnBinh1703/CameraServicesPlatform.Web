@@ -1,10 +1,8 @@
-import { FileTextOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
   Carousel,
   Col,
-  Descriptions,
   Input,
   Layout,
   message,
@@ -230,48 +228,57 @@ const ProductList = () => {
                   <Card
                     hoverable
                     cover={
-                      <div style={{ position: 'relative', height: 240 }}>
+                      <div style={{ position: "relative", height: 240 }}>
                         {product.listImage.length > 0 && (
                           <img
                             alt={product.productName}
                             src={product.listImage[0].image}
                             style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
                             }}
                             loading="lazy"
                           />
                         )}
                         <div
                           style={{
-                            position: 'absolute',
+                            position: "absolute",
                             top: 10,
                             right: 10,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '4px',
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "4px",
                           }}
                         >
-                          {(product.priceBuy || product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) && (
+                          {(product.priceBuy ||
+                            product.pricePerDay ||
+                            product.pricePerHour ||
+                            product.pricePerMonth ||
+                            product.pricePerWeek) && (
                             <div
                               style={{
-                                background: product.priceBuy ? '#ff4d4f' : '#1890ff',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                                color: 'white',
-                                fontSize: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                fontWeight: '500',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                border: '1px solid rgba(255,255,255,0.2)',
+                                background: product.priceBuy
+                                  ? "#ff4d4f"
+                                  : "#1890ff",
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                color: "white",
+                                fontSize: "12px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontWeight: "500",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                border: "1px solid rgba(255,255,255,0.2)",
                               }}
                             >
                               {product.priceBuy ? (
                                 <span>Chỉ bán</span>
-                              ) : (product.pricePerDay || product.pricePerHour || product.pricePerMonth || product.pricePerWeek) ? (
+                              ) : product.pricePerDay ||
+                                product.pricePerHour ||
+                                product.pricePerMonth ||
+                                product.pricePerWeek ? (
                                 <span>Chỉ cho thuê</span>
                               ) : (
                                 <span>Cho thuê & Bán</span>
@@ -281,66 +288,88 @@ const ProductList = () => {
                         </div>
                       </div>
                     }
-                    onDoubleClick={() => handleCardDoubleClick(product.productID)}
+                    onDoubleClick={() =>
+                      handleCardDoubleClick(product.productID)
+                    }
                     className="product-card"
                     style={{
-                      height: '100%',
-                      overflow: 'hidden',
+                      height: "100%",
+                      overflow: "hidden",
                     }}
-                    bodyStyle={{ padding: '16px' }}
+                    bodyStyle={{ padding: "16px" }}
                   >
                     <Card.Meta
                       title={
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center' 
-                        }}>
-                          <Typography.Title level={5} ellipsis style={{ margin: 0, maxWidth: '80%' }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography.Title
+                            level={5}
+                            ellipsis
+                            style={{ margin: 0, maxWidth: "80%" }}
+                          >
                             {product.productName}
                           </Typography.Title>
                           <button
                             onClick={() => handleAddToWishlist(product)}
                             className="wishlist-button"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                            }}
                           >
                             {wishlistedProducts.includes(product.productID) ? (
-                              <FaHeart style={{ color: '#ff4d4f', fontSize: '20px' }} />
+                              <FaHeart
+                                style={{ color: "#ff4d4f", fontSize: "20px" }}
+                              />
                             ) : (
-                              <FaRegHeart style={{ color: '#8c8c8c', fontSize: '20px' }} />
+                              <FaRegHeart
+                                style={{ color: "#8c8c8c", fontSize: "20px" }}
+                              />
                             )}
                           </button>
                         </div>
                       }
                       description={
-                        <div style={{ fontSize: '14px' }}>
+                        <div style={{ fontSize: "14px" }}>
                           <Typography.Paragraph
                             ellipsis={{ rows: 2 }}
-                            style={{ color: '#666', marginBottom: 12 }}
+                            style={{ color: "#666", marginBottom: 12 }}
                           >
                             {product.productDescription}
                           </Typography.Paragraph>
 
-                          <div style={{ 
-                            display: 'flex', 
-                            flexWrap: 'wrap', 
-                            gap: '8px', 
-                            marginBottom: 12 
-                          }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "8px",
+                              marginBottom: 12,
+                            }}
+                          >
                             <Tag color="gold">{product.serialNumber}</Tag>
-                            <Tag color="blue">{getBrandName(product.brand)}</Tag>
+                            <Tag color="blue">
+                              {getBrandName(product.brand)}
+                            </Tag>
                             <Tag color="green">{product.quality}</Tag>
                           </div>
 
-                          <div style={{ 
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
-                            marginBottom: 12,
-                            background: '#f8f9fa',
-                            padding: '8px',
-                            borderRadius: '6px'
-                          }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                              marginBottom: 12,
+                              background: "#f8f9fa",
+                              padding: "8px",
+                              borderRadius: "6px",
+                            }}
+                          >
                             {product.priceBuy && (
                               <div className="price-row">
                                 <span>Giá bán:</span>
@@ -387,26 +416,33 @@ const ProductList = () => {
                             )}
                           </div>
 
-                          <div style={{ 
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginTop: 12 
-                          }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginTop: 12,
+                            }}
+                          >
                             <div>
                               {Array.from({ length: 5 }, (_, index) => (
                                 <span
                                   key={index}
                                   style={{
-                                    color: index < (product.rating || 0) ? '#fadb14' : '#f0f0f0',
-                                    fontSize: '16px',
+                                    color:
+                                      index < (product.rating || 0)
+                                        ? "#fadb14"
+                                        : "#f0f0f0",
+                                    fontSize: "16px",
                                   }}
                                 >
                                   ★
                                 </span>
                               ))}
                             </div>
-                            <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                            <span
+                              style={{ color: "#8c8c8c", fontSize: "12px" }}
+                            >
                               {moment(product.createdAt).format("DD/MM/YYYY")}
                             </span>
                           </div>
@@ -432,13 +468,15 @@ const ProductList = () => {
       </Content>
       <Modal
         title={
-          <div style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold',
-            borderBottom: '2px solid #f0f0f0',
-            paddingBottom: '12px',
-            marginBottom: '20px'
-          }}>
+          <div
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              borderBottom: "2px solid #f0f0f0",
+              paddingBottom: "12px",
+              marginBottom: "20px",
+            }}
+          >
             {productDetail?.productName || "Chi tiết sản phẩm"}
           </div>
         }
@@ -454,10 +492,15 @@ const ProductList = () => {
             onClick={() => handleAddToWishlist(productDetail)}
             className="focus:outline-none"
             type="primary"
-            icon={wishlistedProducts.includes(productDetail?.productID) ? 
-              <FaHeart /> : <FaRegHeart />}
+            icon={
+              wishlistedProducts.includes(productDetail?.productID) ? (
+                <FaHeart />
+              ) : (
+                <FaRegHeart />
+              )
+            }
             size="large"
-          />
+          />,
         ]}
         bodyStyle={{ padding: "24px", borderRadius: "8px" }}
         centered
@@ -466,12 +509,14 @@ const ProductList = () => {
           <div style={{ display: "flex", gap: "24px" }}>
             {/* Left side - Image */}
             <div style={{ flex: "0 0 40%" }}>
-              <div style={{ 
-                position: 'relative',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}>
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                }}
+              >
                 <img
                   src={productDetail.listImage[0]?.image}
                   alt={productDetail.productName}
@@ -489,41 +534,51 @@ const ProductList = () => {
             <div style={{ flex: "1" }}>
               <div style={{ marginBottom: "24px" }}>
                 <Typography.Title level={4}>Thông tin cơ bản</Typography.Title>
-                <div style={{ 
-                  background: '#f8f9fa', 
-                  padding: '16px', 
-                  borderRadius: '8px',
-                  marginBottom: '16px' 
-                }}>
+                <div
+                  style={{
+                    background: "#f8f9fa",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
                   <Row gutter={[16, 16]}>
                     <Col span={12}>
-                      <div style={{ color: '#666' }}>Mã Seri:</div>
-                      <div style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                      <div style={{ color: "#666" }}>Mã Seri:</div>
+                      <div style={{ fontWeight: "bold", color: "#1890ff" }}>
                         {productDetail.serialNumber}
                       </div>
                     </Col>
                     <Col span={12}>
-                      <div style={{ color: '#666' }}>Chất lượng:</div>
-                      <Tag color="blue" style={{ padding: '4px 12px' }}>
+                      <div style={{ color: "#666" }}>Chất lượng:</div>
+                      <Tag color="blue" style={{ padding: "4px 12px" }}>
                         {productDetail.quality}
                       </Tag>
                     </Col>
                   </Row>
                 </div>
-                
+
                 <Typography.Title level={4}>Giá cả</Typography.Title>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: '16px',
-                  background: '#f8f9fa',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "16px",
+                    background: "#f8f9fa",
+                    padding: "16px",
+                    borderRadius: "8px",
+                  }}
+                >
                   {productDetail.priceBuy && (
                     <div className="price-item">
-                      <div style={{ color: '#666' }}>Giá Mua:</div>
-                      <div style={{ color: '#52c41a', fontSize: '18px', fontWeight: 'bold' }}>
+                      <div style={{ color: "#666" }}>Giá Mua:</div>
+                      <div
+                        style={{
+                          color: "#52c41a",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                        }}
+                      >
                         {new Intl.NumberFormat("vi-VN", {
                           style: "currency",
                           currency: "VND",
@@ -533,8 +588,8 @@ const ProductList = () => {
                   )}
                   {productDetail.pricePerHour && (
                     <div className="price-item">
-                      <div style={{ color: '#666' }}>Giá thuê/giờ:</div>
-                      <div style={{ color: '#1890ff', fontSize: '16px' }}>
+                      <div style={{ color: "#666" }}>Giá thuê/giờ:</div>
+                      <div style={{ color: "#1890ff", fontSize: "16px" }}>
                         {new Intl.NumberFormat("vi-VN", {
                           style: "currency",
                           currency: "VND",
@@ -542,37 +597,78 @@ const ProductList = () => {
                       </div>
                     </div>
                   )}
+                  {productDetail.pricePerDay && (
+                    <div className="price-item">
+                      <div style={{ color: "#666" }}>Giá thuê/Ngày:</div>
+                      <div style={{ color: "#1890ff", fontSize: "16px" }}>
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(productDetail.pricePerDay)}
+                      </div>
+                    </div>
+                  )}
+                  {productDetail.pricePerWeek && (
+                    <div className="price-item">
+                      <div style={{ color: "#666" }}>Giá thuê/Tuần:</div>
+                      <div style={{ color: "#1890ff", fontSize: "16px" }}>
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(productDetail.pricePerWeek)}
+                      </div>
+                    </div>
+                  )}
+                  {productDetail.pricePerMonth && (
+                    <div className="price-item">
+                      <div style={{ color: "#666" }}>Giá thuê/Tháng:</div>
+                      <div style={{ color: "#1890ff", fontSize: "16px" }}>
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(productDetail.pricePerMonth)}
+                      </div>
+                    </div>
+                  )}
                   {/* Similar blocks for other price types */}
                 </div>
 
-                <Typography.Title level={4} style={{ marginTop: '24px' }}>Mô tả</Typography.Title>
-                <Typography.Paragraph style={{ 
-                  background: '#f8f9fa',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  marginBottom: '24px'
-                }}>
+                <Typography.Title level={4} style={{ marginTop: "24px" }}>
+                  Mô tả
+                </Typography.Title>
+                <Typography.Paragraph
+                  style={{
+                    background: "#f8f9fa",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "24px",
+                  }}
+                >
                   {productDetail.productDescription}
                 </Typography.Paragraph>
 
                 <Typography.Title level={4}>Thông số kỹ thuật</Typography.Title>
-                <div style={{ 
-                  background: '#f8f9fa',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
+                <div
+                  style={{
+                    background: "#f8f9fa",
+                    padding: "16px",
+                    borderRadius: "8px",
+                  }}
+                >
                   {productDetail.listProductSpecification.map((spec) => (
-                    <div 
+                    <div
                       key={spec.productSpecificationID}
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '8px 0',
-                        borderBottom: '1px solid #e8e8e8'
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "8px 0",
+                        borderBottom: "1px solid #e8e8e8",
                       }}
                     >
-                      <span style={{ color: '#666' }}>{spec.specification}:</span>
-                      <span style={{ fontWeight: '500' }}>{spec.details}</span>
+                      <span style={{ color: "#666" }}>
+                        {spec.specification}:
+                      </span>
+                      <span style={{ fontWeight: "500" }}>{spec.details}</span>
                     </div>
                   ))}
                 </div>
@@ -580,9 +676,9 @@ const ProductList = () => {
             </div>
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ textAlign: "center", padding: "40px" }}>
             <LoadingComponent />
-            <p style={{ marginTop: '16px' }}>Đang tải chi tiết sản phẩm...</p>
+            <p style={{ marginTop: "16px" }}>Đang tải chi tiết sản phẩm...</p>
           </div>
         )}
       </Modal>
@@ -654,4 +750,4 @@ export default ProductList;
   font-weight: 600;
   font-size: 16px;
 }
-`
+`;

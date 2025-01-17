@@ -189,6 +189,20 @@ const ProductDetailsInfoRent = ({
       return;
     }
 
+    // Check if date is in the past
+    const now = moment();
+    if (date.isBefore(now)) {
+      message.error("Không thể chọn thời gian trong quá khứ");
+      return;
+    }
+
+    // Check if time is within operating hours (8:00 - 19:00)
+    const hour = date.hour();
+    if (hour < 8 || hour >= 19) {
+      message.error("Thời gian thuê phải trong khoảng từ 8:00 đến 19:00");
+      return;
+    }
+
     setRentalStartDate(date);
 
     const calculatedEndDate = calculateRentalEndTime(
@@ -237,10 +251,15 @@ const ProductDetailsInfoRent = ({
     }
     return rentalEndTime;
   };
+
+  const disabledDate = (current) => {
+    return current && current < moment().startOf('day');
+  };
+
   const disabledTime = () => ({
-    disabledHours: () =>
-      [...Array(24)].map((_, i) => i).filter((h) => h < 7 || h >= 20),
+    disabledHours: () => [...Array(24)].map((_, i) => i).filter((h) => h < 8 || h >= 19),
   });
+
   return (
     <div>
       {" "}
@@ -589,6 +608,8 @@ const ProductDetailsInfoRent = ({
                         style={customDatePickerStyle}
                         className="custom-datepicker"
                         size="large"
+                        disabledDate={disabledDate}
+                        disabledTime={disabledTime}
                       />
                     </Form.Item>
                   </Col>

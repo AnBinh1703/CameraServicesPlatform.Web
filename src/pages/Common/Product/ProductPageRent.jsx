@@ -1,5 +1,6 @@
 import {
   CalendarOutlined,
+  ClearOutlined,
   EditOutlined,
   FolderOpenOutlined,
   InfoCircleOutlined,
@@ -7,7 +8,6 @@ import {
   ShopOutlined,
   StarOutlined,
   TagOutlined,
-  ClearOutlined,
 } from "@ant-design/icons"; // Import Ant Design icons
 import {
   Button,
@@ -63,8 +63,7 @@ const ProductPageRent = () => {
   const { id } = useParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const pageSize = 20;
-
+  const pageSize = 50;
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

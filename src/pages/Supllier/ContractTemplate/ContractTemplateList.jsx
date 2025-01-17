@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   deleteContractTemplateById,
-  getAllContractTemplates,
+  getContractTemplateByAccountId,
 } from "../../../api/contractTemplateApi";
 import { getAllProduct } from "../../../api/productApi";
 import UpdateContractTemplateForm from "./UpdateContractTemplateForm";
@@ -29,13 +29,9 @@ const ContractTemplateList = ({ refresh }) => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getAllContractTemplates(
-          pageIndex,
-          pageSize,
-          searchText
-        );
-        setContractTemplates(data.result.items);
-        setTotal(data.result.totalCount);
+        const data = await getContractTemplateByAccountId(accountId);
+        setContractTemplates(data.result.items || data.result);
+        setTotal(data.result.totalCount || data.result.length);
       } catch (error) {
         setError(error);
         message.error("Lỗi khi lấy danh sách mẫu hợp đồng.");
@@ -56,7 +52,7 @@ const ContractTemplateList = ({ refresh }) => {
 
     fetchContractTemplates();
     fetchProducts();
-  }, [refresh, pageIndex, pageSize, searchText]);
+  }, [refresh, accountId]);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);

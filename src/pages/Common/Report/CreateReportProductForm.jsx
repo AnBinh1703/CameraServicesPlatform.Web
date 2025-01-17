@@ -86,13 +86,16 @@ const CreateReportProductForm = () => {
     try {
       const response = await getProductById(productId);
       if (response && response.productName) {
-        setReportProductDetails(prev => ({
+        setReportProductDetails((prev) => ({
           ...prev,
-          [productId]: response
+          [productId]: response,
         }));
       }
     } catch (error) {
-      console.error(`Error fetching product details for ID ${productId}:`, error);
+      console.error(
+        `Error fetching product details for ID ${productId}:`,
+        error
+      );
     }
   };
 
@@ -103,7 +106,7 @@ const CreateReportProductForm = () => {
       if (response?.isSuccess) {
         setProductReports(response.result || []);
         // Fetch product details for each report
-        response.result?.forEach(report => {
+        response.result?.forEach((report) => {
           if (report.productID) {
             fetchReportProductDetails(report.productID);
           }
@@ -165,7 +168,7 @@ const CreateReportProductForm = () => {
         startDate: currentDate.toISOString(),
         endDate: currentDate.toISOString(),
         reason: values.reason,
-        accountID: user.id
+        accountID: user.id,
       };
 
       console.log("Submitting report data:", reportData);
@@ -189,22 +192,23 @@ const CreateReportProductForm = () => {
 
   const fetchProductDetails = async (productId) => {
     try {
-      console.log('Fetching product details for ID:', productId);
+      console.log("Fetching product details for ID:", productId);
       const response = await getProductById(productId);
-      console.log('Raw product API response:', response);
-      
-      if (response && response.productName) { // Verify the response structure
-        console.log('Valid product details received:', response);
+      console.log("Raw product API response:", response);
+
+      if (response && response.productName) {
+        // Verify the response structure
+        console.log("Valid product details received:", response);
         setProductDetails((prev) => {
           const newState = {
             ...prev,
             [productId]: response,
           };
-          console.log('Updated product details state:', newState);
+          console.log("Updated product details state:", newState);
           return newState;
         });
       } else {
-        console.warn('Invalid product details response:', response);
+        console.warn("Invalid product details response:", response);
       }
     } catch (error) {
       console.error("Error fetching product details:", error);
@@ -213,17 +217,17 @@ const CreateReportProductForm = () => {
 
   const fetchSupplierDetails = async (supplierId) => {
     try {
-      console.log('Fetching supplier details for ID:', supplierId);
+      console.log("Fetching supplier details for ID:", supplierId);
       const response = await getSupplierById(supplierId);
       if (response?.isSuccess) {
         // Extract the first item from the items array
         const supplierData = response.result?.items?.[0];
-        console.log('Supplier data extracted:', supplierData);
-        
+        console.log("Supplier data extracted:", supplierData);
+
         if (supplierData) {
           setSupplierDetails((prev) => ({
             ...prev,
-            [supplierId]: supplierData
+            [supplierId]: supplierData,
           }));
         }
       }
@@ -235,22 +239,22 @@ const CreateReportProductForm = () => {
   const handleOrderSelect = (orderId) => {
     const selected = orders.find((order) => order.orderID === orderId);
     if (selected) {
-      console.log('Selected order:', selected);
+      console.log("Selected order:", selected);
       setSelectedOrder(selected);
-      
+
       // Fetch details for the selected order
       const orderDetail = selected.orderDetails?.[0];
-      console.log('Order detail:', orderDetail);
-      
+      console.log("Order detail:", orderDetail);
+
       if (orderDetail?.productID) {
-        console.log('Fetching product for ID:', orderDetail.productID);
+        console.log("Fetching product for ID:", orderDetail.productID);
         fetchProductDetails(orderDetail.productID);
       } else {
-        console.warn('No product ID found in order detail');
+        console.warn("No product ID found in order detail");
       }
-      
+
       if (selected.supplierID) {
-        console.log('Fetching supplier for ID:', selected.supplierID);
+        console.log("Fetching supplier for ID:", selected.supplierID);
         fetchSupplierDetails(selected.supplierID);
       }
 
@@ -268,9 +272,12 @@ const CreateReportProductForm = () => {
       key={report.productReportID}
       className="cursor-pointer hover:bg-gray-50 transition-colors"
     >
-      <td className="py-4 px-6 border-b text-center w-24">{report.productReportID}</td>
+      <td className="py-4 px-6 border-b text-center w-24">
+        {report.productReportID}
+      </td>
       <td className="py-4 px-6 border-b text-center w-48">
-        {reportProductDetails[report.productID]?.productName || report.productID}
+        {reportProductDetails[report.productID]?.productName ||
+          report.productID}
       </td>
       <td className="py-4 px-6 border-b text-center w-32">
         <span
@@ -283,15 +290,23 @@ const CreateReportProductForm = () => {
               : "bg-yellow-500"
           }`}
         >
-          {report.statusType === "Approved" ? "Đã duyệt" 
-            : report.statusType === "Reject" ? "Từ chối" 
+          {report.statusType === "Approved"
+            ? "Đã duyệt"
+            : report.statusType === "Reject"
+            ? "Từ chối"
             : "Chờ xử lý"}
         </span>
       </td>
       <td className="py-4 px-6 border-b w-64 truncate">{report.reason}</td>
-      <td className="py-4 px-6 border-b w-48 truncate">{report.message || "-"}</td>
-      <td className="py-4 px-6 border-b text-center w-40">{formatDateTime(report.createdAt)}</td>
-      <td className="py-4 px-6 border-b text-center w-40">{formatDateTime(report.updatedAt)}</td>
+      <td className="py-4 px-6 border-b w-48 truncate">
+        {report.message || "-"}
+      </td>
+      <td className="py-4 px-6 border-b text-center w-40">
+        {formatDateTime(report.createdAt)}
+      </td>
+      <td className="py-4 px-6 border-b text-center w-40">
+        {formatDateTime(report.updatedAt)}
+      </td>
     </tr>
   );
 
@@ -341,10 +356,10 @@ const CreateReportProductForm = () => {
     const productInfo = productDetails[orderDetail.productID];
     const supplierInfo = supplierDetails[order.supplierID];
 
-    console.log('Order detail in render:', orderDetail);
-    console.log('All product details:', productDetails);
-    console.log('Product info for ID:', orderDetail.productID, productInfo);
-    console.log('Supplier info for rendering:', supplierInfo);
+    console.log("Order detail in render:", orderDetail);
+    console.log("All product details:", productDetails);
+    console.log("Product info for ID:", orderDetail.productID, productInfo);
+    console.log("Supplier info for rendering:", supplierInfo);
 
     return (
       <div className="mb-4 p-4 border rounded-lg bg-gray-50">
@@ -363,7 +378,9 @@ const CreateReportProductForm = () => {
             </p>
             <p>
               <strong>Phương thức giao hàng:</strong>{" "}
-              {order.deliveriesMethod === 0 ? "Nhận tại cửa hàng" : "Giao hàng tận nơi"}
+              {order.deliveriesMethod === 0
+                ? "Nhận tại cửa hàng"
+                : "Giao hàng tận nơi"}
               <p>
                 {order.deliveriesMethod === 1 ? order.shippingAddress : " "}
               </p>
@@ -427,13 +444,25 @@ const CreateReportProductForm = () => {
           <table className="min-w-full bg-white">
             <thead className="bg-gray-50">
               <tr>
-                <th className="py-4 px-6 border-b text-center w-24">Mã báo cáo</th>
-                <th className="py-4 px-6 border-b text-center w-48">Tên sản phẩm</th>
-                <th className="py-4 px-6 border-b text-center w-32">Trạng thái</th>
+                <th className="py-4 px-6 border-b text-center w-24">
+                  Mã báo cáo
+                </th>
+                <th className="py-4 px-6 border-b text-center w-48">
+                  Tên sản phẩm
+                </th>
+                <th className="py-4 px-6 border-b text-center w-32">
+                  Trạng thái
+                </th>
                 <th className="py-4 px-6 border-b text-center w-64">Lý do</th>
-                <th className="py-4 px-6 border-b text-center w-48">Phản hồi</th>
-                <th className="py-4 px-6 border-b text-center w-40">Ngày tạo</th>
-                <th className="py-4 px-6 border-b text-center w-40">Ngày cập nhật</th>
+                <th className="py-4 px-6 border-b text-center w-48">
+                  Phản hồi
+                </th>
+                <th className="py-4 px-6 border-b text-center w-40">
+                  Ngày tạo
+                </th>
+                <th className="py-4 px-6 border-b text-center w-40">
+                  Ngày cập nhật
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -489,27 +518,6 @@ const CreateReportProductForm = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      {isLoading ? (
-        <p>Đang tải...</p>
-      ) : (
-        <table className="min-w-full">
-          <thead>
-            <tr>
-              <th className="py-3 px-4 border-b">Mã báo cáo</th>
-              <th className="py-3 px-4 border-b">Mã sản phẩm</th>
-              <th className="py-3 px-4 border-b">Trạng thái</th>
-              <th className="py-3 px-4 border-b">Lý do</th>
-              <th className="py-3 px-4 border-b">Tin nhắn</th>
-              <th className="py-3 px-4 border-b">Ngày tạo</th>
-              <th className="py-3 px-4 border-b">Ngày cập nhật</th>
-            </tr>
-          </thead>
-          <tbody>{productReports.map(renderReportItems)}</tbody>
-        </table>
-      )}
-
-      {/* ...rest of the code (Modal and other components) ... */}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import {
   getContractTemplateByAccountId,
 } from "../api/contractTemplateApi";
 
-const ContractTemplateFields = ({ onSubmit, products, productID: initialProductID }) => { // Added initialProductID prop
+const ContractTemplateFields = ({ onSubmit, products = [], productID: initialProductID }) => { // Added initialProductID prop
   const { user } = useSelector((state) => state.user || {});
   const [form] = Form.useForm();
   const accountID = user.id;
@@ -120,7 +120,7 @@ const ContractTemplateFields = ({ onSubmit, products, productID: initialProductI
             name="contractTerms"
             label="Điều Khoản Hợp Đồng"
             rules={[
-              { required: true, message: "Vui lòng nhập điều khoản hợp đồng!" },
+              { required: true, message: "Vui lòng nhập điều khoản hợp ��ồng!" },
             ]}
           >
             <Input.TextArea placeholder="Nhập điều khoản hợp đồng" rows={4} />
