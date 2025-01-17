@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Checkbox, Input, Row, Col } from "antd"; // Added Row and Col
+import { Form, Checkbox, InputNumber, Row, Col } from "antd"; // Update import to include InputNumber
 
 const PriceTypeSelector = ({ priceType, handlePriceTypeChange }) => {
   return (
@@ -21,10 +21,17 @@ const PriceTypeSelector = ({ priceType, handlePriceTypeChange }) => {
               label="Giá theo giờ"
               rules={[
                 { required: true, message: "Vui lòng nhập giá theo giờ!" },
-                { type: "number", transform: (value) => Number(value) },
+                { type: "number", min: 1000, message: "Giá theo giờ phải lớn hơn hoặc bằng 1.000" },
               ]}
             >
-              <Input type="number" placeholder="Nhập giá theo giờ" />
+              <InputNumber
+                className="w-full"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                placeholder="Nhập giá theo giờ"
+                addonAfter="VNĐ"
+                size="large"
+              />
             </Form.Item>
           </Col>
         )}
@@ -36,10 +43,17 @@ const PriceTypeSelector = ({ priceType, handlePriceTypeChange }) => {
               label="Giá theo ngày"
               rules={[
                 { required: true, message: "Vui lòng nhập giá theo ngày!" },
-                { type: "number", transform: (value) => Number(value) },
+                { type: "number", min: 1000, message: "Giá theo ngày phải lớn hơn hoặc bằng 1.000" },
               ]}
             >
-              <Input type="number" placeholder="Nhập giá theo ngày" />
+              <InputNumber
+                className="w-full"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                placeholder="Nhập giá theo ngày"
+                addonAfter="VNĐ"
+                size="large"
+              />
             </Form.Item>
           </Col>
         )}
@@ -53,10 +67,17 @@ const PriceTypeSelector = ({ priceType, handlePriceTypeChange }) => {
               label="Giá theo tuần"
               rules={[
                 { required: true, message: "Vui lòng nhập giá theo tuần!" },
-                { type: "number", transform: (value) => Number(value) },
+                { type: "number", min: 1000, message: "Giá theo tuần phải lớn hơn hoặc bằng 1.000" },
               ]}
             >
-              <Input type="number" placeholder="Nhập giá theo tuần" />
+              <InputNumber
+                className="w-full"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                placeholder="Nhập giá theo tuần"
+                addonAfter="VNĐ"
+                size="large"
+              />
             </Form.Item>
           </Col>
         )}
@@ -68,10 +89,17 @@ const PriceTypeSelector = ({ priceType, handlePriceTypeChange }) => {
               label="Giá theo tháng"
               rules={[
                 { required: true, message: "Vui lòng nhập giá theo tháng!" },
-                { type: "number", transform: (value) => Number(value) },
+                { type: "number", min: 1000, message: "Giá theo tháng phải lớn hơn hoặc bằng 1.000" },
               ]}
             >
-              <Input type="number" placeholder="Nhập giá theo tháng" />
+              <InputNumber
+                className="w-full"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                placeholder="Nhập giá theo tháng"
+                addonAfter="VNĐ"
+                size="large"
+              />
             </Form.Item>
           </Col>
         )}

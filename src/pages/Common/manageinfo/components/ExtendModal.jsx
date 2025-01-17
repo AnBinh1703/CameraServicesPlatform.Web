@@ -1,6 +1,6 @@
 import { DatePicker, Form, Input, Modal, Select, message } from "antd";
 import moment from "moment";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getOrderDetailsById } from "../../../../api/orderApi";
 import { getProductById } from "../../../../api/productApi";
 
@@ -13,7 +13,7 @@ const ExtendModal = ({
 }) => {
   // Create form instance inside the component
   const [form] = Form.useForm();
-  
+  const [endRentalDate, setEndRentalDate] = useState(null);
   const [productPrices, setProductPrices] = useState({
     pricePerHour: 0,
     pricePerDay: 0,
@@ -60,6 +60,52 @@ const ExtendModal = ({
 
     fetchProductPrices();
   }, [selectedOrder]);
+  console.log("dd:", selectedOrder?.rentalEndDate);
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      if (selectedOrder?.orderID) {
+        try {
+          const orderDetails = await getOrderDetailsById(
+            selectedOrder.orderID,
+            1,
+            10
+          );
+          if (orderDetails && orderDetails.result?.length > 0) {
+            // Ensure proper moment date formatting
+            const endDate = moment(selectedOrder?.rentalEndDate).isValid()
+              ? moment(selectedOrder?.rentalEndDate)
+              : moment();
+
+            setEndRentalDate(endDate);
+
+            // Set the form field with a valid moment object
+            form.setFieldsValue({
+              rentalExtendStartDate: endDate,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching order details:", error);
+        }
+      }
+    };
+
+    if (isVisible) {
+      fetchOrderDetails();
+    }
+  }, [isVisible, selectedOrder, form]);
+
+  // Add this useEffect
+  useEffect(() => {
+    if (selectedOrder?.rentalEndDate) {
+      const startDate = moment(selectedOrder.rentalEndDate);
+      if (startDate.isValid()) {
+        form.setFieldsValue({
+          rentalExtendStartDate: startDate,
+        });
+      }
+    }
+  }, [selectedOrder, form]);
 
   const calculateProductPriceRent = (values) => {
     const { durationUnit, durationValue } = values;
@@ -73,7 +119,7 @@ const ExtendModal = ({
       0: productPrices.pricePerHour,
       1: productPrices.pricePerDay,
       2: productPrices.pricePerWeek,
-      3: productPrices.pricePerMonth
+      3: productPrices.pricePerMonth,
     };
 
     if (!priceMap[durationUnit]) {
@@ -122,8 +168,12 @@ const ExtendModal = ({
     ) {
       const { rentalExtendStartDate, durationUnit, durationValue } = allValues;
 
-      if (rentalExtendStartDate && durationUnit !== undefined && durationValue) {
-        const startDate = moment(rentalExtendStartDate);
+      if (
+        rentalExtendStartDate &&
+        durationUnit !== undefined &&
+        durationValue
+      ) {
+        const startDate = moment(selectedOrder?.rentalEndDate); // Use selectedOrder.rentalEndDate directly
 
         if (startDate.hours() < 8) {
           startDate.hours(8).minutes(0).seconds(0);
@@ -151,17 +201,20 @@ const ExtendModal = ({
         const returnDate = endDate.clone().add(1, "hours");
 
         // Calculate total amount using the local function
-        const totalAmount = calculateProductPriceRent({ durationUnit, durationValue });
+        const totalAmount = calculateProductPriceRent({
+          durationUnit,
+          durationValue,
+        });
 
         // Update all calculated fields at once
         form.setFieldsValue({
           rentalExtendEndDate: endDate,
           extendReturnDate: returnDate,
           totalAmount: totalAmount,
-          totalAmountDisplay: new Intl.NumberFormat('vi-VN', { 
-            style: 'currency', 
-            currency: 'VND' 
-          }).format(totalAmount)
+          totalAmountDisplay: new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(totalAmount),
         });
       }
     }
@@ -178,20 +231,44 @@ const ExtendModal = ({
   const renderDurationOptions = () => (
     <Select>
       <Select.Option value={0} disabled={!productPrices.pricePerHour}>
-        Giờ - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(productPrices.pricePerHour)}/giờ
-        (tối thiểu {durationOptions[0].min} tối đa {durationOptions[0].max})
+        Giờ -{" "}
+        {new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(productPrices.pricePerHour)}
+        /giờ (tối thiểu {durationOptions[0].min} tối đa {durationOptions[0].max}
+        )
       </Select.Option>
       <Select.Option value={1} disabled={!productPrices.pricePerDay}>
-        Ngày - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(productPrices.pricePerDay)}/ngày
-        (tối thiểu {durationOptions[1].min} tối đa {durationOptions[1].max})
+        Ngày -{" "}
+        {new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(productPrices.pricePerDay)}
+        /ngày (tối thiểu {durationOptions[1].min} tối đa{" "}
+        {durationOptions[1].max})
       </Select.Option>
       <Select.Option value={2} disabled={!productPrices.pricePerWeek}>
-        Tuần - {productPrices.pricePerWeek ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(productPrices.pricePerWeek) : 'Không khả dụng'}/tuần
-        (tối thiểu {durationOptions[2].min} tối đa {durationOptions[2].max})
+        Tuần -{" "}
+        {productPrices.pricePerWeek
+          ? new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(productPrices.pricePerWeek)
+          : "Không khả dụng"}
+        /tuần (tối thiểu {durationOptions[2].min} tối đa{" "}
+        {durationOptions[2].max})
       </Select.Option>
       <Select.Option value={3} disabled={!productPrices.pricePerMonth}>
-        Tháng - {productPrices.pricePerMonth ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(productPrices.pricePerMonth) : 'Không khả dụng'}/tháng
-        (tối thiểu {durationOptions[3].min} tối đa {durationOptions[3].max})
+        Tháng -{" "}
+        {productPrices.pricePerMonth
+          ? new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(productPrices.pricePerMonth)
+          : "Không khả dụng"}
+        /tháng (tối thiểu {durationOptions[3].min} tối đa{" "}
+        {durationOptions[3].max})
       </Select.Option>
     </Select>
   );
@@ -207,7 +284,7 @@ const ExtendModal = ({
       footer={null}
     >
       <Form
-        form={form} // Pass the form instance here
+        form={form}
         layout="vertical"
         onFinish={(values) => {
           const formData = {
@@ -217,24 +294,16 @@ const ExtendModal = ({
           onExtend(formData);
         }}
         onValuesChange={handleFormValuesChange}
-        initialValues={{ 
+        initialValues={{
           orderID: selectedOrder?.orderID,
           durationUnit: 0,
-          durationValue: 1
+          durationValue: 2,
         }}
       >
-        <Form.Item
-          name="orderID"
-          hidden
-          initialValue={selectedOrder?.orderID} // Set initial value here too
-        >
+        <Form.Item name="orderID" hidden>
           <Input />
         </Form.Item>
-        <Form.Item
-          name="orderID"
-          hidden
-          initialValue={selectedOrder?.productID} // Set initial value here too
-        >
+        <Form.Item name="orderID" hidden>
           <Input />
         </Form.Item>
         <Form.Item
@@ -257,44 +326,17 @@ const ExtendModal = ({
           <Input type="number" min={1} />
         </Form.Item>
 
-        <Form.Item
-          name="rentalExtendStartDate"
-          label="Ngày bắt đầu gia hạn"
-          rules={[
-            { required: true, message: "Vui lòng chọn ngày bắt đầu" },
-            {
-              validator: (_, value) => {
-                if (value && !isWithinBusinessHours(moment(value), true)) {
-                  return Promise.reject(
-                    "Thời gian bắt đầu phải trong khoảng 8:00 - 17:00"
-                  );
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
-        >
+        <Form.Item name="rentalExtendStartDate" label="Ngày bắt đầu gia hạn">
           <DatePicker
-            showTime={{
-              format: "HH:mm",
-              hourStep: 1,
-              minuteStep: 15,
-              disabledHours: () => [
-                ...Array.from({ length: 8 }, (_, i) => i), // Hours before 8:00
-                ...Array.from({ length: 7 }, (_, i) => i + 17), // Hours after 17:00
-              ],
-            }}
-            format="YYYY-MM-DD HH:mm"
-            disabledDate={(current) => {
-              // Disable dates before today and after one month from today
-              return (
-                current &&
-                (current < moment().startOf("day") ||
-                  current > moment().add(1, "month").endOf("day"))
-              );
-            }}
-            showToday={true}
+            showTime
+            format="DD/MM/YYYY HH:mm" // Change format to desired format
+            disabled
             allowClear={false}
+            value={
+              selectedOrder?.rentalEndDate
+                ? moment(selectedOrder.rentalEndDate)
+                : null
+            }
           />
         </Form.Item>
 
@@ -306,7 +348,7 @@ const ExtendModal = ({
           <DatePicker
             showTime
             format="YYYY-MM-DD HH:mm"
-            disabled // Make it read-only since it's auto-calculated
+            disabled
             allowClear={false}
           />
         </Form.Item>
@@ -318,7 +360,7 @@ const ExtendModal = ({
         >
           <DatePicker
             showTime
-            disabled // Make it read-only since it's auto-calculated
+            disabled
             format="YYYY-MM-DD HH:mm"
             allowClear={false}
           />
@@ -331,17 +373,14 @@ const ExtendModal = ({
         >
           <Input
             disabled
-            style={{ color: '#000' }}
-            value={form.getFieldValue('totalAmountDisplay')}
+            style={{ color: "#000" }}
+            value={form.getFieldValue("totalAmountDisplay")}
             addonAfter="VND"
           />
         </Form.Item>
 
         {/* Hidden field for actual numeric value */}
-        <Form.Item
-          name="totalAmount"
-          hidden
-        >
+        <Form.Item name="totalAmount" hidden>
           <Input type="number" />
         </Form.Item>
 

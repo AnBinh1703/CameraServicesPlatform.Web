@@ -1,44 +1,80 @@
-import React from "react";
-import { Button, Upload, message, Card } from "antd"; // Added Card
-import { UploadOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+import { Upload, Modal } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
-const ImageUpload = ({ file, filePreview, handleFileChange, handleRemoveFile }) => {
+const getBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+
+const ImageUpload = ({ fileList, handleFileChange, handleRemoveFile }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
+
+  const handleCancel = () => setPreviewOpen(false);
+
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
+    }
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+    setPreviewTitle(file.name || file.url?.substring(file.url.lastIndexOf('/') + 1));
+  };
+
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Tải ảnh</div>
+    </div>
+  );
+
+  const handleChange = async ({ fileList: newFileList }) => {
+    const processedFileList = await Promise.all(
+      newFileList.map(async (file) => {
+        if (!file.url && !file.preview && file.originFileObj) {
+          file.preview = await getBase64(file.originFileObj);
+        }
+        return {
+          ...file,
+          status: 'done'
+        };
+      })
+    );
+    handleFileChange({ fileList: processedFileList });
+  };
+
   return (
     <>
       <Upload
-        name="file"
-        listType="picture"
-        beforeUpload={(file) => {
-          const isImage = file.type.startsWith("image/");
-          if (!isImage) {
-            message.error("Chỉ có thể tải lên hình ảnh!");
-          }
-          const isLt2M = file.size / 1024 / 1024 < 2;
-          if (!isLt2M) {
-            message.error("Hình ảnh phải nhỏ hơn 2MB!");
-          }
-          return isImage && isLt2M;
-        }}
-        onChange={handleFileChange}
+        accept="image/*"
+        listType="picture-card"
+        fileList={fileList}
+        onPreview={handlePreview}
+        onChange={handleChange}
         onRemove={handleRemoveFile}
-        showUploadList={false}
-        accept="image/*" // Ensure only images can be selected
+        beforeUpload={() => false}
+        multiple={false}
+        maxCount={1}
       >
-        <Button icon={<UploadOutlined />} type="primary">
-          Tải lên hình ảnh
-        </Button>
+        {fileList.length >= 1 ? null : uploadButton}
       </Upload>
-      {filePreview && (
-        <Card
-          hoverable
-          style={{ marginTop: 16 }}
-          cover={<img alt="Preview" src={filePreview} />}
-        >
-          <Button type="danger" onClick={handleRemoveFile} block>
-            Xóa Hình Ảnh
-          </Button>
-        </Card>
-      )}
+      <Modal
+        open={previewOpen}
+        title={previewTitle}
+        footer={null}
+        onCancel={handleCancel}
+      >
+        <img
+          alt="preview"
+          style={{ width: '100%' }}
+          src={previewImage}
+        />
+      </Modal>
     </>
   );
 };

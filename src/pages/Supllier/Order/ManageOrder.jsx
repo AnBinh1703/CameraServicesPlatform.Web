@@ -88,6 +88,10 @@ const ManageOrder = () => {
             getCalculateTotalRevenueBySupplier(supplierId),
           ]);
 
+        console.log('Order Cost Statistics:', orderCostStatistics);
+        console.log('Order Statistics:', orderStatistics);
+        console.log('Total Revenue:', totalRevenue);
+
         setData({
           orderCostStatistics: Array.isArray(orderCostStatistics?.result)
             ? orderCostStatistics.result
@@ -95,7 +99,16 @@ const ManageOrder = () => {
           orderStatistics: orderStatistics?.result || {},
           totalRevenue: totalRevenue?.result || 0,
         });
+
+        console.log('Final Data State:', {
+          orderCostStatistics: Array.isArray(orderCostStatistics?.result)
+            ? orderCostStatistics.result
+            : [],
+          orderStatistics: orderStatistics?.result || {},
+          totalRevenue: totalRevenue?.result || 0,
+        });
       } catch (error) {
+        console.error('Error fetching dashboard data:', error);
         message.error(
           "Lỗi khi tải dữ liệu thống kê: " + (error.message || "Unknown error")
         );
@@ -203,32 +216,28 @@ const ManageOrder = () => {
     {
       title: "Tổng Đơn Hàng",
       value: data.orderStatistics.totalOrders,
-      icon: (
-        <ShoppingCartOutlined style={{ color: "#1890ff", fontSize: "24px" }} />
-      ),
+      icon: <ShoppingCartOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
     },
-
     {
       title: "Đơn Hàng Chờ Xử Lý",
       value: data.orderStatistics.pendingOrders,
       icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
     },
     {
-      title: "Đơn Hàng Yêu Cầu Hủy",
-      value: data.orderStatistics.cancelingOrders,
-      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
+      title: "Đơn Hàng Đã Đặt",
+      value: data.orderStatistics.placedOrders,
+      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
     },
     {
-      title: "Đơn Hàng Được Hủy",
-      value: data.orderStatistics.canceledOrders,
-      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
-    },
-    {
-      title: "Đơn Hàng Được Sẵn Sàng",
+      title: "Đơn Hàng Được Duyệt",
       value: data.orderStatistics.approvedOrders,
       icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
     },
-
+    {
+      title: "Đơn Hàng Đang Giao",
+      value: data.orderStatistics.shippedOrders,
+      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
+    },
     {
       title: "Đơn Hoàn Thành",
       value: data.orderStatistics.completedOrders,
@@ -240,14 +249,39 @@ const ManageOrder = () => {
       icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
     },
     {
-      title: "Đơn Hàng Chờ Hoàn Tiền",
+      title: "Đơn Thanh Toán Thất Bại",
+      value: data.orderStatistics.paymentFailOrders,
+      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Yêu Cầu Hủy",
+      value: data.orderStatistics.cancelingOrders,
+      icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hàng Đã Hủy",
+      value: data.orderStatistics.canceledOrders,
+      icon: <FileDoneOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Chờ Hoàn Tiền",
       value: data.orderStatistics.pendingRefundOrders,
       icon: <FileDoneOutlined style={{ color: "#faad14", fontSize: "24px" }} />,
     },
     {
+      title: "Đơn Đã Hoàn Tiền",
+      value: data.orderStatistics.refundOrders,
+      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+    },
+    {
+      title: "Đơn Hoàn Trả Cọc",
+      value: data.orderStatistics.depositReturnOrders,
+      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+    },
+    {
       title: "Đơn Hàng Gia Hạn",
       value: data.orderStatistics.extendOrders,
-      icon: <FileDoneOutlined style={{ color: "#52c41a", fontSize: "24px" }} />,
+      icon: <FileDoneOutlined style={{ color: "#1890ff", fontSize: "24px" }} />,
     },
   ];
 

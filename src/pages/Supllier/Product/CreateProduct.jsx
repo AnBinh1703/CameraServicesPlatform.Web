@@ -11,6 +11,7 @@ import {
   Row,
   Select,
   Typography,
+  InputNumber, // Add this import
 } from "antd"; // Added Row and Col
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -32,8 +33,7 @@ const CreateProduct = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [file, setFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null);
+  const [fileList, setFileList] = useState([]); // Replace single file state with fileList
   const user = useSelector((state) => state.user.user || {});
   const [supplierId, setSupplierId] = useState(null);
   const [specifications, setSpecifications] = useState([
@@ -108,20 +108,24 @@ const CreateProduct = () => {
     }
   }, [supplierId]);
 
-  const handleFileChange = (info) => {
-    if (info.file.status === "done" || info.file.status === "uploading") {
-      setFile(info.file.originFileObj);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFilePreview(e.target.result);
-      };
-      reader.readAsDataURL(info.file.originFileObj);
+  const handleFileChange = ({ fileList: newFileList }) => {
+    // Only keep the latest file since we're not using multiple
+    const latestFile = newFileList[newFileList.length - 1];
+    if (latestFile) {
+      setFileList([
+        {
+          ...latestFile,
+          status: "done",
+        },
+      ]);
+    } else {
+      setFileList([]);
     }
   };
 
-  const handleRemoveFile = () => {
-    setFile(null);
-    setFilePreview(null);
+  const handleRemoveFile = (file) => {
+    const newFileList = fileList.filter((item) => item.uid !== file.uid);
+    setFileList(newFileList);
   };
 
   const handleCreateProduct = async (values) => {
@@ -176,6 +180,11 @@ const CreateProduct = () => {
       formData.append("VoucherID", selectedVoucher.vourcherID);
     }
 
+    // Add file to formData
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      formData.append("file", fileList[0].originFileObj);
+    }
+
     // Debugging: Log FormData entries
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
@@ -210,8 +219,7 @@ const CreateProduct = () => {
 
         // Reset form and state
         form.resetFields();
-        setFile(null);
-        setFilePreview(null);
+        setFileList([]);
         setSpecifications([{ feature: description }]);
         setSelectedVoucher(null);
       } else {
@@ -234,7 +242,6 @@ const CreateProduct = () => {
 
   const handlePriceTypeChange = (value) => {
     setPriceType(value);
-    // Reset other price fields based on selected price types
     const resetFields = {
       PricePerHour: 0,
       PricePerDay: 0,
@@ -443,9 +450,34 @@ const CreateProduct = () => {
                 label="Ngày sản xuất"
                 rules={[
                   { required: true, message: "Vui lòng nhập ngày sản xuất!" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      if (new Date(value) > new Date()) {
+                        message.error(
+                          "Ngày sản xuất không được trong tương lai!"
+                        );
+                        return Promise.reject(
+                          "Ngày sản xuất không được trong tương lai!"
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
                 ]}
               >
-                <Input type="date" style={{ width: "100%" }} />
+                <Input
+                  type="date"
+                  style={{ width: "100%" }}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => {
+                    if (new Date(e.target.value) > new Date()) {
+                      message.error(
+                        "Ngày sản xuất không được trong tương lai!"
+                      );
+                    }
+                  }}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -455,9 +487,26 @@ const CreateProduct = () => {
               <Form.Item
                 name="OriginalPrice"
                 label="Giá gốc"
-                rules={[{ required: true, message: "Vui lòng nhập giá gốc!" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập giá gốc!" },
+                  {
+                    type: "number",
+                    min: 1000,
+                    message: "Giá gốc phải lớn hơn hoặc bằng 1.000",
+                    transform: (value) => Number(value),
+                  },
+                ]}
               >
-                <Input type="number" placeholder="Nhập giá gốc" />
+                <InputNumber
+                  className="w-full"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  placeholder="Nhập giá gốc"
+                  addonAfter="VNĐ"
+                  size="large"
+                />
               </Form.Item>
             </Col>
             {productType === "buy" && (
@@ -467,10 +516,24 @@ const CreateProduct = () => {
                   label="Giá"
                   rules={[
                     { required: true, message: "Vui lòng nhập giá sản phẩm!" },
-                    { type: "number", transform: (value) => Number(value) },
+                    {
+                      type: "number",
+                      min: 1000,
+                      message: "Giá phải lớn hơn hoặc bằng 1.000",
+                      transform: (value) => Number(value),
+                    },
                   ]}
                 >
-                  <Input type="number" placeholder="Nhập giá sản phẩm" />
+                  <InputNumber
+                    className="w-full"
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    placeholder="Nhập giá sản phẩm"
+                    addonAfter="VNĐ"
+                    size="large"
+                  />
                 </Form.Item>
               </Col>
             )}
@@ -505,9 +568,24 @@ const CreateProduct = () => {
                         required: true,
                         message: "Vui lòng nhập tiền cọc cho sản phẩm!",
                       },
+                      {
+                        type: "number",
+                        min: 1000,
+                        message: "Tiền cọc phải lớn hơn hoặc bằng 1.000",
+                        transform: (value) => Number(value),
+                      },
                     ]}
                   >
-                    <Input placeholder="Nhập tiền cọc" />
+                    <InputNumber
+                      className="w-full"
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                      placeholder="Nhập tiền cọc"
+                      addonAfter="VNĐ"
+                      size="large"
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -526,12 +604,15 @@ const CreateProduct = () => {
             handleRemoveSpecification={handleRemoveSpecification}
           />
 
-          <Form.Item label="Hình ảnh">
+          <Form.Item
+            label="Hình ảnh"
+            rules={[{ required: true, message: "Vui lòng tải l��n hình ảnh!" }]}
+          >
             <ImageUpload
-              file={file}
-              filePreview={filePreview}
+              fileList={fileList}
               handleFileChange={handleFileChange}
               handleRemoveFile={handleRemoveFile}
+              multiple={false}
             />
           </Form.Item>
 
@@ -573,7 +654,7 @@ const CreateProduct = () => {
 
       {/* Modal for Contract Template Fields */}
       <Modal
-        title="Tạo Mẫu Hợp Đồng"
+        title="Tạo Mẫu Hẫu Đồng"
         visible={isContractModalVisible}
         onCancel={() => setIsContractModalVisible(false)}
         footer={null}

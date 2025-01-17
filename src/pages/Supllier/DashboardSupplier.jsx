@@ -25,8 +25,8 @@ import {
 } from "chart.js";
 import dayjs from "dayjs";
 import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
-import { Line, Pie } from "react-chartjs-2";
+import React, { useEffect, useState } from "react";
+import { Pie } from "react-chartjs-2";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId } from "../../api/accountApi";
 import { getComboById, getCombosBySupplierId } from "../../api/comboApi";
@@ -532,45 +532,6 @@ const DashboardSupplier = () => {
                 ]}
                 pagination={false}
               />
-            </Card>
-          </Col>{" "}
-          <Col xs={24} lg={12}>
-            <Card title="Thống kê thanh toán" className="shadow-md">
-              {statistics.payments && (
-                <>
-                  <Statistic
-                    title="Tổng doanh thu"
-                    value={statistics.payments.totalRevenue}
-                    precision={0}
-                    formatter={(value) => formatter.format(value)}
-                  />
-                  <Line
-                    data={{
-                      labels: statistics.payments.monthlyRevenue?.map(
-                        (m) => `${m.month}/${m.year}`
-                      ),
-                      datasets: [
-                        {
-                          label: "Doanh thu theo tháng",
-                          data: statistics.payments.monthlyRevenue?.map(
-                            (m) => m.totalRevenue
-                          ),
-                          borderColor: "#36a2eb",
-                          tension: 0.1,
-                        },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
-                      },
-                    }}
-                  />
-                </>
-              )}
             </Card>
           </Col>{" "}
           <Col xs={24} lg={12}>

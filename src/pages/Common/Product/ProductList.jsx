@@ -155,8 +155,7 @@ const ProductList = () => {
       const data = {
         accountId: accountId,
         productID: product.productID,
-        // Add any other necessary data here
-      };
+       };
       const result = await createWishlist(data);
       if (result) {
         message.success("Product added to wishlist!");
@@ -196,8 +195,7 @@ const ProductList = () => {
       </Header>
       <Content style={{ padding: "20px" }}>
         <Carousel autoplay style={{ marginBottom: "20px" }}>
-          {/* Add carousel items here */}
-        </Carousel>
+         </Carousel>
 
         <div
           style={{

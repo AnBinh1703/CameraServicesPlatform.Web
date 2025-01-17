@@ -1,6 +1,5 @@
 import {
   CalendarOutlined,
-  ClearOutlined,
   EditOutlined,
   FolderOpenOutlined,
   InfoCircleOutlined,
@@ -22,7 +21,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 import { getCategoryById } from "../../../api/categoryApi";
-import { getAllProduct } from "../../../api/productApi";
+import { getAllProduct, getProductByName } from "../../../api/productApi"; // Add getProductByName import
 import { getSupplierById } from "../../../api/supplierApi";
 import { getBrandName, getProductStatusEnum } from "../../../utils/constant";
 
@@ -111,27 +110,12 @@ const ProductPageRent = () => {
     try {
       const productData = await getProductByName(value, 1, 20);
       if (productData) {
-        const productsWithDetails = await Promise.all(
-          productData.map(async (product) => {
-            const supplierData = await getSupplierById(product.supplierID);
-            const categoryData = await getCategoryById(product.categoryID);
-
-            return {
-              ...product,
-              supplierName:
-                supplierData?.result?.items?.[0]?.supplierName || "Unknown",
-              categoryName:
-                categoryData?.result?.items?.[0]?.categoryName || "Unknown",
-            };
-          })
-        );
-        setProducts(productsWithDetails);
+        setProducts(productData);
       } else {
         message.error("No products found.");
         setProducts([]);
       }
     } catch (error) {
-      console.error("Error searching products:", error);
       message.error("An error occurred while searching for products.");
     } finally {
       setLoading(false);
@@ -163,9 +147,7 @@ const ProductPageRent = () => {
     setCurrentPage(page);
   };
 
-  const availableProducts = products.filter(
-    (product) => product.status === 1 && product.contractTemplateID != null
-  );
+  const availableProducts = products.filter((product) => product.status === 1);
 
   return (
     <Layout>
@@ -178,30 +160,23 @@ const ProductPageRent = () => {
           Sản Phẩm Cho Thuê
         </Title>
 
-        <div style={commonStyles.searchSection}>
-          <div className="flex flex-col md:flex-row gap-4">
-            <Search
-              placeholder="Nhập tên sản phẩm cần tìm..."
-              enterButton={
-                <Button type="primary" className="bg-blue-500">
-                  <SearchOutlined /> Tìm Kiếm
-                </Button>
-              }
-              size="large"
-              value={searchTerm}
-              onSearch={handleSearch}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleClearSearch}
-              size="large"
-              icon={<ClearOutlined />}
-              className="bg-gray-50 hover:bg-gray-100 border-gray-200 min-w-[120px]"
-            >
-              Xóa
-            </Button>
-          </div>
+        <div style={commonStyles.searchSection} className="flex gap-4">
+          <Search
+            placeholder="Tìm kiếm sản phẩm..."
+            enterButton={<SearchOutlined />}
+            size="large"
+            value={searchTerm}
+            onSearch={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleClearSearch}
+            size="large"
+            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg"
+          >
+            Xóa Tìm Kiếm
+          </Button>
         </div>
 
         {loading ? (

@@ -184,7 +184,9 @@ const ProductPageBuy = () => {
       currency: "VND",
     }).format(price);
   };
-  const availableProducts = products.filter((product) => product.status === 0);
+  const availableProducts = products.filter(
+    (product) => product.status === 0 && product.quantity != 0
+  );
 
   return (
     <Layout>

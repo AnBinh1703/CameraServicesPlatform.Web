@@ -151,11 +151,13 @@ const Settings = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <Card 
+      <Card
         className="shadow-md rounded-lg"
         title={
           <Space direction="vertical" size="small">
-            <Title level={4} className="m-0">Cài Đặt Hệ Thống</Title>
+            <Title level={4} className="m-0">
+              Cài Đặt Hệ Thống
+            </Title>
             <Text type="secondary">Quản lý thông số và cấu hình hệ thống</Text>
           </Space>
         }
@@ -178,7 +180,7 @@ const Settings = () => {
             showIcon
             className="mb-4"
           />
-          
+
           <Table
             columns={columns}
             dataSource={settings}
@@ -190,7 +192,7 @@ const Settings = () => {
               showTotal: (total) => `Tổng số: ${total} cài đặt`,
               showSizeChanger: true,
               showQuickJumper: true,
-              pageSizeOptions: ['5', '10', '20'],
+              pageSizeOptions: ["5", "10", "20"],
             }}
           />
         </Space>
@@ -199,7 +201,9 @@ const Settings = () => {
       <Modal
         title={
           <Space direction="vertical" size={0}>
-            <Title level={4} className="m-0">Thêm Cài Đặt Mới</Title>
+            <Title level={4} className="m-0">
+              Thêm Cài Đặt Mới
+            </Title>
             <Text type="secondary">Nhập thông tin cho cài đặt mới</Text>
           </Space>
         }
@@ -217,15 +221,13 @@ const Settings = () => {
         destroyOnClose
       >
         <Divider />
-        <Form 
-          form={modalForm} 
-          layout="vertical"
-          className="max-w-2xl mx-auto"
-        >
+        <Form form={modalForm} layout="vertical" className="max-w-2xl mx-auto">
           <Space direction="vertical" className="w-full" size="large">
             {/* Money Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <Title level={5} className="mb-4">Cài Đặt Tiền Giữ Chỗ</Title>
+              <Title level={5} className="mb-4">
+                Cài Đặt Tiền Giữ Chỗ
+              </Title>
               <Form.Item
                 label={
                   <span>
@@ -237,8 +239,12 @@ const Settings = () => {
                 }
                 name="reservationMoney"
                 rules={[
-                  { required: true, message: "Vui lòng nhập tiền đặt cọc" },
-                  { type: "number", min: 0, message: "Tiền đặt cọc không thể âm" },
+                  { required: true, message: "Vui lòng nhập tiền Giữ Chỗ" },
+                  {
+                    type: "number",
+                    min: 0,
+                    message: "Tiền Giữ Chỗ không thể âm",
+                  },
                 ]}
               >
                 <InputNumber
@@ -247,7 +253,7 @@ const Settings = () => {
                     `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                   }
                   parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-                  placeholder="Nhập tiền đặt cọc"
+                  placeholder="Nhập tiền Giữ Chỗ"
                   addonAfter="VNĐ"
                   size="large"
                 />
@@ -256,7 +262,9 @@ const Settings = () => {
 
             {/* Customer Cancel Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <Title level={5} className="mb-4">Cài Đặt Hủy Đơn Hàng</Title>
+              <Title level={5} className="mb-4">
+                Cài Đặt Hủy Đơn Hàng
+              </Title>
               <Space direction="vertical" className="w-full">
                 <Form.Item
                   label={
@@ -269,7 +277,10 @@ const Settings = () => {
                   }
                   name="cancelDurationUnit"
                   rules={[
-                    { required: true, message: "Vui lòng chọn đơn vị thời gian" },
+                    {
+                      required: true,
+                      message: "Vui lòng chọn đơn vị thời gian",
+                    },
                   ]}
                 >
                   <Select
@@ -293,7 +304,11 @@ const Settings = () => {
                       required: true,
                       message: "Vui lòng nhập thời gian cho phép hủy",
                     },
-                    { type: "number", min: 1, message: "Thời gian phải lớn hơn 0" },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Thời gian phải lớn hơn 0",
+                    },
                   ]}
                 >
                   <InputNumber
@@ -307,7 +322,9 @@ const Settings = () => {
 
             {/* Provider Cancel Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <Title level={5} className="mb-4">Cài Đặt Hủy Đơn Hàng Bởi Nhà Cung Cấp</Title>
+              <Title level={5} className="mb-4">
+                Cài Đặt Hủy Đơn Hàng Bởi Nhà Cung Cấp
+              </Title>
               <Space direction="vertical" className="w-full">
                 <Form.Item
                   label={
@@ -320,7 +337,10 @@ const Settings = () => {
                   }
                   name="cancelAcceptDurationUnit"
                   rules={[
-                    { required: true, message: "Vui lòng chọn đơn vị thời gian" },
+                    {
+                      required: true,
+                      message: "Vui lòng chọn đơn vị thời gian",
+                    },
                   ]}
                 >
                   <Select
@@ -340,8 +360,15 @@ const Settings = () => {
                   }
                   name="cancelAcceptVaule"
                   rules={[
-                    { required: true, message: "Vui lòng nhập thời gian đồng ý hủy" },
-                    { type: "number", min: 1, message: "Thời gian phải lớn hơn 0" },
+                    {
+                      required: true,
+                      message: "Vui lòng nhập thời gian đồng ý hủy",
+                    },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Thời gian phải lớn hơn 0",
+                    },
                   ]}
                 >
                   <InputNumber
