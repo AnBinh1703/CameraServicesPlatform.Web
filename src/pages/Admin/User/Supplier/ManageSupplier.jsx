@@ -198,8 +198,13 @@ const ManageSupplier = () => {
   }); // Add closing brace here
 
   const handleCopyEmail = (email) => {
-    navigator.clipboard.writeText(email);
-    message.success("Đã sao chép email!");
+    navigator.clipboard.writeText(email).then(() => {
+      setTimeout(() => {
+        message.success("Đã sao chép email!");
+      }, 100); // Add a small delay
+    }).catch(() => {
+      message.error("Không thể sao chép email!");
+    });
   };
 
   const columns = [
