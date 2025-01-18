@@ -723,9 +723,7 @@ const CreateStaffRefundMember = () => {
       render: (text, record) => (
         <Space size="small">
           {/* Existing refund button */}
-          {((record.orderStatus === 9 &&
-            record.isPayment &&
-            record.orderType === 1) ||
+          {((record.orderStatus === 9 && record.isPayment) ||
             (record.orderStatus === 11 && record.isPayment) ||
             (record.orderStatus === 7 &&
               record.isPayment &&
@@ -778,7 +776,7 @@ const CreateStaffRefundMember = () => {
           >
             Xử lí giao dịch
           </Button>
-        ) : record.orderStatus === 9 ? (
+        ) : record.orderStatus === 11 ? (
           <Button
             type="default"
             size="small"
