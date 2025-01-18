@@ -39,7 +39,7 @@ const ManageCategory = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [form] = Form.useForm();
 
-  const fetchCategories = async (page = 1, pageSize = 10) => {
+  const fetchCategories = async (page = 1, pageSize = 100) => {
     setLoading(true);
     try {
       const data = await getAllCategories(page, pageSize);
