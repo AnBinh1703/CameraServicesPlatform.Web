@@ -1,5 +1,6 @@
-import React from "react";
 import { Button } from "antd";
+import React from "react";
+import { useSelector } from "react-redux";
 
 const SupplierInfo = ({ supplierInfo, showModal }) => {
   if (!supplierInfo) {
@@ -9,7 +10,7 @@ const SupplierInfo = ({ supplierInfo, showModal }) => {
       </div>
     );
   }
-
+  const { user } = useSelector((state) => state.user || {});
   return (
     <div className="bg-white max-w-2xl shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6">
@@ -41,7 +42,7 @@ const SupplierInfo = ({ supplierInfo, showModal }) => {
           <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt className="text-sm font-medium text-gray-500">Email</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {supplierInfo.email}
+              {user?.email}
             </dd>
           </div>
           <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

@@ -362,15 +362,17 @@ const CreateStaffRefundMember = () => {
 
   const handleConfirmRefund = async (orderId) => {
     try {
-      const response = await updateOrderStatusRefund(orderId);
+      const response = await updateOrderStatusDepositRefund(orderId); // Updated function call
       if (response.isSuccess) {
         message.success("Xác nhận hoàn tiền thành công");
         fetchOrders(); // Refresh the table data
       } else {
-        message.error("Không thể xác nhận hoàn tiền: " + (response.messages || "Lỗi không xác định"));
+        message.error(
+          "Không thể xác nhận hoàn tiền: " +
+            (response.messages || "Lỗi không xác định")
+        );
       }
     } catch (error) {
-      message.error("Lỗi khi xác nhận hoàn tiền: " + (error.message || "Lỗi không xác định"));
       console.error("Error confirming refund:", error);
     }
   };
@@ -731,31 +733,34 @@ const CreateStaffRefundMember = () => {
               type="primary"
               size="small"
               onClick={() =>
-                handleRefund(record.orderID, record.orderStatus, record.orderType)
+                handleRefund(
+                  record.orderID,
+                  record.orderStatus,
+                  record.orderType
+                )
               }
             >
               Hoàn tiền
             </Button>
           )}
-          
+
           {/* Add new confirm button for status 9 */}
-          {record.orderStatus === 9 && (
+          {/* {record.orderStatus === 9 && (
             <Button
               type="default"
               size="small"
               onClick={() => {
                 Modal.confirm({
-                  title: 'Xác nhận hoàn tiền',
-                  content: 'Bạn có chắc chắn muốn xác nhận đã hoàn tiền thành công?',
-                  okText: 'Xác nhận',
-                  cancelText: 'Hủy',
-                  onOk: () => handleConfirmRefund(record.orderID)
+                  title: "Xác nhận hoàn tiền",
+                  content:
+                    "Bạn có chắc chắn muốn xác nhận đã hoàn tiền thành công?",
+                  okText: "Xác nhận",
+                  cancelText: "Hủy",
+                  onOk: () => handleConfirmRefund(record.orderID),
                 });
               }}
-            >
-              Xác nhận hoàn tiền
-            </Button>
-          )}
+            ></Button>
+          )} */}
         </Space>
       ),
     },
@@ -764,16 +769,15 @@ const CreateStaffRefundMember = () => {
       key: "updateStatus",
       width: 120,
       render: (text, record) =>
-        (record.orderStatus === 11 && record.orderType === 0) ||
-        record.orderStatus === 11 ? (
+        record.orderStatus === 11 && record.orderType === 0 ? (
           <Button
             type="default"
             size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 0)}
           >
-            Xử lí giao dịch Cho khách
+            Xử lí giao dịch Cho NCC
           </Button>
-        ) : record.orderStatus === 9 && record.orderType === 1 ? (
+        ) : record.orderStatus === 9 ? (
           <Button
             type="default"
             size="small"

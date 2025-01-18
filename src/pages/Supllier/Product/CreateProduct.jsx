@@ -5,13 +5,13 @@ import {
   Col,
   Form,
   Input,
+  InputNumber,
   message,
   Modal,
   Radio,
   Row,
   Select,
   Typography,
-  InputNumber, // Add this import
 } from "antd"; // Added Row and Col
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -19,6 +19,7 @@ import { getSupplierIdByAccountId } from "../../../api/accountApi";
 import { getAllCategories } from "../../../api/categoryApi";
 import { createContractTemplate } from "../../../api/contractTemplateApi";
 import { createProductBuy, createProductRent } from "../../../api/productApi";
+import { createProductVoucher } from "../../../api/ProductVoucherApi"; // Import the new API function
 import { getVouchersBySupplierId } from "../../../api/voucherApi";
 import ContractTemplateFields from "../../../components/ContractTemplateFields"; // Import the new component
 import ImageUpload from "../../../components/ImageUpload";
@@ -201,18 +202,31 @@ const CreateProduct = () => {
       }
 
       // Debugging: Log the result to verify the structure
-      console.log("API Response:", result);
+      console.log("API Response:", result.result);
 
       if (result?.isSuccess) {
         message.success("Product created successfully!");
 
-        if (productType === "rent") {
-          const productID = result.result?.productID;
-          if (!productID) {
-            message.error("Failed to retrieve Product ID.");
-            return;
-          }
+        const productID = result.result?.productID;
+        if (!productID) {
+          message.error("Failed to retrieve Product ID.");
+          return;
+        }
 
+        // Create product voucher if a voucher is selected
+        if (selectedVoucher) {
+          const voucherResult = await createProductVoucher(
+            productID,
+            selectedVoucher.vourcherID
+          );
+          if (voucherResult) {
+            message.success("Product voucher created successfully!");
+          } else {
+            message.error("Failed to create product voucher.");
+          }
+        }
+
+        if (productType === "rent") {
           setCreatedProductID(productID);
           setIsContractModalVisible(true);
         }

@@ -121,7 +121,7 @@ const ManageOrder = () => {
       label: (
         <span className="font-medium text-lg text-gray-700 flex items-center">
           <ShoppingCartOutlined className="mr-2" />
-          Danh sách đơn hàng
+          Danh sách đơn hàng NCC
         </span>
       ),
       children: <OrderListBySuplier refresh={refreshList} />,

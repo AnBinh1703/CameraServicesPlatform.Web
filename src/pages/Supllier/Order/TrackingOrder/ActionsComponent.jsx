@@ -153,18 +153,17 @@ const ActionsComponent = ({
           Gửi yêu cầu hoàn tiền cho hệ thống
         </Button>
       )}
-      {order.orderStatus === 7 &&
-        order.pay(
-          <Button
-            type="primary"
-            onClick={() => showConfirm("pending-refund", order.orderID)}
-            className="ml-2"
-            icon={<CheckCircleOutlined />}
-            style={{ marginRight: 8, marginBottom: 8 }}
-          >
-            Gửi yêu cầu hoàn tiền cho hệ thống
-          </Button>
-        )}
+      {order.orderStatus === 7 && order.isPayment && (
+        <Button
+          type="primary"
+          onClick={() => showConfirm("pending-refund", order.orderID)}
+          className="ml-2"
+          icon={<CheckCircleOutlined />}
+          style={{ marginRight: 8, marginBottom: 8 }}
+        >
+          Gửi yêu cầu hoàn tiền cho hệ thống
+        </Button>
+      )}
       {order.orderStatus === 1 &&
         order.deliveriesMethod === 0 &&
         order.orderType === 1 && (

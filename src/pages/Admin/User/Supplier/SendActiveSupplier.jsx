@@ -20,6 +20,7 @@ const SendActivationCode = () => {
     const result = await sendOTP(email);
     if (result) {
       message.success("Mã kích hoạt đã được gửi thành công!");
+    } else {
       message.error("Gửi mã kích hoạt thất bại");
     }
 

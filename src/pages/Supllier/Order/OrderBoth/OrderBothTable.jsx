@@ -2,6 +2,7 @@ import { Button, Modal, Table, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
 import { getReturnDetailByOrderId } from "../../../../api/returnDetailApi"; // Ensure to import your api instance
+import { getTransactionImage } from "../../../../api/transactionApi"; // Add this line
 import {
   deliveryStatusMap,
   orderStatusMap,
@@ -23,6 +24,8 @@ const OrderBothTable = ({
   const [returnDetail, setReturnDetail] = useState(null);
   const [returnDetailModalVisible, setReturnDetailModalVisible] =
     useState(false); // Add this line
+  const [transactionImage, setTransactionImage] = useState(null); // Add this line
+  const [transactionModalVisible, setTransactionModalVisible] = useState(false); // Add this line
 
   const handleSearch = (searchText) => {
     const filtered = orders.filter((order) =>
@@ -108,6 +111,12 @@ const OrderBothTable = ({
       sorter: (a, b) => a.shippingAddress.localeCompare(b.shippingAddress),
     },
     {
+      title: "Lí do hủy đơnđơn",
+      dataIndex: "cancelMessage",
+      key: "cancelMessage",
+      sorter: (a, b) => a.cancelMessage.localeCompare(b.cancelMessage),
+    },
+    {
       title: "Phương thức giao hàng",
       dataIndex: "deliveriesMethod",
       key: "deliveriesMethod",
@@ -160,6 +169,23 @@ const OrderBothTable = ({
                   style={{ marginLeft: 8 }}
                 >
                   Chi tiết trả hàng
+                </Button>
+              )}
+              {record.orderStatus === 10 && (
+                <Button
+                  type="default"
+                  onClick={async () => {
+                    const transactionImage = await getTransactionImage(
+                      record.orderID
+                    );
+                    if (transactionImage.isSuccess) {
+                      setTransactionImage(transactionImage.result);
+                      setTransactionModalVisible(true);
+                    }
+                  }}
+                  style={{ marginLeft: 8 }}
+                >
+                  Xem Giao Dich
                 </Button>
               )}
             </>
@@ -221,6 +247,20 @@ const OrderBothTable = ({
               {moment(returnDetail.updatedAt).format("DD/MM/YYYY HH:mm:ss")}
             </p>
           </div>
+        )}
+      </Modal>
+      <Modal
+        title="Giao Dịch"
+        visible={transactionModalVisible}
+        onCancel={() => setTransactionModalVisible(false)}
+        footer={null}
+      >
+        {transactionImage && (
+          <img
+            src={transactionImage}
+            alt="Transaction"
+            style={{ width: "100%" }}
+          />
         )}
       </Modal>
     </>

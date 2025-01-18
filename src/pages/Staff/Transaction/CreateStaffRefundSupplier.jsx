@@ -315,15 +315,8 @@ const CreateStaffRefundSupplier = () => {
         message.success("Xác nhận hoàn tiền thành công");
         fetchOrders(); // Refresh the table data
       } else {
-        message.error(
-          "Không thể xác nhận hoàn tiền: " +
-            (response.messages || "Lỗi không xác định")
-        );
       }
     } catch (error) {
-      message.error(
-        "Lỗi khi xác nhận hoàn tiền: " + (error.message || "Lỗi không xác định")
-      );
       console.error("Error confirming refund:", error);
     }
   };

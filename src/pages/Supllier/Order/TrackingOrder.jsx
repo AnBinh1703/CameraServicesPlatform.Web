@@ -248,25 +248,21 @@ const TrackingOrder = ({ order, onUpdate }) => {
 
   const showConfirm = (action, orderId) => {
     if (action === "cancel") {
+      let localCancelMessage = "";
       Modal.confirm({
         title: "Bạn có chắc chắn muốn hủy đơn hàng này?",
         content: (
           <div>
             <p>Vui lòng nhập lý do hủy đơn:</p>
             <Input.TextArea
-              value={cancelMessage}
-              onChange={(e) => setCancelMessage(e.target.value)}
+              onChange={(e) => (localCancelMessage = e.target.value)}
               placeholder="Nhập lý do hủy đơn hàng"
               rows={4}
             />
           </div>
         ),
         onOk() {
-          handleCancelOrder(orderId, cancelMessage);
-          setCancelMessage(""); // Reset message after submission
-        },
-        onCancel() {
-          setCancelMessage(""); // Reset message if canceled
+          handleCancelOrder(orderId, localCancelMessage);
         },
         okText: "Xác nhận",
         cancelText: "Hủy bỏ",

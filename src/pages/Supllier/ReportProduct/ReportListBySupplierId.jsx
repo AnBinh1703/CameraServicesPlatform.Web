@@ -1,15 +1,15 @@
-import { Card, List, message } from "antd";
+import { Card, List, message, Button } from "antd";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getSupplierIdByAccountId, getUserById } from "../../../api/accountApi"; // Import the new API function
 import { getProductById } from "../../../api/productApi"; // Import the new API function
-import { getProductReportBySupplierId } from "../../../api/productReportApi";
+import { getProductReportBySupplierId, approveProductReport, rejectProductReport } from "../../../api/productReportApi";
 
 const ReportListBySupplierId = () => {
   const statusTypeMap = {
-    Suspended: "Tạm ngưng",
-    Blocked: "Chặn",
-    reject: "Từ chối"
+    Pending: "Đang xử lí",
+    Approved: "Đã xử lí",
+    Reject: "Từ chối",
   };
 
   const user = useSelector((state) => state.user.user || {});
@@ -73,6 +73,26 @@ const ReportListBySupplierId = () => {
     }
   };
 
+  const handleApprove = async (productReportID) => {
+    const res = await approveProductReport(productReportID, "Approved");
+    if (res) {
+      message.success("Product report approved successfully.");
+      fetchProductReport(supplierId); // Refresh the report list
+    } else {
+      message.error("Failed to approve product report.");
+    }
+  };
+
+  const handleReject = async (productReportID) => {
+    const res = await rejectProductReport(productReportID, "Rejected");
+    if (res) {
+      message.success("Product report rejected successfully.");
+      fetchProductReport(supplierId); // Refresh the report list
+    } else {
+      message.error("Failed to reject product report.");
+    }
+  };
+
   useEffect(() => {
     fetchSupplierId();
   }, [user.id]);
@@ -125,6 +145,12 @@ const ReportListBySupplierId = () => {
                 <p>
                   <strong>Lý do:</strong> {report.reason}
                 </p>
+                <Button type="primary" onClick={() => handleApprove(report.id)}>
+                  Approve
+                </Button>
+                <Button type="danger" onClick={() => handleReject(report.id)}>
+                  Reject
+                </Button>
               </Card>
             </List.Item>
           )}

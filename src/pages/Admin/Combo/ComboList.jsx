@@ -212,7 +212,18 @@ const ComboList = ({ refresh }) => {
               step={1000}
             />
           </Form.Item>
-
+          <Form.Item
+            name="durationCombo"
+            label="Thời gian Combo"
+            rules={[{ required: true, message: "Vui lòng chọn thời gian combo!" }]}
+          >
+            <Select placeholder="Chọn thời gian combo">
+              <Option value={0}>1 tháng</Option>
+              <Option value={1}>2 tháng</Option>
+              <Option value={2}>3 tháng</Option>
+              <Option value={3}>5 tháng</Option>
+            </Select>
+          </Form.Item>
           <Form.Item className="mb-0">
             <Button type="primary" htmlType="submit" className="w-full">
               {isUpdateMode ? "Cập nhật" : "Tạo"}

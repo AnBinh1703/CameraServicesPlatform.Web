@@ -70,7 +70,11 @@ const DetailAllProduct = ({ product, onClose }) => {
     const fetchSupplierDetails = async () => {
       if (supplierID) {
         const response = await getSupplierById(supplierID);
-        if (response.isSuccess && response.result.items && response.result.items.length > 0) {
+        if (
+          response.isSuccess &&
+          response.result.items &&
+          response.result.items.length > 0
+        ) {
           setSupplierDetails(response.result.items[0]);
         }
       }
@@ -111,9 +115,9 @@ const DetailAllProduct = ({ product, onClose }) => {
 
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined) return "Không có";
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
@@ -270,7 +274,7 @@ const DetailAllProduct = ({ product, onClose }) => {
 
         <div style={{ marginTop: "32px" }}>
           <Title level={3} style={{ marginBottom: "16px" }}>
-            Vouchers
+            Vouchers 
           </Title>
           <Table
             columns={voucherColumns}
