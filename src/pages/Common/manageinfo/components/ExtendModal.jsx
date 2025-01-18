@@ -60,7 +60,7 @@ const ExtendModal = ({
 
     fetchProductPrices();
   }, [selectedOrder]);
-  console.log("dd:", selectedOrder?.rentalEndDate);
+  // console.log("dd:", selectedOrder?.rentalEndDate);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {

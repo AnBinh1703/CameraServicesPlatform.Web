@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllExtendsByOrderId } from "../../../../api/extendApi";
-import { cancelOrder } from "../../../../api/orderApi";
+import {
+  cancelOrder,
+  updateOrderStatusCompleted,
+} from "../../../../api/orderApi";
 import { getProductReportByAccountId } from "../../../../api/productReportApi"; // Updated import
 import { formatDateTime, formatPrice } from "../utils/orderUtils";
 import ReportRatingDialog from "./ReportRatingDialog";
@@ -36,6 +39,7 @@ const OrderCard = ({
     supplierAddress: "Đang tải...",
   });
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isConfirmingProduct, setIsConfirmingProduct] = useState(false);
 
   useEffect(() => {
     if (order.orderStatus === 3 || order.orderStatus === 12) {
@@ -184,6 +188,23 @@ const OrderCard = ({
       console.error("Error confirming order:", error);
     } finally {
       setIsConfirming(false);
+    }
+  };
+
+  const handleConfirmProduct = async (orderId) => {
+    setIsConfirmingProduct(true);
+    try {
+      const response = await updateOrderStatusCompleted(orderId);
+      if (response?.isSuccess) {
+        message.success("Xác nhận nhận sản phẩm thành công");
+        window.location.reload();
+      } else {
+        message.error("Không thể xác nhận nhận sản phẩm");
+      }
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi xác nhận nhận sản phẩm");
+    } finally {
+      setIsConfirmingProduct(false);
     }
   };
 
@@ -518,7 +539,8 @@ const OrderCard = ({
           </button>
         )}
         {order.isPayment &&
-          (order.orderStatus === 3 || order.orderStatus === 12) && (
+          ((order.orderStatus === 3 && order.orderType === 1) ||
+            (order.orderStatus === 12 && order.orderType === 1)) && (
             <button
               onClick={() => onExtendClick(order)}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -526,19 +548,38 @@ const OrderCard = ({
               Gia hạn
             </button>
           )}
-        {order.isPayment && order.orderStatus === 1 && (
-          <button
-            onClick={() => handleConfirmOrder(order.orderID)}
-            disabled={isConfirming}
-            className={`px-4 py-2 text-white rounded-lg transition-colors ${
-              isConfirming
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
-          >
-            {isConfirming ? "Đang xử lý..." : "Xác nhận đã nhận sản phẩm thuê"}
-          </button>
-        )}
+        {order.isPayment &&
+          order.orderStatus === 1 &&
+          order.orderType === 1 && (
+            <button
+              onClick={() => handleConfirmOrder(order.orderID)}
+              disabled={isConfirming}
+              className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                isConfirming
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+            >
+              {isConfirming ? "Đang xử lý..." : "Xác nhận đã nhận "}
+            </button>
+          )}
+
+        {order.isPayment &&
+          order.orderStatus === 1 &&
+          order.orderType === 0 && (
+            <button
+              onClick={() => handleConfirmProduct(order.orderID)}
+              disabled={isConfirmingProduct}
+              className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                isConfirmingProduct
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+            >
+              {isConfirmingProduct ? "Đang xử lý..." : "Xác nhận  sản phẩm"}
+            </button>
+          )}
+
         {order.isPayment &&
           order.orderType === 1 &&
           (order.orderStatus === 1 ||

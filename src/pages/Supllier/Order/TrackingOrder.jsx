@@ -360,6 +360,7 @@ const TrackingOrder = ({ order, onUpdate }) => {
       title: "Chờ trả hàng",
       description: "Đợi khách hàng trả sản phẩm",
       status: [12, 3],
+      forOrderType: 1,
       icon: <SmileOutlined />,
       action: "ship",
       color: "indigo",
@@ -406,12 +407,9 @@ const TrackingOrder = ({ order, onUpdate }) => {
     // Hide processing and later steps if order is cancelled or being cancelled
     const hideProcessingAndLater =
       [6, 7].includes(order?.orderStatus) &&
-      [
-        "Đang xử lý",
-        "Chờ trả hàng",
-        "Hoàn thành",
-        "Chờ hoàn tiền",
-      ].includes(step.title);
+      ["Đang xử lý", "Chờ trả hàng", "Hoàn thành", "Chờ hoàn tiền"].includes(
+        step.title
+      );
 
     return typeCheck && !hideCancellationSteps && !hideProcessingAndLater;
   });

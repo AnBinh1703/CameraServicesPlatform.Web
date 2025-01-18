@@ -33,6 +33,7 @@ const ProductDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false); // State to track wishlist status
   const [ratings, setRatings] = useState([]); // State to store ratings
   const [wishlistId, setWishlistId] = useState(null);
+  const [averageRating, setAverageRating] = useState(0); // State to store average rating
 
   const user = useSelector((state) => state.user.user || {});
   const accountId = user.id;
@@ -89,7 +90,13 @@ const ProductDetailPage = () => {
           }
           const ratingsData = await getRatingsByProductId(id, 1, 10);
           if (ratingsData && ratingsData.result) {
-            setRatings(ratingsData.result);
+            setAverageRating(ratingsData.result.averageRating);
+            setRatings(ratingsData.result.reviewComments.map((comment, index) => ({
+              ratingID: index,
+              ratingValue: ratingsData.result.averageRating,
+              reviewComment: comment,
+              createdAt: new Date().toISOString(), // Assuming current date for simplicity
+            })));
           }
         }
       } catch (error) {
@@ -323,8 +330,8 @@ const ProductDetailPage = () => {
                     <div className="bg-gray-50 p-3 rounded">
                       <p className="text-sm text-gray-500">Đánh giá</p>
                       <div className="flex items-center">
-                        <Rate disabled defaultValue={product.rating} />
-                        <span className="ml-2">{product.rating}/5</span>
+                        <Rate disabled defaultValue={averageRating} />
+                        <span className="ml-2">{averageRating}/5</span>
                       </div>
                     </div>
                   </div>
@@ -372,15 +379,15 @@ const ProductDetailPage = () => {
                 <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
                 {ratings.length > 0 ? (
                   <div className="grid gap-4">
-                    {ratings.map((rating) => (
+                    {ratings.map((rating, index) => (
                       <div
-                        key={rating.ratingID}
+                        key={index}
                         className="bg-gray-50 p-4 rounded-lg"
                       >
                         <div className="flex items-center gap-4 mb-2">
-                          <Rate disabled defaultValue={rating.ratingValue} />
+                          <Rate disabled defaultValue={averageRating} />
                           <span className="text-gray-600">
-                            {rating.ratingValue}/5
+                            {averageRating}/5
                           </span>
                         </div>
                         <p className="text-gray-700 mb-2">

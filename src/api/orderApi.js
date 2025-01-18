@@ -281,10 +281,7 @@ export const cancelOrder = async (orderId, cancelMessage) => {
 };
 export const updateOrderStatusCompleted = async (orderId) => {
   try {
-    const res = await api.put(
-      `/order/update-order-status-completed/${orderId}`,
-      {}
-    );
+    const res = await api.put(`/order/update-order-status-completed/${orderId}`, {});
     return res.data;
   } catch (err) {
     console.error("Error updating order status:", err);
