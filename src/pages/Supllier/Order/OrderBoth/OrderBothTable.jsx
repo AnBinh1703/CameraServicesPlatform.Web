@@ -142,6 +142,23 @@ const OrderBothTable = ({
           >
             Theo dõi đơn hàng
           </Button>
+          {record.orderStatus === 10 && (
+            <Button
+              type="default"
+              onClick={async () => {
+                const transactionImage = await getTransactionImage(
+                  record.orderID
+                );
+                if (transactionImage.isSuccess) {
+                  setTransactionImage(transactionImage.result);
+                  setTransactionModalVisible(true);
+                }
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              Xem Giao Dich
+            </Button>
+          )}
           {record.orderType === 1 && (
             <>
               <Button
@@ -169,23 +186,6 @@ const OrderBothTable = ({
                   style={{ marginLeft: 8 }}
                 >
                   Chi tiết trả hàng
-                </Button>
-              )}
-              {record.orderStatus === 10 && (
-                <Button
-                  type="default"
-                  onClick={async () => {
-                    const transactionImage = await getTransactionImage(
-                      record.orderID
-                    );
-                    if (transactionImage.isSuccess) {
-                      setTransactionImage(transactionImage.result);
-                      setTransactionModalVisible(true);
-                    }
-                  }}
-                  style={{ marginLeft: 8 }}
-                >
-                  Xem Giao Dich
                 </Button>
               )}
             </>

@@ -723,9 +723,10 @@ const CreateStaffRefundMember = () => {
       render: (text, record) => (
         <Space size="small">
           {/* Existing refund button */}
-          {((record.orderStatus === 11 &&
+          {((record.orderStatus === 9 &&
             record.isPayment &&
             record.orderType === 1) ||
+            (record.orderStatus === 11 && record.isPayment) ||
             (record.orderStatus === 7 &&
               record.isPayment &&
               record.orderType === 1)) && (
@@ -769,13 +770,13 @@ const CreateStaffRefundMember = () => {
       key: "updateStatus",
       width: 120,
       render: (text, record) =>
-        record.orderStatus === 11 && record.orderType === 0 ? (
+        record.orderStatus === 9 && record.orderType === 0 ? (
           <Button
             type="default"
             size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 0)}
           >
-            Xử lí giao dịch Cho NCC
+            Xử lí giao dịch
           </Button>
         ) : record.orderStatus === 9 ? (
           <Button
@@ -783,7 +784,7 @@ const CreateStaffRefundMember = () => {
             size="small"
             onClick={() => handleUpdateOrderStatus(record.orderID, 1)}
           >
-            Xử lí giao dịch Cho khách
+            Xử lí giao dịch
           </Button>
         ) : null,
     },

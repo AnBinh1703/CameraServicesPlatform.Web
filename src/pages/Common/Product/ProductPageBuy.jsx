@@ -73,7 +73,7 @@ const ProductPageBuy = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const productData = await getAllProduct(1, 50);
+      const productData = await getAllProduct(1, 100);
       if (productData) {
         const productsWithDetails = await Promise.all(
           productData.map(async (product) => {
@@ -143,7 +143,7 @@ const ProductPageBuy = () => {
     setLoading(true);
     setSearchTerm(value);
     try {
-      const productData = await getProductByName(value, 1, 20);
+      const productData = await getProductByName(value, 1, 100100);
       if (productData) {
         setProducts(productData);
       } else {

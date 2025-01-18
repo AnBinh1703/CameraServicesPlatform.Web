@@ -1,5 +1,5 @@
-import { Button, Spin, Table, Breadcrumb, Card, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
+import { Breadcrumb, Card, Table, Typography } from "antd";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { getUserById } from "../../../api/accountApi";
@@ -76,12 +76,7 @@ const HistoryTransactionList = () => {
       key: "accountID",
       render: (accountID) => accountNames[accountID],
     },
-    {
-      title: "Tên nhân viên",
-      dataIndex: "staffID",
-      key: "staffID",
-      render: (staffID) => staffNames[staffID],
-    },
+
     {
       title: "Số tiền",
       dataIndex: "price",
@@ -128,7 +123,7 @@ const HistoryTransactionList = () => {
               dataSource={transactions}
               rowKey="transactionID"
               loading={loading}
-              scroll={{ x: 'max-content', y: 'calc(100vh - 280px)' }}
+              scroll={{ x: "max-content", y: "calc(100vh - 280px)" }}
               className="history-table"
               pagination={{
                 current: pageIndex,

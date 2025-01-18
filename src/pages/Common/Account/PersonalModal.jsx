@@ -167,7 +167,7 @@ const PersonalModal = ({ onClose }) => {
               </div>
 
               {/* Address Field */}
-              <div>
+              {/* <div>
                 <label htmlFor="address" className="label font-semibold">
                   Địa chỉ
                 </label>
@@ -183,7 +183,7 @@ const PersonalModal = ({ onClose }) => {
                   component="div"
                   className="text-error mt-1"
                 />
-              </div>
+              </div> */}
 
               {/* Job Field */}
               <div>

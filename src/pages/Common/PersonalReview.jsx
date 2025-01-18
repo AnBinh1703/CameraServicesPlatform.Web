@@ -1,7 +1,8 @@
-import { message } from "antd";
+import { Image, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "tailwindcss/tailwind.css";
+import { getProductById } from "../../api/productApi";
 import { getRatingsByAccountId } from "../../api/ratingApi";
 import LoadingComponent from "../../components/LoadingComponent/LoadingComponent";
 
@@ -43,17 +44,31 @@ const deliveryStatusMap = {
 const PersonalReview = () => {
   const { user } = useSelector((state) => state.user || {});
   const [isLoading, setIsLoading] = useState(false);
-  const [accountRatings, setAccountRatings] = useState({
-    averageRating: 0,
-    reviewComments: [],
-  });
+  const [ratings, setRatings] = useState([]);
+  const [productDetails, setProductDetails] = useState({});
+
+  const fetchProductDetails = async (productId) => {
+    try {
+      const product = await getProductById(productId);
+      setProductDetails((prev) => ({
+        ...prev,
+        [productId]: product,
+      }));
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    }
+  };
 
   const fetchAccountRatings = async () => {
     try {
       setIsLoading(true);
       const response = await getRatingsByAccountId(user.id, 1, 10);
       if (response?.isSuccess) {
-        setAccountRatings(response.result);
+        setRatings(response.result);
+        // Fetch product details for each rating
+        response.result.forEach((rating) => {
+          fetchProductDetails(rating.productID);
+        });
       }
     } catch (error) {
       console.error("Lỗi khi tải đánh giá:", error);
@@ -69,41 +84,97 @@ const PersonalReview = () => {
     }
   }, [user]);
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const calculateAverageRating = () => {
+    if (!ratings.length) return 0;
+    const sum = ratings.reduce((acc, rating) => acc + rating.ratingValue, 0);
+    return sum / ratings.length;
+  };
+
+  const renderRatingEntry = (rating) => {
+    const product = productDetails[rating.productID];
+    const productImage = product?.listImage?.[0]?.image || "/placeholder-image.jpg";
+
+    return (
+      <div
+        key={rating.ratingID}
+        className="bg-white p-4 rounded-lg shadow mb-4"
+      >
+        <div className="flex gap-4">
+          <div className="w-24 h-24 flex-shrink-0">
+            <Image
+              src={productImage}
+              alt={product?.productName}
+              className="w-full h-full object-cover rounded"
+              fallback="/placeholder-image.jpg"
+            />
+          </div>
+          <div className="flex-grow">
+            <h4 className="font-semibold text-lg mb-1">
+              {product?.productName || "Đang tải..."}
+            </h4>
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-yellow-500">
+                {"★".repeat(rating.ratingValue)}
+                {"☆".repeat(5 - rating.ratingValue)}
+              </div>
+              <span className="text-sm text-gray-500">
+                {formatDate(rating.createdAt)}
+              </span>
+            </div>
+            <p className="text-gray-700">
+              {rating.reviewComment || "Không có nhận xét"}
+            </p>
+            <div className="mt-2 text-sm text-gray-500">
+              <span className="mr-4">ID: {rating.productID}</span>
+              <span>Mã đánh giá: {rating.ratingID}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderRatingsOverview = () => (
     <div className="mb-6 p-4 bg-white rounded-lg shadow">
-      <h3 className="text-xl font-semibold mb-3">Tổng quan đánh giá của bạn</h3>
+      <h3 className="text-xl font-semibold mb-3">Tổng quan đánh giá</h3>
       <div className="flex items-center mb-2">
         <span className="mr-2">Đánh giá trung bình:</span>
         <span className="text-yellow-500">
-          {"★".repeat(Math.round(accountRatings.averageRating))}
+          {"★".repeat(Math.round(calculateAverageRating()))}
+          {"☆".repeat(5 - Math.round(calculateAverageRating()))}
         </span>
-        <span className="ml-1">
-          ({accountRatings.averageRating.toFixed(1)})
-        </span>
+        <span className="ml-1">({calculateAverageRating().toFixed(1)})</span>
       </div>
-      {accountRatings.reviewComments.length > 0 && (
-        <div>
-          <h4 className="font-medium mb-2">Nhận xét gần đây:</h4>
-          <ul className="list-disc pl-5">
-            {accountRatings.reviewComments.map((comment, index) => (
-              <li key={index} className="text-gray-600">
-                {comment}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="text-sm text-gray-600">
+        Tổng số đánh giá: {ratings.length}
+      </div>
     </div>
   );
 
   return (
     <div className="container mx-auto py-8 px-4">
       <LoadingComponent isLoading={isLoading} title="Đang tải dữ liệu..." />
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-3 bg-white shadow-lg rounded-lg p-6">
-          {renderRatingsOverview()}
+      {user && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            {renderRatingsOverview()}
+            <div className="space-y-4">
+              {ratings.map((rating) => renderRatingEntry(rating))}
+            </div>
+          </div>
+          <div className="lg:col-span-1">{/* Sidebar content if needed */}</div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
