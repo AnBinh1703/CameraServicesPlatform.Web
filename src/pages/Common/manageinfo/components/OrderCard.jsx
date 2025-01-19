@@ -548,25 +548,23 @@ const OrderCard = ({
               Gia hạn
             </button>
           )}
-        {order.isPayment &&
-          order.orderStatus === 1 &&
-          order.orderType === 1 && (
-            <button
-              onClick={() => handleConfirmOrder(order.orderID)}
-              disabled={isConfirming}
-              className={`px-4 py-2 text-white rounded-lg transition-colors ${
-                isConfirming
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
-            >
-              {isConfirming ? "Đang xử lý..." : "Xác nhận đã nhận "}
-            </button>
-          )}
+        {order.isPayment && order.orderStatus === 1 && (
+          <button
+            onClick={() => handleConfirmOrder(order.orderID)}
+            disabled={isConfirming}
+            className={`px-4 py-2 text-white rounded-lg transition-colors ${
+              isConfirming
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
+          >
+            {isConfirming ? "Đang xử lý..." : "Xác nhận đã nhận "}
+          </button>
+        )}
 
-        {/* {(order.isPayment && order.orderStatus === 3) ||
-          (order.isPayment && order.orderStatus === 4) ||
-          (order.isPayment && (
+        {order.orderStatus === 3 ||
+          order.orderStatus === 1 ||
+          (order.orderStatus === 4 && (
             <button
               onClick={() => handleConfirmProduct(order.orderID)}
               disabled={isConfirmingProduct}
@@ -578,7 +576,7 @@ const OrderCard = ({
             >
               {isConfirmingProduct ? "Đang xử lý..." : "Xác nhận  sản phẩm"}
             </button>
-          ))} */}
+          ))}
         {/* {order.isPayment &&
           order.orderStatus === 1 &&
           order.orderType === 11 && (
