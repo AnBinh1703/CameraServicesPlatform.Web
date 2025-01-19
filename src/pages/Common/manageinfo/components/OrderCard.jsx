@@ -562,7 +562,7 @@ const OrderCard = ({
           </button>
         )}
 
-        {order.orderStatus === 3 ||
+        {/* {order.orderStatus === 3 ||
           order.orderStatus === 1 ||
           (order.orderStatus === 4 && (
             <button
@@ -576,7 +576,7 @@ const OrderCard = ({
             >
               {isConfirmingProduct ? "Đang xử lý..." : "Xác nhận  sản phẩm"}
             </button>
-          ))}
+          ))} */}
         {/* {order.isPayment &&
           order.orderStatus === 1 &&
           order.orderType === 11 && (
